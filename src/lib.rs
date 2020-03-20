@@ -69,7 +69,7 @@ impl StyleWrap {
     }
 
     #[getter]
-    fn font_style(&self) -> PyResult<ColorWrap> {
+    fn font_style(&self) -> PyResult<u8> {
         Ok(self.font_style)
     }
 }
@@ -107,7 +107,7 @@ impl FontStyleWrap {
 
 #[pyfunction]
 /// Test function for syntect execution
-fn highlight(text: str, language: str) -> PyResult<Vec<(StyleWrap, &'static str)>> {
+fn highlight(text: &'static str, language: &str) -> PyResult<Vec<(StyleWrap, &'static str)>> {
     let ps = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
@@ -138,7 +138,7 @@ fn highlight(text: str, language: str) -> PyResult<Vec<(StyleWrap, &'static str)
             let py_style = StyleWrap {
                 foreground: py_foreground,
                 background: py_background,
-                font_style: style.font_style.bits();
+                font_style: style.font_style.bits(),
             };
 
             python_output.push((py_style, text));
