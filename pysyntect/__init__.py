@@ -1,4 +1,15 @@
 
-from .pysyntect import sum_as_string
 
-sum_as_string
+from .pysyntect import highlight, Style, Color, FontStyleConst
+
+
+class FontStyle:
+    BOLD = FontStyleConst.bold()
+    ITALIC = FontStyleConst.italic()
+    UNDERLINE = FontStyleConst.underline()
+
+
+highlight
+Style
+Color
+FontStyle
