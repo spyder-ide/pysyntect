@@ -10,6 +10,9 @@ edition = "2018"
 name = "pysyntect"
 crate-type = ["cdylib"]
 
+[dependencies]
+syntect = "3.3"
+
 [dependencies.pyo3]
 version = "0.9.0"
 features = ["extension-module"]
