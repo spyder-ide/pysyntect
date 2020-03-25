@@ -1,0 +1,297 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Fortran - Punchcard
+comment: "?i: has to be added everywhere because fortran is case insensitive; NB: order of matching matters"
+file_extensions:
+  - f
+  - F
+  - f77
+  - F77
+  - for
+  - FOR
+  - fpp
+  - FPP
+scope: source.fortran
+contexts:
+  main:
+    - include: preprocessor-rule-enabled
+    - include: preprocessor-rule-disabled
+    - include: preprocessor-rule-other
+    - match: (?i:(r8|r4|\.TRUE\.|\.FALSE\.))
+      comment: built-in constants
+      scope: constant.language.fortran
+    - match: '\b[\+\-]?[0-9]+\.?[0-9a-zA-Z_]*\b'
+      comment: numbers
+      scope: constant.numeric.fortran
+    - match: |-
+        (?x:								# extended mode
+        ^
+        \s*									# start of line and possibly some space
+        ([a-zA-Z\(\)]*)(?<!end)				# 1: possibly some type specification but not the word end
+        \s*									# possibly some space
+        (?i:(function|subroutine))\b		# 2: function or subroutine
+        \s+									# some space
+        ([A-Za-z_][A-Za-z0-9_]*)			# 3: name
+        )
+      comment: First line of function/subroutine definition
+      captures:
+        1: storage.type.fortran
+        2: storage.type.function.fortran
+        3: entity.name.function.fortran
+      push:
+        - meta_scope: meta.function.fortran
+        - match: |-
+            (?x:									# extended mode
+            ((?i:end))							# 1: the word end
+            (									# followed by
+            	$								# end of line
+            |									# or
+            	\s*								# possibly some space
+            	(?i:(function|subroutine))		# 2: function or subroutine
+            	((\s+[A-Za-z_][A-Za-z0-9_]*)?)	# 3: possibly the name
+            )
+            )
+          captures:
+            1: keyword.other.fortran
+            3: storage.type.function.fortran
+            4: entity.name.function.end.fortran
+          pop: true
+        - match: \G\s*(\()
+          captures:
+            1: punctuation.definition.parameters.begin.fortran
+          push:
+            - match: \)
+              captures:
+                0: punctuation.definition.parameters.end.fortran
+              pop: true
+            - match: '([^\s),]*)\s*(,)?'
+              captures:
+                1: variable.parameter.fortran
+                2: punctuation.separator.arguments.fortan
+        - include: $top_level_main
+    - match: \b(?i:(integer|real|double\s+precision|complex|logical|character))\b(?=.*::)
+      comment: Line of type specification
+      captures:
+        1: storage.type.fortran
+      push:
+        - meta_scope: meta.specification.fortran
+        - match: (?=!)|$
+          pop: true
+        - include: $top_level_main
+    - match: \b(?i:(go\s*to|assign|to|if|then|else|elseif|end\s*if|continue|stop|pause|do|end\s*do|while|cycle))\b
+      comment: statements controling the flow of the program
+      scope: keyword.control.fortran
+    - match: \b(?i:(program|end\s+program|entry|block\s+data|call|return|contains|include))\b
+      comment: programming units
+      scope: keyword.control.programming-units.fortran
+    - match: \b(?i:(open|close|read|write|print|inquire|backspace|endfile|format))\b
+      comment: i/o statements
+      scope: keyword.control.io.fortran
+    - match: ((?<!\=)\=(?!\=)|\-|\+|\/\/|\/|(?!^)\*|::)
+      comment: operators
+      scope: keyword.operator.fortran
+    - match: (?i:(\.and\.|\.or\.|\.eq\.|\.lt\.|\.le\.|\.gt\.|\.ge\.|\.ne\.|\.not\.|\.eqv\.|\.neqv\.))
+      comment: logical operators
+      scope: keyword.operator.logical.fortran
+    - match: \b(?i:(present)(?=\())
+      comment: argument related intrisics
+      scope: keyword.other.instrisic.argument.fortran
+    - match: \b(?i:(abs|aimag|aint|anint|cmplx|conjg|dble|dim|dprod|int|max|min|mod|nint|real|sign|digits|epsilon|huge|maxexponent|minexponent|precision|radix|range|tiny)(?=\())
+      comment: numeric intrisics
+      scope: keyword.other.instrisic.numeric.fortran
+    - match: \b(?i:(achar|adjustl|adjustr|char|iachar|ichar|index|len_trim|repeat|scan|string|trim|verify|len)(?=\())
+      comment: character string intrinsics
+      scope: keyword.other.instrisic.string.fortran
+    - match: \b(?i:(((acos|asin|atan|atan2|cos|cosh|exp|log|log10|sin|sinh|sqrt|tan|tanh)(?=\())|(random_number|random_seed)))\b
+      comment: mathematical intrisics
+      scope: keyword.other.instrisic.math.fortran
+    - match: \b(?i:(kind|selected_int_kind|selected_real_kind|transfer)(?=\())
+      comment: data kind intrinsics
+      scope: keyword.other.instrisic.data.fortran
+    - match: \b(?i:(logical)(?=\())
+      comment: logical intrinsics
+      scope: keyword.other.instrisic.logical.fortran
+    - match: \b(?i:(((bit_size|btest|iand|ibclr|ibits|ibset|ieor|ior|ishift|ishiftc|not)(?=\())|mvbits))\b
+      comment: bit operations intrinsics
+      scope: keyword.other.instrisic.bit.fortran
+    - match: \b(?i:(exponent|fraction|nearest|rrspacing|scale|set_exponent|spacing)(?=\())
+      comment: floating point intrinsics
+      scope: keyword.other.instrisic.floating-point.fortran
+    - match: \b(?i:(((dot_product|sum|matmul|transpose|all|any|count|maxval|minval|maxloc|minloc|product|sum|lbound|ubound|shape|size|merge|pack|unpack|reshape|spread|cshift|eoshift)(?=\())|(where|elsewhere|end\s*where)))\b
+      comment: matrix/vector/array intrisics
+      scope: keyword.other.instrisic.array.fortran
+    - match: \b(?i:(((dtime)(?=\())|(date_and_time|system_clock)))\b
+      comment: other intrisics
+      scope: keyword.other.instrisic.fortran
+    - match: \b(?i:(integer|real|double\s+precision|complex|logical|character|block\sdata|operator|assignment))\b
+      comment: data specification
+      scope: storage.type.fortran
+    - match: \b(?i:(dimension|common|equivalence|parameter|external|intrinsic|save|data|implicit\s*none|implicit|intent|in|out|inout))\b
+      comment: data type attributes
+      scope: storage.modifier.fortran
+    - match: "'"
+      comment: String
+      captures:
+        0: punctuation.definition.string.begin.fortran
+      push:
+        - meta_scope: string.quoted.single.fortran
+        - match: "''"
+          scope: constant.character.escape.apostrophe.fortran
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.fortran
+          pop: true
+    - match: '"'
+      comment: String
+      captures:
+        0: punctuation.definition.string.begin.fortran
+      push:
+        - meta_scope: string.quoted.double.fortran
+        - match: '""'
+          scope: constant.character.escape.quote.fortran
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.fortran
+          pop: true
+    - match: ^\s*#\s*(error|warning)\b
+      captures:
+        1: keyword.control.import.error.fortran
+      push:
+        - meta_scope: meta.preprocessor.diagnostic.fortran
+        - match: $\n?
+          captures:
+            1: keyword.control.import.error.fortran
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.fortran
+    - match: ^\s*#\s*(include|import)\b\s+
+      captures:
+        1: keyword.control.import.include.fortran
+      push:
+        - meta_scope: meta.preprocessor.fortran.include
+        - match: (?=(?://|/\*))|$\n?
+          captures:
+            1: keyword.control.import.include.fortran
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.fortran
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.fortran
+          push:
+            - meta_scope: string.quoted.double.include.fortran
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.fortran
+              pop: true
+        - match: <
+          captures:
+            0: punctuation.definition.string.begin.fortran
+          push:
+            - meta_scope: string.quoted.other.lt-gt.include.fortran
+            - match: ">"
+              captures:
+                0: punctuation.definition.string.end.fortran
+              pop: true
+    - include: pragma-mark
+    - match: ^\s*#\s*(define|defined|elif|else|if|ifdef|ifndef|line|pragma|undef)\b
+      captures:
+        1: keyword.control.import.fortran
+      push:
+        - meta_scope: meta.preprocessor.fortran
+        - match: (?=(?://|/\*))|$\n?
+          captures:
+            1: keyword.control.import.fortran
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.fortran
+  disabled:
+    - match: ^\s*#\s*if(n?def)?\b.*$
+      comment: eat nested preprocessor if(def)s
+      push:
+        - match: ^\s*#\s*endif\b.*$
+          pop: true
+        - include: disabled
+        - include: pragma-mark
+  pragma-mark:
+    - match: ^\s*(#\s*(pragma\s+mark)\s+(.*))
+      scope: meta.section
+      captures:
+        1: meta.preprocessor.fortran
+        2: keyword.control.import.pragma.fortran
+        3: meta.toc-list.pragma-mark.fortran
+  preprocessor-rule-disabled:
+    - match: ^\s*(#(if)\s+(0)\b).*
+      captures:
+        1: meta.preprocessor.fortran
+        2: keyword.control.import.if.fortran
+        3: constant.numeric.preprocessor.fortran
+      push:
+        - match: ^\s*(#\s*(endif)\b)
+          captures:
+            1: meta.preprocessor.fortran
+            2: keyword.control.import.if.fortran
+            3: constant.numeric.preprocessor.fortran
+          pop: true
+        - match: ^\s*(#\s*(else)\b)
+          captures:
+            1: meta.preprocessor.fortran
+            2: keyword.control.import.else.fortran
+          push:
+            - match: (?=^\s*#\s*endif\b.*$)
+              captures:
+                1: meta.preprocessor.fortran
+                2: keyword.control.import.else.fortran
+              pop: true
+            - include: $top_level_main
+        - match: ""
+          push:
+            - meta_scope: comment.block.preprocessor.if-branch
+            - match: (?=^\s*#\s*(else|endif)\b.*$)
+              pop: true
+            - include: disabled
+            - include: pragma-mark
+  preprocessor-rule-enabled:
+    - match: ^\s*(#(if)\s+(0*1)\b)
+      captures:
+        1: meta.preprocessor.fortran
+        2: keyword.control.import.if.fortran
+        3: constant.numeric.preprocessor.fortran
+      push:
+        - match: ^\s*(#\s*(endif)\b)
+          captures:
+            1: meta.preprocessor.fortran
+            2: keyword.control.import.if.fortran
+            3: constant.numeric.preprocessor.fortran
+          pop: true
+        - match: ^\s*(#\s*(else)\b).*
+          captures:
+            1: meta.preprocessor.fortran
+            2: keyword.control.import.else.fortran
+          push:
+            - meta_content_scope: comment.block.preprocessor.else-branch
+            - match: (?=^\s*#\s*endif\b.*$)
+              captures:
+                1: meta.preprocessor.fortran
+                2: keyword.control.import.else.fortran
+              pop: true
+            - include: disabled
+            - include: pragma-mark
+        - match: ""
+          push:
+            - match: (?=^\s*#\s*(else|endif)\b.*$)
+              pop: true
+            - include: $top_level_main
+  preprocessor-rule-other:
+    - match: ^\s*(#\s*(if(n?def)?)\b.*?(?:(?=(?://|/\*))|$))
+      captures:
+        1: meta.preprocessor.fortran
+        2: keyword.control.import.fortran
+      push:
+        - match: ^\s*(#\s*(endif)\b).*$
+          captures:
+            1: meta.preprocessor.fortran
+            2: keyword.control.import.fortran
+          pop: true
+        - include: $top_level_main

@@ -1,0 +1,174 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ZAP
+file_extensions:
+  - zap
+  - xzap
+first_line_match: ^\s*(?:\.(?:NEW|INSERT)\b|;.*\.zap)
+scope: source.zap
+contexts:
+  main:
+    - include: whitespace
+    - include: comment
+    - include: number
+    - include: string
+    - include: labels
+    - include: instruction
+    - include: debug_directive
+    - include: directive
+  comment:
+    - match: (;).*$
+      scope: comment.line.zap
+      captures:
+        1: punctuation.definition.comment.line.zap
+  branch:
+    - match: |-
+        (?x)
+        (?: (/) | (\\) )
+        \s*
+        (?:
+            (TRUE | FALSE)
+        |   ( [A-Za-z?$#&] [A-Za-z0-9\-?$#&.]* )
+        )
+      scope: meta.branch.zap
+      captures:
+        1: keyword.control.branch.positive.zap
+        2: keyword.control.branch.negative.zap
+        3: "keyword.control.branch.${3:/downcase}.zap"
+        4: keyword.control.branch.label.name.zap
+  debug_directive:
+    - match: |-
+        (?x)
+        (?<=\s|:|^)
+        (\.)(DEBUG-[-A-Z]+)
+        (?= \s | ; | $)
+      captures:
+        0: "keyword.directive.debug.${2:/downcase}.zap"
+        1: punctuation.directive.debug.zap
+      push:
+        - meta_scope: meta.directive.debug.zap
+        - match: (?=;|$)
+          pop: true
+        - include: operands
+  directive:
+    - match: |-
+        (?x)
+        (?<=\s|:|^)
+        (?!\.DEBUG-)
+        (?:
+            ((\.)(FUNCT))
+            \s+
+            ([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*)
+            (?= \s | [,;] | $)
+        |
+            ((\.)([A-Z]+))
+            (?= \s | ; | $)
+        )
+      captures:
+        1: "keyword.directive.${3:/downcase}.zap"
+        2: punctuation.directive.zap
+        4: entity.name.function.zap
+        5: "keyword.directive.${7:/downcase}.zap"
+        6: punctuation.directive.zap
+      push:
+        - meta_scope: meta.directive.zap
+        - match: (?=;|$)
+          pop: true
+        - include: operands
+  global_label:
+    - match: '([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*)(::)'
+      scope: meta.label.global.zap
+      captures:
+        1: keyword.control.definition.label.global.name.zap
+        2: punctuation.definition.label.global.zap
+  identifier:
+    - match: '(STACK\b)|([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*)'
+      scope: meta.variable.zap
+      captures:
+        1: variable.language.stack.zap
+        2: variable.zap
+  instruction:
+    - match: |-
+        (?x)
+        \b
+        (?:
+            (JUMP)
+            \s+
+            ([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*)
+            (?= \s* (?: ; | $ ) )
+        |
+            (
+                ADD | ASHIFT | ASSIGNED\? | BAND | BCOM | BOR | BTST | BUFOUT | CALL | CALL1 | CALL2 |
+                CATCH | CHECKU | CLEAR | COLOR | COPYT | CRLF | CURGET | CURSET | DCLEAR | DEC |
+                DIRIN | DIROUT | DISPLAY | DIV | DLESS\? | EQUAL\? | ERASE | FCLEAR | FIRST\? | FONT |
+                FSET\?? | FSTACK | GET | GETB | GETP | GETPT | GRTR\? | HLIGHT | ICALL | ICALL1 |
+                ICALL2 | IGRTR\? | IN\? | INC | INPUT | INTBL\? | IRESTORE | ISAVE | IXCALL | JUMP |
+                LESS\? | LEX | LOC | MARGIN | MENU | MOD | MOUSE-INFO | MOUSE-LIMIT | MOVE | MUL |
+                NEXT\? | NEXTP | NOOP | ORIGINAL\? | PICINF | PICSET | POP | PRINT | PRINTB | PRINTC |
+                PRINTD | PRINTF | PRINTI | PRINTN | PRINTR | PRINTT | PRINTU | PTSIZE | PUSH | PUT |
+                PUTB | PUTP | QUIT | RANDOM | READ | REMOVE | RESTART | RESTORE | RETURN | RFALSE |
+                RSTACK | RTRUE | SAVE | SCREEN | SCROLL | SET | SHIFT | SOUND | SPLIT | SUB | THROW |
+                USL | VALUE | VERIFY | WINATTR | WINGET | WINPOS | WINPUT | WINSIZE | XCALL | XPUSH |
+                ZERO\? | XWSTR
+            )
+            (?= \s | ; | $)
+        )
+      captures:
+        1: keyword.opcode.zap
+        2: keyword.control.branch.label.name.zap
+        3: keyword.opcode.zap
+      push:
+        - meta_scope: meta.instruction.zap
+        - match: (?=;|$)
+          pop: true
+        - include: operands
+        - include: store
+        - include: branch
+  labels:
+    - include: global_label
+    - include: local_label
+  local_label:
+    - match: '([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*)(:)(?!:)'
+      scope: meta.label.local.zap
+      captures:
+        1: keyword.control.definition.label.local.name.zap
+        2: punctuation.definition.label.local.zap
+  number:
+    - match: "[0-9]+"
+      scope: constant.numeric.decimal.zap
+  operands:
+    - include: summation
+    - include: number
+    - include: identifier
+    - include: string
+  store:
+    - match: '(>)\s*(?:(STACK)|([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*))'
+      scope: meta.store.zap
+      captures:
+        1: punctuation.definition.storage.zap
+        2: storage.stack.zap
+        3: entity.name.variable.zap
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.zap
+      push:
+        - meta_scope: string.quoted.double.zap
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.zap
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.zap
+  summation:
+    - match: '(?:([0-9]+)|([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*))(?:\s*(\+)\s*(?:([0-9]+)|([A-Za-z?$#&][A-Za-z0-9\-?$#&.]*)))+'
+      scope: meta.operand.summation.zap
+      captures:
+        1: constant.numeric.decimal.zap
+        2: entity.name.variable.zap
+        3: keyword.operator.plus.zap
+        4: constant.numeric.decimal.zap
+        5: entity.name.variable.zap
+  whitespace:
+    - match: \s+

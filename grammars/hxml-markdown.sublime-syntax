@@ -1,0 +1,18 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: markdown.hxml.codeblock
+contexts:
+  main:
+    - include: hxml-code-block
+  hxml-code-block:
+    - match: 'hxml(\s+[^`~]*)?$'
+      push:
+        - match: '(^|\G)(?=\s*[`~]{3,}\s*$)'
+          pop: true
+        - match: (^|\G)(\s*)(.*)
+          push:
+            - meta_content_scope: meta.embedded.block.hxml
+            - match: ""
+              pop: true
+            - include: scope:source.hxml

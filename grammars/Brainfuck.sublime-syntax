@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Brainfuck
+file_extensions:
+  - bf
+scope: source.bf
+contexts:
+  main:
+    - match: "[+-]"
+      scope: constant.character.modify-value.bf
+    - match: "[<>]"
+      scope: keyword.operator.modify-pointer.bf
+    - match: "[.,]"
+      scope: entity.name.function.io.bf
+    - match: '\['
+      scope: punctuation.definition.tag.begin.bf
+    - match: '\]'
+      scope: punctuation.definition.tag.end.bf
+    - match: '[^-.,+<>\[\]]'
+      scope: comment.block.bf

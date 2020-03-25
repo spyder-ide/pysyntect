@@ -1,0 +1,515 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Sass
+file_extensions:
+  - sass
+  - sass.erb
+scope: source.sass
+contexts:
+  main:
+    - match: '(?:(!)|(\$))([a-zA-Z0-9_-]+)\s*(?=(\|\|)?=|:\s+)'
+      captures:
+        1: invalid.illegal.deprecated.sass
+        2: punctuation.definition.entity.sass
+        3: variable.other.sass
+      push:
+        - meta_scope: meta.variable-declaration.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - match: (?:(:)\s+)|((\|\|)?=)
+          captures:
+            1: punctuation.separator.key-value.css
+            2: invalid.illegal.deprecated.sass
+          push:
+            - meta_scope: meta.property-value.sass
+            - match: (?=;?$)
+              pop: true
+            - include: property-value
+    - match: \s*((@)if\b)\s+
+      captures:
+        1: keyword.control.if.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.if.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: \s*((@)(?:(?:else(?=\s*$))|(?:else\s+if\s+(?=\S+))))
+      captures:
+        1: keyword.control.else.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.else.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: \s*((@)while\b)\s+
+      captures:
+        1: keyword.control.while.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.while.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: \s*((@)for\b)\s+
+      captures:
+        1: keyword.control.for.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.for.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: \s*((@)each\b)\s+
+      captures:
+        1: keyword.control.each.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.each.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: '^((@)function\b)\s*([a-zA-Z0-9_-]+)'
+      captures:
+        1: keyword.control.at-rule.function.sass
+        2: punctuation.definition.entity.sass
+        3: support.function.misc.sass
+      push:
+        - meta_scope: meta.at-rule.function.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: \s*((@)return\b)\s+
+      captures:
+        1: keyword.control.return.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.return.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: '^(=\s*|(?:(@)mixin))\s+([a-zA-Z0-9_-]+)'
+      captures:
+        1: keyword.control.at-rule.mixin.sass
+        2: punctuation.definition.entity.sass
+        3: variable.other.sass
+      push:
+        - meta_scope: meta.variable-declaration.sass.mixin
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: \s*((@)content)\s*$
+      captures:
+        1: keyword.control.content.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.content.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: '^\s*(\+(?!\s+)|(?:(@)include(?=\s+)))\s*(?:([\w-]+)(\.))?([a-zA-Z0-9_-]+)'
+      captures:
+        1: keyword.control.at-rule.include.sass
+        2: punctuation.definition.entity.sass
+        3: variable.sass
+        4: punctuation.access.module.sass
+        5: variable.other.sass
+      push:
+        - meta_scope: meta.function.include.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: '^\s*(@extend)\s+([.*&#%a-zA-Z][-_:.*&#a-zA-Z]*)\s*(;)?\s*$'
+      scope: meta.function.extend.sass
+      captures:
+        1: keyword.control.at-rule.extend.sass
+        2: variable.other.sass
+        3: invalid.illegal.punctuation.sass
+    - match: \s*((@)(warn|debug|error)\b)\s*
+      captures:
+        1: keyword.control.warn.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.warn.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: string-single
+        - include: string-double
+    - match: '^\s*((@)at-root)(?!(?:\s+[^.\(])|(?:\s+\((?!with)))'
+      captures:
+        1: keyword.control.at-root.sass
+        2: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.at-rule.at-root.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - match: '(?:(\((?:with(?:out)?)\s*:\s*[a-zA-Z ]+\))|((?:[.*&#a][:*&#a-zA-Z]+)+))'
+          captures:
+            1: support.function.misc.sass
+            2: .entity.other.attribute-name
+    - match: ^\s*((@)use\b)\s*
+      captures:
+        1: keyword.control.at-rule.use.sass
+        2: punctuation.definition.keyword.sass
+      push:
+        - meta_scope: meta.at-rule.use.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - match: \b(as|with)\b
+          scope: keyword.control.operator
+        - match: '\b[\w-]+\b'
+          scope: variable.sass
+        - match: \*
+          scope: variable.language.expanded-namespace.sass
+        - include: string-single
+        - include: string-double
+        - include: comments
+        - match: \(
+          captures:
+            0: punctuation.definition.module.begin.bracket.round.sass
+          push:
+            - match: \)
+              captures:
+                0: punctuation.definition.module.end.bracket.round.sass
+              pop: true
+            - include: property-value
+    - match: \s*((@)forward\b)\s*
+      captures:
+        1: keyword.control.at-rule.forward.sass
+        2: punctuation.definition.keyword.sass
+      push:
+        - meta_scope: meta.at-rule.forward.sass
+        - match: \s*(?=;)
+          captures:
+            1: keyword.control.at-rule.forward.sass
+            2: punctuation.definition.keyword.sass
+          pop: true
+        - match: \b(as|hide|show)\b
+          scope: keyword.control.operator
+        - match: '\b([\w-]+)(\*)'
+          captures:
+            1: entity.other.attribute-name.module.sass
+            2: punctuation.definition.wildcard.sass
+        - match: '\b[\w-]+\b'
+          scope: entity.name.function.sass
+        - include: variable-usage
+        - include: string-single
+        - include: string-double
+        - include: comments
+    - match: '^\s*(\+)([a-zA-Z0-9_-]+)'
+      captures:
+        1: punctuation.definition.entity.sass
+        2: variable.other.sass
+        3: punctuation.definition.entity.sass
+      push:
+        - meta_scope: meta.variable-usage.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - match: '(!|\$)([a-zA-Z0-9_-]+)'
+          scope: meta.variable-usage.sass
+          captures:
+            1: punctuation.definition.entity.css
+            2: variable.other.sass
+        - include: string-single
+        - include: string-double
+    - match: '(?=[.*&#\[a-zA-Z][:.*&#a-zA-Z]*)'
+      push:
+        - meta_scope: meta.selector.css
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: comments
+        - match: "(&)([a-zA-Z0-9_-]*)"
+          captures:
+            1: keyword.other.parent-reference.sass
+            2: entity.other.attribute-name.parent-selector-suffix.sass
+        - match: '(\.)[a-zA-Z0-9_-]+'
+          scope: entity.other.attribute-name.class.sass
+          captures:
+            1: punctuation.definition.entity.css
+        - include: scope:source.css#tag-names
+        - match: "(#)[a-zA-Z][a-zA-Z0-9_-]*"
+          scope: entity.other.attribute-name.id.css.sass
+          captures:
+            1: punctuation.definition.entity.sass
+        - match: \*
+          scope: entity.name.tag.wildcard.sass
+        - include: scope:source.css#pseudo-classes
+        - include: scope:source.css#pseudo-elements
+        - include: scope:source.css#functional-pseudo-classes
+        - match: '(?i)(\[)\s*(-?[_a-z\\[[:^ascii:]]][-_a-z0-9\\[[:^ascii:]]]*)(?:\s*([~|^$*]?=)\s*(?:(-?[_a-z\\[[:^ascii:]]][-_a-z0-9\\[[:^ascii:]]]*)|((?>([''"])(?:[^\\]|\\.)*?(\6)))))?\s*(])'
+          scope: meta.attribute-selector.css.sass
+          captures:
+            1: punctuation.definition.attribute-selector.begin.bracket.square.sass
+            2: entity.other.attribute-name.attribute.sass
+            3: keyword.operator.sass
+            4: string.unquoted.attribute-value.sass
+            5: string.quoted.double.attribute-value.sass
+            6: punctuation.definition.string.begin.sass
+            7: punctuation.definition.string.end.sass
+            8: punctuation.definition.attribute-selector.end.bracket.square.sass
+    - include: comments
+    - match: '^(=|@keyframes\s+)([a-zA-Z0-9_-]+)'
+      captures:
+        1: keyword.control.at-rule.keyframes.sass
+        2: variable.other.sass
+      push:
+        - meta_scope: meta.variable-declaration.sass.mixin
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-value
+    - match: ^\s*((@)import\b)
+      captures:
+        1: keyword.control.at-rule.import.sass
+        2: punctuation.definition.keyword.sass
+      push:
+        - meta_scope: meta.at-rule.import.sass
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: string-double
+        - match: (url)\s*(\()\s*
+          captures:
+            1: support.function.url.sass
+            2: punctuation.section.function.sass
+          push:
+            - match: \s*(\))\s*
+              captures:
+                1: punctuation.section.function.sass
+              pop: true
+            - match: '[^''") \t]+'
+              scope: variable.parameter.url.sass
+            - include: string-single
+            - include: string-double
+        - match: '([^"''\n;]+)'
+          scope: variable.parameter.url.sass
+    - match: ^\s*((@)media)\b
+      captures:
+        1: keyword.control.at-rule.media.sass
+        2: punctuation.definition.keyword.sass
+      push:
+        - meta_scope: meta.at-rule.media.sass
+        - match: $
+          pop: true
+        - match: \b(only)\b
+          scope: keyword.control.operator.css.sass
+        - match: \(
+          captures:
+            0: punctuation.definition.media-query.begin.bracket.round.sass
+          push:
+            - meta_scope: meta.property-list.media-query.sass
+            - match: \)
+              captures:
+                0: punctuation.definition.media-query.end.bracket.round.sass
+              pop: true
+            - match: "(?<![-a-z])(?=[-a-z])"
+              push:
+                - meta_scope: meta.property-name.media-query.sass
+                - match: "$|(?![-a-z])"
+                  pop: true
+                - include: scope:source.css#media-features
+                - include: scope:source.css#property-names
+            - match: (:)\s*
+              captures:
+                1: punctuation.separator.key-value.sass
+              push:
+                - meta_content_scope: meta.property-value.media-query.sass
+                - match: \s*(?=\))
+                  pop: true
+                - include: property-value
+        - include: variable-usage
+        - include: conditional-operators
+        - include: scope:source.css#media-types
+    - match: '^\s+(:)(?=[-a-z])'
+      captures:
+        1: punctuation.separator.key-value.css
+      push:
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - include: property-name
+        - match: \s+
+          push:
+            - meta_scope: meta.property-value.sass
+            - match: (?=;?$)
+              pop: true
+            - include: property-value
+    - match: '^\s+([-A-Za-z]+)\s*(?=(\|\|)?=|:[ \t]+)'
+      captures:
+        2: punctuation.separator.key-value.css
+        3: invalid.illegal.deprecated.sass
+      push:
+        - match: (;)?$
+          captures:
+            1: invalid.illegal.punctuation.sass
+          pop: true
+        - match: (?:(:)\s+)|((\|\|)?=)
+          captures:
+            1: punctuation.separator.key-value.css
+            2: invalid.illegal.deprecated.sass
+          push:
+            - meta_scope: meta.property-value.sass
+            - match: (?=;?$)
+              pop: true
+            - include: property-value
+  comments:
+    - match: \w+\s*((//|/\*).*)
+      captures:
+        1: invalid.illegal.sass
+    - match: ^(\s*)(///)
+      captures:
+        2: punctuation.definition.comment.sass
+      push:
+        - meta_scope: comment.block.documentation.sass
+        - match: ^(?!\s\1)
+          pop: true
+        - include: scope:source.sassdoc
+    - match: ^(\s*)(/\*)
+      captures:
+        2: punctuation.definition.comment.sass
+      push:
+        - meta_scope: comment.block.sass
+        - match: (\*/)|^(?!\s\1)
+          captures:
+            1: punctuation.definition.comment.sass
+          pop: true
+    - match: ^(\s*)(//)
+      captures:
+        2: punctuation.definition.comment.sass
+      push:
+        - meta_scope: comment.line.sass
+        - match: ^(?!\s\1)
+          pop: true
+  conditional-operators:
+    - match: "==|!=|<=|>=|<|>"
+      scope: keyword.operator.comparison.sass
+    - match: \b(not|or|and)\b
+      scope: keyword.operator.logical.sass
+  property-name:
+    - match: "(?=[-A-Za-z]+)"
+      push:
+        - meta_scope: meta.property-name.sass
+        - match: (?!\G)
+          pop: true
+        - include: scope:source.css#property-names
+  property-value:
+    - include: scope:source.css#numeric-values
+    - match: '[-+*/](?!\s*[-+*/])'
+      scope: keyword.operator.css
+    - include: variable-usage
+    - match: \b(true|false)\b
+      scope: support.constant.property-value.css.sass
+    - include: scope:source.css#property-keywords
+    - include: scope:source.css#color-keywords
+    - match: '(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b'
+      scope: constant.other.color.rgb-value.css
+      captures:
+        1: punctuation.definition.constant.css
+    - include: string-double
+    - include: string-single
+    - match: '([\w-]+)(\.)([\w-]+)(\()'
+      captures:
+        1: variable.sass
+        2: punctuation.access.module.sass
+        3: support.function.misc.sass
+        4: punctuation.section.function.sass
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.sass
+          pop: true
+        - include: string-double
+        - include: string-single
+        - include: variable-usage
+        - include: scope:source.css#numeric-values
+    - match: (rgb|url|attr|counter|counters|local|format)\s*(\()
+      captures:
+        1: support.function.misc.sass
+        2: punctuation.section.function.sass
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.sass
+          pop: true
+        - include: string-single
+        - include: string-double
+        - match: '(\b0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\s*,\s*)(0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\s*,\s*)(0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\b)'
+          scope: constant.other.color.rgb-value.sass
+        - match: '\b([0-9]{1,2}|100)\s*%,\s*([0-9]{1,2}|100)\s*%,\s*([0-9]{1,2}|100)\s*%'
+          scope: constant.other.color.rgb-percentage.sass
+        - match: '[^''") \t]+'
+          scope: variable.parameter.misc.sass
+    - match: '!\s*important'
+      scope: keyword.other.important.sass
+    - match: (from|to|through|in)
+      scope: keyword.operator.control.sass
+    - include: conditional-operators
+  string-double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.sass
+      push:
+        - meta_scope: string.quoted.double.sass
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.sass
+          pop: true
+        - match: '\\(\h{1,6}|.)'
+          scope: constant.character.escape.sass
+  string-single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.sass
+      push:
+        - meta_scope: string.quoted.single.sass
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.sass
+          pop: true
+        - match: '\\(\h{1,6}|.)'
+          scope: constant.character.escape.sass
+  variable-usage:
+    - match: '(?:([\w-]+)(\.)(?=\$))?(!|\$)([a-zA-Z0-9_-]+)'
+      scope: meta.variable-usage.sass
+      captures:
+        1: variable.sass
+        2: punctuation.access.module.sass
+        3: punctuation.definition.entity.css
+        4: variable.other.sass

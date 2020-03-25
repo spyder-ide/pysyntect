@@ -1,0 +1,39 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Pike
+file_extensions:
+  - pike
+  - pmod
+scope: source.pike
+contexts:
+  main:
+    - match: \b(public|nomask|private|optional|local|final|static)\b
+      scope: storage.modifier.pike
+    - match: \b(import|inherit|this|foreach|break|continue|while|do|return|if|else|case|switch)\b
+      scope: keyword.control.pike
+    - match: \b(constant|int|float|string|array|mapping|multiset|program|class|object|mixed|void)\b
+      scope: storage.type.pike
+    - match: \b(UNDEFINED)\b
+      scope: constant.language.pike
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b'
+      scope: constant.numeric.pike
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.pike
+        - match: '"'
+          pop: true
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.pike
+        - match: "'"
+          pop: true
+    - match: /\*
+      push:
+        - meta_scope: comment.block.pike
+        - match: \*/
+          pop: true
+    - match: //.*$
+      scope: comment.line.double-slash.pike
+    - match: '^[ \t]*#[a-zA-Z]+'
+      scope: other.preprocessor.pike

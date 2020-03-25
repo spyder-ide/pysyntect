@@ -1,0 +1,162 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Gerber Image
+file_extensions:
+  - gbr
+  - gtl
+  - gbl
+  - gbs
+  - gto
+  - gts
+  - gtp
+  - gbo
+  - gbp
+  - gko
+  - gm1
+  - gpt
+  - gpb
+  - fab
+  - pho
+first_line_match: ^G04 .*\r?\n
+scope: source.gerber
+contexts:
+  main:
+    - match: G04
+      captures:
+        0: entity.name.function.begin-comment.gerber
+      push:
+        - meta_content_scope: comment.block.gerber
+        - match: (?=\*)
+          pop: true
+    - match: "%"
+      captures:
+        0: punctuation.section.begin.extended.command.gerber
+      push:
+        - meta_scope: meta.command.block.gerber
+        - match: "%"
+          captures:
+            0: punctuation.section.end.extended.command.gerber
+          pop: true
+        - include: extendedCommands
+    - match: ","
+      scope: punctuation.separator.list.comma.gerber
+    - match: \*
+      scope: keyword.operator.terminator.gerber
+    - match: M02
+      scope: keyword.control.eof.gerber
+    - match: |-
+        (?x)
+        (FS|MO|AD|AM|AB|D[0-9]+|G01|G02|G03|G74|G75|LP|LM|LR|LS|G36|G37
+        |SR|G04|TF|TA|TO|TD|M02|G54|G55|G70|G71|G90|G91|M00|M01|IP|AS
+        |IR|MI|OF|SF|IN|LN)
+      scope: "entity.name.function.${1:/downcase}.command.gerber"
+    - match: "(X|Y)([-+]?[0-9]+)"
+      scope: "meta.${1:/downcase}.ordinate.gerber"
+      captures:
+        1: "storage.name.var.${1:/downcase}.gerber"
+        2: constant.numeric.decimal.gerber
+    - match: '[-+]?(?:[0-9]*\.[0-9]+|[0-9]+)'
+      scope: constant.numeric.decimal.gerber
+  extendedCommands:
+    - match: '\G(AM)([A-Za-z_.0-9$]+)'
+      captures:
+        1: storage.type.function.macro.gerber
+        2: entity.name.function.macro.gerber
+      push:
+        - match: (?=%)
+          pop: true
+        - include: macroInnards
+    - match: '\G(AD)(D[0-9]+)([^,%*\s]+)'
+      captures:
+        1: storage.type.function.aperture.gerber
+        2: entity.name.function.d-code.gerber
+        3: variable.parameter.aperture-name.gerber
+      push:
+        - meta_scope: meta.aperture.definition.gerber
+        - match: (?=%)
+          pop: true
+        - match: \G(?=,)
+          push:
+            - match: (?=%)
+              pop: true
+            - match: "(X)?([^*%X]+)"
+              captures:
+                1: punctuation.delimiter.modifiers.list.gerber
+            - include: main
+        - include: main
+    - match: '\G(TF|TA|TO)([^,*%]+)(,)'
+      captures:
+        1: storage.type.attribute.gerber
+        2: entity.other.attribute-name.gerber
+      push:
+        - meta_scope: meta.attribute.gerber
+        - match: (?=\*|%)
+          pop: true
+        - match: ","
+          scope: punctuation.separator.list.comma.gerber
+        - match: "[^,%*]"
+          scope: string.unquoted.attribute.gerber
+    - match: '\G(TD)([^,*%]+)'
+      captures:
+        1: entity.name.function.delete.attribute.gerber
+        2: entity.other.attribute-name.gerber
+    - match: '\G(FS)([LT][AI])'
+      captures:
+        1: entity.name.function.format-spec.gerber
+        2: constant.language.option.modes.gerber
+    - match: '\G(OF)(A)([-+]?[0-9]+)(B)([-+]?[0-9]+)'
+      captures:
+        1: entity.name.function.offset.gerber
+        2: storage.name.var.offset.a-axis.gerber
+        3: constant.numeric.decimal.gerber
+        4: storage.name.var.offset.b-axis.gerber
+        5: constant.numeric.decimal.gerber
+    - match: \G(MO)(IN|MM)
+      captures:
+        1: entity.name.function.unit-mode.gerber
+        2: constant.language.unit-type.gerber
+    - match: \G(IP)(POS|NEG)
+      captures:
+        1: entity.name.function.image-polarity.gerber
+        2: constant.language.image-polarity.gerber
+    - match: \G(LP)(C|D)
+      captures:
+        1: entity.name.function.load-polarity.gerber
+        2: constant.language.polarity-type.gerber
+    - match: \G(LM)(N|XY|X|Y)
+      captures:
+        1: entity.name.function.load-mirroring.gerber
+        2: constant.language.mirror-type.gerber
+    - match: \G(LN)
+      captures:
+        1: entity.name.function.load-name.gerber
+      push:
+        - meta_content_scope: variable.parameter.gerber
+        - match: (?=\*|%)
+          pop: true
+    - include: main
+  macroInnards:
+    - match: '^\s*(0)(\s+([^*%]+)(?=\*|%|$))'
+      scope: comment.line.primitive.gerber
+      captures:
+        1: keyword.operator.primitive.gerber
+        3: string.unquoted.gerber
+    - match: \+|-|x|X|/
+      scope: keyword.operator.logical.arithmetic.gerber
+    - match: (\()|(\))
+      captures:
+        1: punctuation.section.equation.begin.gerber
+        2: punctuation.section.equation.end.gerber
+    - match: '(\$)[1-9][0-9]*'
+      scope: variable.positional.parameter.gerber
+      captures:
+        1: punctuation.definition.variable.gerber
+    - match: "="
+      scope: keyword.operator.assignment.gerber
+    - include: main
+  unicodeEscape:
+    - match: '(\\)u[0-9A-Fa-f]{4}'
+      scope: constant.character.escape.unicode.gerber
+      captures:
+        1: punctuation.definition.escape.backslash.gerber

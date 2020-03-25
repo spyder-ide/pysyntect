@@ -1,0 +1,187 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Styled Components
+scope: source.js.css
+contexts:
+  main:
+    - include: comment-block
+    - include: rule-list
+  color-values:
+    - match: \b(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|orange|purple|red|silver|teal|white|yellow)\b
+      comment: http://www.w3.org/TR/CSS21/syndata.html#value-def-color
+      scope: support.constant.color.w3c-standard-color-name.css
+    - match: \b(aliceblue|antiquewhite|aquamarine|azure|beige|bisque|blanchedalmond|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|gainsboro|ghostwhite|gold|goldenrod|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|limegreen|linen|magenta|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|oldlace|olivedrab|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|thistle|tomato|turquoise|violet|wheat|whitesmoke|yellowgreen)\b
+      comment: "These colours are mostly recognised but will not validate. ref: http://www.w3schools.com/css/css_colornames.asp"
+      scope: invalid.deprecated.color.w3c-non-standard-color-name.css
+    - match: (hsla?|rgba?)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+        - match: |-
+            (?x)\b
+                (0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\s*,\s*){2}
+                (0*((1?[0-9]{1,2})|(2([0-4][0-9]|5[0-5])))\b)
+                (\s*,\s*((0?\.[0-9]+)|[0-1]))?
+          scope: constant.other.color.rgb-value.css
+        - match: '\b([0-9]{1,2}|100)\s*%,\s*([0-9]{1,2}|100)\s*%,\s*([0-9]{1,2}|100)\s*%'
+          scope: constant.other.color.rgb-percentage.css
+        - include: numeric-values
+  comment-block:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.css
+      push:
+        - meta_scope: comment.block.css
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.css
+          pop: true
+  media-query:
+    - match: (?i)\s*(only|not)?\s*(all|aural|braille|embossed|handheld|print|projection|screen|tty|tv)?
+      captures:
+        1: keyword.operator.logic.media.css
+        2: support.constant.media.css
+      push:
+        - match: '\s*(?:(,)|(?=[{;]))'
+          captures:
+            1: punctuation.definition.arbitrary-repitition.css
+          pop: true
+        - match: \s*(and)?\s*(\()\s*
+          captures:
+            1: keyword.operator.logic.media.css
+          push:
+            - match: \)
+              pop: true
+            - match: |-
+                (?x)
+                (
+                    ((min|max)-)?
+                    (
+                        ((device-)?(height|width|aspect-ratio))|
+                        (color(-index)?)|monochrome|resolution
+                    )
+                )|grid|scan|orientation
+                \s*(?=[:)])
+              captures:
+                0: support.type.property-name.media.css
+              push:
+                - match: (:)|(?=\))
+                  captures:
+                    1: punctuation.separator.key-value.css
+                  pop: true
+            - match: \b(portrait|landscape|progressive|interlace)
+              scope: support.constant.property-value.css
+            - match: \s*(\d+)(/)(\d+)
+              captures:
+                1: constant.numeric.css
+                2: keyword.operator.arithmetic.css
+                3: constant.numeric.css
+            - include: numeric-values
+  media-query-list:
+    - match: '\s*(?=[^{;])'
+      push:
+        - match: '\s*(?=[{;])'
+          pop: true
+        - include: media-query
+  numeric-values:
+    - match: '(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b'
+      scope: constant.other.color.rgb-value.css
+      captures:
+        1: punctuation.definition.constant.css
+    - match: |-
+        (?x)
+            (?:-|\+)?(?:(?:[0-9]+(?:\.[0-9]+)?)|(?:\.[0-9]+))
+            ((?:px|pt|ch|cm|mm|in|r?em|ex|pc|deg|g?rad|dpi|dpcm|s)\b|%)?
+      scope: constant.numeric.css
+      captures:
+        1: keyword.other.unit.css
+  property-values:
+    - match: \b(absolute|all(-scroll)?|always|armenian|auto|avoid|baseline|below|bidi-override|block|bold|bolder|both|bottom|break-all|break-word|capitalize|center|char|circle|cjk-ideographic|col-resize|collapse|crosshair|dashed|decimal-leading-zero|decimal|default|disabled|disc|distribute-all-lines|distribute-letter|distribute-space|distribute|dotted|double|e-resize|ellipsis|fixed|geometricPrecision|georgian|groove|hand|hebrew|help|hidden|hiragana-iroha|hiragana|horizontal|ideograph-alpha|ideograph-numeric|ideograph-parenthesis|ideograph-space|inactive|inherit|inline-block|inline|inset|inside|inter-ideograph|inter-word|italic|justify|katakana-iroha|katakana|keep-all|left|lighter|line-edge|line-through|line|list-item|loose|lower-alpha|lower-greek|lower-latin|lower-roman|lowercase|lr-tb|ltr|medium|middle|move|n-resize|ne-resize|newspaper|no-drop|no-repeat|nw-resize|none|normal|not-allowed|nowrap|oblique|optimize(Legibility|Quality|Speed)|outset|outside|overline|pointer|pre(-(wrap|line))?|progress|relative|repeat-x|repeat-y|repeat|right|ridge|row-resize|rtl|s-resize|scroll|se-resize|separate|small-caps|solid|square|static|strict|sub|super|sw-resize|table-footer-group|table-header-group|tb-rl|text-bottom|text-top|text|thick|thin|top|transparent|underline|upper-alpha|upper-latin|upper-roman|uppercase|vertical(-(ideographic|text))?|visible(Painted|Fill|Stroke)?|w-resize|wait|whitespace|zero|smaller|larger|((xx?-)?(small|large))|painted|fill|stroke)\b
+      scope: support.constant.property-value.css
+    - match: (\b(?i:arial|century|comic|courier|garamond|georgia|helvetica|impact|lucida|symbol|system|tahoma|times|trebuchet|utopia|verdana|webdings|sans-serif|serif|monospace)\b)
+      scope: support.constant.font-name.css
+    - include: numeric-values
+    - include: color-values
+    - include: string-double
+    - include: string-single
+    - match: (rect)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+        - include: numeric-values
+    - match: (format|local|url|attr|counter|counters)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.section.function.css
+          pop: true
+        - include: string-single
+        - include: string-double
+        - match: '[^''") \t]+'
+          scope: variable.parameter.misc.css
+    - match: \!\s*important
+      scope: keyword.other.important.css
+  rule-list:
+    - match: ""
+      captures:
+        0: punctuation.section.property-list.css
+      push:
+        - meta_scope: meta.property-list.css
+        - match: (?=\s*)
+          pop: true
+        - include: comment-block
+        - match: "(?<![-a-z])(?=[-a-z])"
+          push:
+            - meta_scope: meta.property-name.css
+            - match: "$|(?![-a-z])"
+              pop: true
+            - match: '\b(azimuth|background-attachment|background-color|background-image|background-position|background-repeat|background|box-shadow|border-radius|border-bottom-color|border-bottom-style|border-bottom-width|border-bottom|border-collapse|border-color|border-left-color|border-left-style|border-left-width|border-left|border-right-color|border-right-style|border-right-width|border-right|border-spacing|border-style|border-top-color|border-top-style|border-top-width|border-top|border-width|border|bottom|caption-side|clear|clip|color|content|counter-increment|counter-reset|cue-after|cue-before|cue|cursor|direction|display|elevation|empty-cells|flex-basis|flex-direction|flex-flow|flex-grow|flex-shrink|flex-wrap|flex|float|font-family|font-size-adjust|font-size|font-stretch|font-style|font-variant|font-weight|font|height|image-rendering|left|letter-spacing|line-height|list-style-image|list-style-position|list-style-type|list-style|margin-bottom|margin-left|margin-right|margin-top|marker-offset|margin|marks|max-height|max-width|min-height|min-width|-moz-border-radius|opacity|orphans|outline-color|outline-style|outline-width|outline|overflow(-[xy])?|padding-bottom|padding-left|padding-right|padding-top|padding|page-break-after|page-break-before|page-break-inside|page|pause-after|pause-before|pause|pitch-range|pitch|play-during|pointer-events|position|quotes|resize|richness|right|size|speak-header|speak-numeral|speak-punctuation|speech-rate|speak|src|stress|table-layout|text-(align|decoration|indent|rendering|shadow|transform)|top|transition|unicode-bidi|vertical-align|visibility|voice-family|volume|white-space|widows|width|word-(spacing|wrap)|zoom|z-index)\b'
+              scope: support.type.property-name.css
+        - match: (?<!&|:)(:)\s*
+          captures:
+            1: punctuation.separator.key-value.css
+          push:
+            - meta_scope: meta.property-value.css
+            - match: '\s*(;|(?=\}))'
+              captures:
+                1: punctuation.terminator.rule.css
+              pop: true
+            - include: property-values
+  string-double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.css
+      push:
+        - meta_scope: string.quoted.double.css
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.css
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.css
+  string-single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.css
+      push:
+        - meta_scope: string.quoted.single.css
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.css
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.css

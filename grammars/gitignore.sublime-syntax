@@ -1,0 +1,107 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: .gitignore
+file_extensions:
+  - gitignore
+  - git/ignore
+  - git/info/exclude
+  - gitignore-global
+  - gitignore_global
+  - gitignore.global
+  - alexignore
+  - atomignore
+  - babelignore
+  - coffeelintignore
+  - dockerignore
+  - eslintignore
+  - nodemonignore
+  - npmignore
+  - prettierignore
+  - stylelintignore
+  - vscodeignore
+  - bazaar/ignore
+  - bzrignore
+  - cpyskip.txt
+  - cvsignore
+  - slugignore
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		git-?ignore
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		git-?ignore
+  	(?=\s|:|$)
+scope: source.gitignore
+contexts:
+  main:
+    - include: comment
+    - include: cvsSyntax
+    - include: pattern
+    - include: escape
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.gitignore
+      push:
+        - meta_scope: comment.line.number-sign.gitignore
+        - match: $
+          pop: true
+  bazaarPrefixes:
+    - match: ^RE(:)(?=\S)
+      scope: storage.modifier.bazaar.re-prefix.gitignore
+    - match: ^!!(?=\S)
+      scope: keyword.operator.logical.not.negation.elevated.bazaar.gitignore
+  cvsSyntax:
+    - match: \A(syntax)(:)\s+(glob)$
+      captures:
+        1: variable.parameter.assignment.glob-syntax.cvs.gitignore
+        2: keyword.operator.assignment.separator.key-value.cvs.gitignore
+        3: support.constant.language.syntax-type.cvs.gitignore
+  escape:
+    - match: (\\).
+      scope: constant.character.escape.backslash.gitignore
+      captures:
+        1: punctuation.definition.escape.backslash.gitignore
+  pattern:
+    - match: '(?=[^#\s])'
+      push:
+        - meta_scope: meta.pattern.gitignore
+        - match: $|(?=#)
+          pop: true
+        - include: bazaarPrefixes
+        - include: patternInnards
+  patternInnards:
+    - include: escape
+    - include: range
+    - match: \G!
+      scope: keyword.operator.logical.not.negation.gitignore
+    - match: \*\*
+      scope: keyword.operator.glob.wildcard.globstar.gitignore
+    - match: "[*?]"
+      scope: keyword.operator.glob.wildcard.gitignore
+    - match: /
+      scope: punctuation.directory.separator.meta.gitignore
+    - match: '[^\[\]\\*?#/\s]+'
+      scope: entity.other.file.name.gitignore
+  range:
+    - match: '\['
+      captures:
+        0: punctuation.definition.square.bracket.begin.gitignore
+      push:
+        - meta_scope: meta.character-range.gitignore
+        - meta_content_scope: constant.character.class.gitignore
+        - match: '\]|(?=$)'
+          captures:
+            0: punctuation.definition.square.bracket.end.gitignore
+          pop: true
+        - include: escape
+        - match: "-"
+          scope: punctuation.delimiter.range.character-set.gitignore

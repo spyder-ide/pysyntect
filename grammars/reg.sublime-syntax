@@ -1,0 +1,72 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: REG (Windows Registry)
+file_extensions:
+  - reg
+scope: source.reg
+contexts:
+  main:
+    - match: ;.*$
+      scope: comment.reg
+    - match: Windows Registry Editor Version \d.\d\d
+      scope: meta.doctype.reg
+    - match: ^((@)|\".*\")(=)((\-)|\s*(0|1)\s*$|)
+      captures:
+        2: keyword.reg
+        3: punctuation.separator.key-value.reg
+        5: keyword.operator.reg
+        6: language.constant.boolean.reg
+    - match: (\\)$
+      captures:
+        1: keyword.reg
+    - match: \"
+      captures:
+        0: punctuation.definition.string.begin.reg
+      push:
+        - meta_scope: string.quoted.double.reg
+        - match: \"
+          captures:
+            0: punctuation.definition.string.end.reg
+          pop: true
+        - match: \\\\
+          scope: constant.character.escape.reg
+    - match: '(hex)(|\(([ABab0-9])\))(:)'
+      captures:
+        1: storage.type.reg
+        3: constant.numeric.reg
+        4: keyword.operator.reg
+    - match: '(dword)(:)([ABCDEFabcdef0-9]{1,8})\s*$'
+      captures:
+        1: storage.type.reg
+        2: keyword.operator.reg
+        3: constant.numeric.reg
+    - match: '(\[)(\s*\n)*(-){0,1}(\s*\n)*'
+      captures:
+        1: meta.brace.square.reg
+        3: keyword.operator.reg
+      push:
+        - meta_scope: .meta.section.key-path.reg
+        - match: '\]'
+          captures:
+            0: meta.brace.square.reg
+          pop: true
+        - match: (HKEY_CURRENT_CONFIG|HKCC)\\(Software|System)
+          captures:
+            1: keyword.other.hive-name.reg
+            2: language.constant.standard-key.reg
+        - match: (HKEY_CURRENT_USER|HKCU)\\(AppEvents|AppXBackupContentType|Console|Control Panel|Environment|EUDC|Keyboard Layout|Network|Printers|Software|System|Volatile Environment)
+          captures:
+            1: keyword.other.hive-name.reg
+            2: language.constant.standard-key.reg
+        - match: (HKEY_LOCAL_MACHINE|HKLM)\\(BCD00000000|DRIVERS|HARDWARE|SAM|SECURITY|SOFTWARE|SYSTEM)
+          captures:
+            1: keyword.other.hive-name.reg
+            2: language.constant.standard-key.reg
+        - match: (HKEY_USERS|HKU)\\(.DEFAULT)\\(AppEvents|AppXBackupContentType|Console|Control Panel|Environment|EUDC|Keyboard Layout|Network|Printers|Software|System|Volatile Environment)
+          captures:
+            1: keyword.other.hive-name.reg
+            2: language.constant.standard-key.reg
+            3: language.constant.standard-key.reg
+        - match: (HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_CONFIG|HKCC|HKEY_CURRENT_USER|HKCU|HKEY_DYN_DATA|HKEY_LOCAL_MACHINE|HKLM|HKEY_PERFORMANCE_DATA|HKEY_USERS|HKU)
+          scope: keyword.other.hive-name.reg

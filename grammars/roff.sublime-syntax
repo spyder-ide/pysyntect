@@ -1,0 +1,2681 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Roff
+file_extensions:
+  - "1"
+  - "1b"
+  - "1c"
+  - "1has"
+  - "1in"
+  - "1m"
+  - "1s"
+  - "1t"
+  - "1x"
+  - "1.in"
+  - "2"
+  - "3"
+  - "3avl"
+  - "3bsm"
+  - "3c"
+  - "3in"
+  - "3m"
+  - "3pm"
+  - "3qt"
+  - "3x"
+  - "4"
+  - "5"
+  - "6"
+  - "7"
+  - "7d"
+  - "7fs"
+  - "7i"
+  - "7ipp"
+  - "7m"
+  - "7p"
+  - "7.in"
+  - "8"
+  - "9"
+  - "9e"
+  - "9f"
+  - "9p"
+  - "9s"
+  - eqnrc
+  - groff
+  - man
+  - mandoc
+  - mdoc
+  - me
+  - mmn
+  - mmt
+  - ms
+  - mom
+  - n
+  - nr
+  - nroff
+  - roff
+  - rof
+  - tmac
+  - tmac-u
+  - tmac.in
+  - toc.entries
+  - tr
+  - troff
+  - troffrc
+  - troffrc-end
+first_line_match: |-
+  (?x)
+
+  	# Manual page with .TH macro on first line
+  	^\.TH[ \t]+(?:\S+)
+  	|
+
+  	# Preprocessor line
+  	# See: https://www.gnu.org/software/groff/manual/html_node/Preprocessors-in-man-pages.html
+  	^'\\"\x20[tre]+(?=\s|$)
+  	|
+
+  	# “Aliased” manual page
+  	^\.so[ \t]+man(\w+)/.+\.\1(?=\s|$)
+  	|
+
+  	# DWB copyright banner
+  	(?:^|\R)(?:'+\t?|\.\t)\\"\s
+  	|
+
+  	# Modeline
+  	(?i:
+  		# Emacs
+  		-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  			[gnt]?roff
+  		(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  		|
+
+  		# Vim
+  		(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\r\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\r\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  			[gnt]?roff
+  		(?=\s|:|$)
+  	)
+scope: text.roff
+contexts:
+  main:
+    - include: preprocessors
+    - include: escapes
+    - include: requests
+    - include: macros
+  "3-part-title":
+    - match: '\G[ \t]*(.)((?:(?!\1).)*)(\1)((?:(?!\1).)*)(\1)((?:(?!\1).)*)(\1)'
+      scope: string.3-part.other.roff
+      captures:
+        1: punctuation.definition.string.begin.roff
+        2: entity.string.left.roff
+        3: punctuation.definition.string.begin.roff
+        4: entity.string.centre.roff
+        5: punctuation.definition.string.end.roff
+        6: entity.string.right.roff
+        7: punctuation.definition.string.end.roff
+  alternating-fonts:
+    - match: '^([.''])[ \t]*(BI)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\")'
+          pop: true
+        - include: odd-bold
+        - include: even-italic-after-bold
+        - include: even-italic
+        - include: bridge-escapes
+    - match: '^([.''])[ \t]*(BR)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\")'
+          pop: true
+        - include: odd-bold
+        - include: even-roman-after-bold
+        - include: even-roman
+        - include: bridge-escapes
+    - match: '^([.''])[ \t]*(IB)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\")'
+          pop: true
+        - include: odd-italic
+        - include: even-bold-after-italic
+        - include: even-bold
+        - include: bridge-escapes
+    - match: '^([.''])[ \t]*(IR)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\")'
+          pop: true
+        - include: odd-italic
+        - include: even-roman-after-italic
+        - include: even-roman
+        - include: bridge-escapes
+    - match: '^([.''])[ \t]*(RB)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\")'
+          pop: true
+        - include: odd-roman
+        - include: even-bold-after-roman
+        - include: even-bold
+        - include: bridge-escapes
+    - match: '^([.''])[ \t]*(RI)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\")'
+          pop: true
+        - include: odd-roman
+        - include: even-italic-after-roman
+        - include: even-italic
+        - include: bridge-escapes
+  arithmetic:
+    - include: escapes
+    - match: (\()(.*?)(\))
+      scope: meta.brackets.roff
+      captures:
+        1: punctuation.arithmetic.begin.roff
+        3: punctuation.arithmetic.end.roff
+    - include: number
+    - match: <\?
+      scope: keyword.operator.minimum.gnu.roff
+    - match: '>\?'
+      scope: keyword.operator.maximum.gnu.roff
+    - match: "[-/+*%]"
+      scope: keyword.operator.arithmetic.roff
+    - match: ":|&|[<=>]=?"
+      scope: keyword.operator.logical.roff
+    - match: \|
+      scope: keyword.operator.absolute.roff
+    - match: '(?<=^|\()([cfimnPpsuvz])(;)'
+      scope: meta.scaling-indicator.gnu.roff
+      captures:
+        1: keyword.other.unit.roff
+        2: punctuation.separator.semicolon.roff
+  bold-first:
+    - match: '\G[ \t]*(?!")(?=(?:[^\s\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.bold.roff
+        - match: '(?<![^\\]\\|^\\)(?=\s|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+    - match: (")(")
+      scope: markup.bold.roff
+      captures:
+        0: string.quoted.double.empty.roff
+        1: punctuation.definition.string.begin.roff
+        2: punctuation.definition.string.end.roff
+    - match: '\G[ \t]*(")'
+      captures:
+        0: string.quoted.double.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: markup.bold.roff
+        - meta_content_scope: string.quoted.double.roff
+        - match: ((?:"")*)"(?!")|(?<!\\)(?:$|\R)|(?=\\E?")
+          captures:
+            0: punctuation.definition.string.end.roff
+            1: markup.bold.roff
+          pop: true
+        - include: string-escapes
+    - include: escapes
+    - include: string
+  bold-italic-first:
+    - match: '\G[ \t]*(?!")(?=(?:[^\s\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.bold.italic.roff
+        - match: '(?<![^\\]\\|^\\)(?=\s|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+    - match: (")(")
+      scope: markup.bold.italic.roff
+      captures:
+        0: string.quoted.double.empty.roff
+        1: punctuation.definition.string.begin.roff
+        2: punctuation.definition.string.end.roff
+    - match: '\G[ \t]*(")'
+      captures:
+        0: string.quoted.double.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: markup.bold.italic.roff
+        - meta_content_scope: string.quoted.double.roff
+        - match: ((?:"")*)"(?!")|(?<!\\)(?:$|\R)|(?=\\E?")
+          captures:
+            0: punctuation.definition.string.end.roff
+            1: markup.bold.italic.roff
+          pop: true
+        - include: string-escapes
+    - include: escapes
+    - include: string
+  bold-italic-word:
+    - match: \S+?(?=\\|$|\s)
+      scope: markup.bold.italic.roff
+  bold-word:
+    - match: \S+?(?=\\|$|\s)
+      scope: markup.bold.roff
+  bridge-escapes:
+    - match: '[ \t]+(\\)$\R?'
+      captures:
+        1: punctuation.definition.escape.roff
+      push:
+        - meta_scope: constant.character.escape.newline.roff
+        - match: ^
+          pop: true
+    - match: (\\)$\R?
+      captures:
+        1: punctuation.definition.escape.roff
+      push:
+        - meta_scope: constant.character.escape.newline.roff
+        - match: '^[ \t]*'
+          pop: true
+  conditional-innards:
+    - match: '^\s*(\\E?\{(?:\\E?(?=\R|$))?)?\s*(.*)'
+      captures:
+        1: punctuation.section.conditional.begin.roff
+      push:
+        - match: $
+          pop: true
+  conditionals:
+    - match: |-
+        (?x)^
+        ([.'])   [ \t]*     # 1: punctuation.definition.request.roff
+        (ie|if)  [ \t]*     # 2: keyword.control.roff
+        (!)?                 # 3: keyword.operator.logical
+
+        (?:
+        	# One-character built-in comparison name
+        	([notev])        # 4: constant.language.builtin-comparison.$4.roff
+
+        	|
+
+        	# GNU extensions
+        	([cdFmrS])       # 5: constant.language.builtin-comparison.$5.gnu.roff
+
+        	# Name being validated
+        	[ \t]*
+        	((?:[^ \t\\]|\\(?!E?["#]).)+) # 6: Include “#escapes”
+
+        	|
+
+        	# Arithmetic
+        	(                # 7: meta.equation.roff
+
+        		# Starts with a bracket
+        		(\()        # 8:  punctuation.definition.begin.roff
+        		(.*?)        # 9:  Include “#arithmetic”
+        		(\))        # 10: punctuation.definition.end.roff
+
+        		# Anything else affixed to it
+        		(            # 11: Include “#arithmetic”
+        			(?:
+        				[^\s\(] | # Operators/numbers
+        				\(.*?\)   # More brackets
+        			)*
+        		)
+
+        		|
+
+        		# Doesn’t start with a bracket
+        		(?:
+        			# Starts with a long-form string/register
+        			(\|?\\+E?[n*]\(\S{2}) # 12: Include “#escapes”
+        			|
+        			# Starts with a digit or backslash
+        			(?=\d|\\)
+        		)
+        		([^\s\(]*) # 13: Sandwiched mathematical junk
+
+        		(?: # Possible embedded brackets
+        			(\()    # 14: punctuation.definition.begin.roff
+        			(.*?)    # 15: Include “#arithmetic”
+        			(\))    # 16: punctuation.definition.end.roff
+        		)?
+        		(?: # Possible trailing digits/operators
+        			[^\s\(]*?
+        			\d+
+        		)?
+
+        		# Ends with a...
+        		(?<=
+        			# Digit
+        			\d |
+
+        			# Unit suffix
+        			(?<=[\d.])
+        			[A-Za-z] |
+
+        			# Closing bracket
+        			[\)\]] |
+
+        			# String/register: Long-form
+        			\\  [n*] \( \S{2} |
+        			\\E [n*] \( \S{2} |
+
+        			# String/register: Short-form
+        			\\  [n*] \S |
+        			\\E [n*] \S
+        		)
+        	)
+
+        	|
+
+        	# String/variable comparison
+        	([^\d\s\\])  # 17: punctuation.definition.string.begin.roff
+        	(                # 18: variable.parameter.operand.left.roff
+        		(.*?)        # 19: Include “#escapes”
+        	)
+        	(\17)           # 20: punctuation.definition.string.roff
+        	(                # 21: variable.parameter.operand.right.roff
+        		(.*?)        # 22: Include “#escapes”
+        	)
+        	(\17)           # 23: punctuation.definition.string.end.roff
+
+        	|
+
+        	# Anything not recognised
+        	(\S)            # 24: meta.operand.single.roff
+        )?
+
+        (.*)                 # 25: Include “#conditional-innards”
+      captures:
+        0: meta.function.request.$2.roff
+        1: punctuation.definition.request.roff
+        10: punctuation.definition.end.roff
+        14: punctuation.definition.begin.roff
+        16: punctuation.definition.end.roff
+        17: punctuation.definition.string.begin.roff
+        18: variable.parameter.operand.left.roff
+        2: keyword.control.roff
+        20: punctuation.definition.string.roff
+        21: variable.parameter.operand.right.roff
+        23: punctuation.definition.string.end.roff
+        24: meta.operand.single.roff
+        3: keyword.operator.logical
+        4: constant.language.builtin-comparison.$4.roff
+        5: constant.language.builtin-comparison.$5.gnu.roff
+        7: meta.equation.roff
+        8: punctuation.definition.begin.roff
+      push:
+        - match: $
+          pop: true
+    - match: '^([.''])[ \t]*(el)\s*(.*)'
+      captures:
+        0: meta.function.request.$2.roff
+        1: punctuation.definition.request.roff
+        2: keyword.control.roff
+      push:
+        - match: $
+          pop: true
+  continuous-newline:
+    - match: (\\)?(\\)$\R?
+      captures:
+        0: constant.character.escape.newline.roff
+        1: punctuation.definition.concealed.escape.backslash.roff
+        2: punctuation.definition.escape.roff
+      push:
+        - match: "^(?:[.'])?"
+          pop: true
+  definition:
+    - match: '^([.''])[ \t]*((dei?1?)|(ami?1?))\s+(\S+?)?\s*(\\E?["#].*)?$'
+      captures:
+        1: punctuation.definition.request.roff
+        3: storage.type.function.roff
+        4: entity.name.function.roff
+        5: variable.parameter.roff
+      push:
+        - meta_scope: meta.macro.definition.$2.roff
+        - match: '^(?:[ \t]*\x5C{2})?\.[ \t]*\.'
+          captures:
+            0: punctuation.definition.request.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*((dei?1?)|(ami?1?))\s+(\S+)\s*("[^"]+"?|\S+?(?=\s|\\E?["#]))?(.*)$'
+      captures:
+        1: punctuation.definition.request.roff
+        3: storage.type.function.roff
+        4: entity.name.function.roff
+        5: variable.parameter.roff
+        6: keyword.control.terminator.roff
+      push:
+        - meta_scope: meta.macro.definition.with-terminator.$2.roff
+        - match: '^(\.)[ \t]*((\6)(?=$|\s|\\(?:$|")))'
+          captures:
+            1: punctuation.definition.request.roff
+            2: keyword.control.terminator.roff
+          pop: true
+        - include: main
+  eqn:
+    - match: |-
+        (?x)\b
+        (DELTA|GAMMA|LAMBDA|OMEGA|PHI|PI|PSI|SIGMA|THETA|UPSILON|XI|alpha|beta|chi
+        |delta|epsilon|eta|gamma|iota|kappa|lambda|mu|nu|omega|omicron|phi|pi|psi
+        |rho|sigma|tau|theta|upsilon|xi|zeta)\b
+      scope: constant.language.greek-letter.eqn.roff
+    - match: \b(and|arc|cos|cosh|det|exp|for|if|Im|lim|ln|log|max|min|Re|sin|sinh|tan|tanh)\b
+      scope: constant.language.math-function.eqn.roff
+    - match: |-
+        (?x)
+        (?:[><=!]=|\+-|->|<-|<<|>>|\.{3}|,\.+,|[-+=](?!\d)|[*/<>])
+        |\b(?:approx|cdot|ceiling|del|grad|half|inf|inter|int|floor
+        |nothing|partial|prime|prod|sum|times|union)\b
+      scope: constant.character.math-symbol.eqn.roff
+    - match: "{"
+      captures:
+        0: punctuation.section.bracket.curly.begin.eqn.roff
+      push:
+        - match: '}|(?=\.EN)'
+          captures:
+            0: punctuation.section.bracket.curly.end.eqn.roff
+          pop: true
+        - include: eqn
+    - match: (~|\^)|(,)
+      captures:
+        1: keyword.operator.spacing.eqn.roff
+        2: punctuation.separator.delimiter.comma.eqn.roff
+    - match: '\b([nts]?define)\s*(\S+)\s*(\S)'
+      captures:
+        1: storage.type.function.definition.eqn.roff
+        2: entity.name.function.eqn.roff
+        3: punctuation.section.definition.begin.eqn.roff
+      push:
+        - match: ((?:(?!\3).)*+)(\3)|(?=\.EN)
+          captures:
+            2: punctuation.section.definition.end.eqn.roff
+          pop: true
+        - match: '(\{)([^}]*)(\})'
+          captures:
+            1: punctuation.section.bracket.curly.begin.eqn.roff
+            3: punctuation.section.bracket.curly.end.eqn.roff
+        - include: eqn
+        - include: main
+    - match: \b(ifdef)\s*(\S+)\s*(\S)
+      captures:
+        1: keyword.control.flow.if-defined.eqn.roff
+        2: entity.name.function.eqn.roff
+        3: punctuation.section.definition.begin.eqn.roff
+      push:
+        - match: ((?:(?!\3).)*+)(\3)|(?=\.EN)
+          captures:
+            2: punctuation.section.definition.end.eqn.roff
+          pop: true
+        - match: '(\{)([^}]*)(\})'
+          captures:
+            1: punctuation.section.bracket.curly.begin.eqn.roff
+            3: punctuation.section.bracket.curly.end.eqn.roff
+        - include: eqn
+        - include: main
+    - match: |-
+        (?x)\b
+        (above|back|bar|bold|ccol|col|cpile|delim|dot|dotdot|down|dyad|fat|font|from
+        |fwd|gfont|gsize|hat|italic|lcol|left|lineup|lpile|mark|matrix|over|pile
+        |rcol|right|roman|rpile|size|sqrt|sub|sup|tilde|to|under|up|vec)\b
+      scope: keyword.language.eqn.roff
+    - match: |-
+        (?x)\b
+        (accent|big|chartype|smallover|type|vcenter|uaccent|split|nosplit
+        |opprime|special|include|ifdef|undef|g[rb]font|space)\b
+      scope: keyword.language.eqn.gnu.roff
+    - match: |-
+        (?x)\b
+        (Alpha|Beta|Chi|Delta|Epsilon|Eta|Gamma|Iota|Kappa|Lambda|Mu|Nu
+        |Omega|Omicron|Phi|Pi|Psi|Rho|Sigma|Tau|Theta|Upsilon|Xi|Zeta
+        |ldots|dollar)\b
+      scope: constant.language.eqn.gnu.roff
+    - match: |-
+        (?x)\b(set)[ \t]+
+        (accent_width|axis_height|baseline_sep|big_op_spacing[1-5]|body_depth|body_height|column_sep
+        |default_rule_thickness|delimiter_factor|delimiter_shortfall|denom[12]|draw_lines|fat_offset
+        |matrix_side_sep|medium_space|minimum_size|nroff|null_delimiter_space|num[12]|over_hang
+        |script_space|shift_down|su[bp]_drop|sub[12]|sup[1-3]|thick_space|thin_space|x_height)\b
+      scope: meta.set-variable.eqn.gnu.roff
+      captures:
+        1: storage.type.var.eqn.roff
+        2: variable.other.mathml.eqn.roff
+    - match: '(?![\d\\"])[^-,!.{}\[\]*/^+<=>~\s"]+'
+      scope: string.unquoted.parameter.eqn.roff
+    - match: (?<=delim)\s*(?:(on)|(off))\b
+      captures:
+        1: constant.language.boolean.logical.true.eqn.roff
+        2: constant.language.boolean.logical.false.eqn.roff
+    - include: escapes
+    - include: number
+    - include: string
+  escapes:
+    - include: escapes-copymode
+    - include: escapes-full
+  escapes-clipped:
+    - match: '\\E?f(?:[I2]|\(CI|\[\s*(?:[I2]|CI)\s*\])'
+      push:
+        - match: '$|(?=\\E?f[\[A-Za-z0-9])'
+          pop: true
+        - include: main
+        - include: italic-word
+    - match: '\\E?f(?:[B3]|\(CB|\[\s*(?:[B3]|CB)\s*\])'
+      push:
+        - match: '$|(?=\\E?f[\[A-Za-z0-9])'
+          pop: true
+        - include: main
+        - include: bold-word
+    - match: '\\E?f(?:4|\(BI|\[\s*BI\s*\])'
+      push:
+        - match: '$|(?=\\E?f[\[A-Za-z0-9])'
+          pop: true
+        - include: main
+        - include: bold-italic-word
+    - match: '\\E?f(?:\(C[WR]|\[\s*C[WR]\s*\])'
+      push:
+        - match: '$|(?=\\E?f[\[A-Za-z0-9])'
+          pop: true
+        - include: main
+        - include: monospace-word
+  escapes-copymode:
+    - match: (\\+?)(?=\1\S)
+      scope: punctuation.definition.concealed.escape.backslash.roff
+    - match: (?:^(\.|'+)\s*)?(\\E?")
+      captures:
+        1: punctuation.definition.comment.roff
+        2: punctuation.definition.comment.roff
+      push:
+        - meta_scope: comment.line.roff
+        - match: $
+          pop: true
+    - match: (?:^(\.|'+)\s*)?(\\E?#).*$\R?
+      captures:
+        1: punctuation.definition.comment.roff
+        2: punctuation.definition.comment.roff
+      push:
+        - meta_scope: comment.line.number-sign.gnu.roff
+        - match: ^
+          pop: true
+    - match: '^(\.|''+)[ \t]*$'
+      scope: comment.empty.roff
+      captures:
+        1: punctuation.definition.comment.roff
+    - include: continuous-newline
+    - include: register-expansion
+    - match: (?:((\\)E)|(\\))\\
+      scope: constant.character.escape.backslash.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))t
+      scope: constant.character.escape.tab.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))a
+      scope: constant.character.escape.leader-char.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))\.
+      scope: constant.character.escape.dot.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: '^(\\\*\[[^\]]+\])\s*(\.\w+.*)'
+      push:
+        - match: $
+          pop: true
+    - match: '((?:((\\)E)|(\\))\*(\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.interpolate-string.gnu.roff
+        - meta_content_scope: function-call.arguments.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-name
+    - match: '((?:((\\)E)|(\\))\*(\())(\S{2})|((?:((\\)E)|(\\))\*)(\S)'
+      scope: constant.character.escape.function.interpolate-string.roff
+      captures:
+        1: entity.name.roff
+        10: punctuation.definition.escape.roff
+        11: variable.parameter.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+        7: entity.name.roff
+        8: constant.character.escape.current-escape-char.gnu.roff
+        9: punctuation.definition.escape.roff
+    - match: ((?:((\\)E)|(\\))\$\d)
+      scope: constant.character.escape.function.interpolate-argument.roff
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+    - match: '((?:((\\)E)|(\\))[Mm](\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.set-colour.gnu.roff
+        - meta_content_scope: variable.parameter.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-params
+    - match: '((?:((\\)E)|(\\))[Mm](\())(\S{2})|((?:((\\)E)|(\\))[Mm])(\S)'
+      scope: constant.character.escape.function.set-colour.gnu.roff
+      captures:
+        1: entity.name.roff
+        10: punctuation.definition.escape.roff
+        11: variable.parameter.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+        7: entity.name.roff
+        8: constant.character.escape.current-escape-char.gnu.roff
+        9: punctuation.definition.escape.roff
+    - match: '((?:((\\)E)|(\\))s([-+])?(\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: keyword.operator.arithmetic.roff
+        6: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.point-size.gnu.roff
+        - meta_content_scope: variable.parameter.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-params
+    - match: '((?:((\\)E)|(\\))(?!s[-+]?\(?\d)[ABRsZ])((.))'
+      captures:
+        1: entity.name.function.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: string.other.roff
+        6: punctuation.definition.begin.roff
+      push:
+        - meta_scope: constant.character.escape.function.check-identifier.gnu.roff
+        - meta_content_scope: string.other.roff
+        - match: (\6)|(?<!\\)(?=$)
+          captures:
+            0: string.other.roff
+            1: punctuation.definition.end.roff
+          pop: true
+        - include: escapes
+    - match: '((?:((\\)E)|(\\))O([0-4]))'
+      scope: constant.character.escape.internal.gnu.roff
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: constant.numeric.roff
+    - match: '((?:((\\)E)|(\\))O(5)(\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: constant.numeric.roff
+        6: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.internal.stderr-write-file.gnu.roff
+        - meta_content_scope: string.unquoted.filename.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: escapes
+    - match: '((?:((\\)E)|(\\))[VY](\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.interpolate-variable.gnu.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-name
+    - match: '((?:((\\)E)|(\\))[VY](\())(\S{2})|((?:((\\)E)|(\\))[VY])(\S)'
+      scope: constant.character.escape.function.interpolate-variable.gnu.roff
+      captures:
+        1: entity.name.roff
+        10: punctuation.definition.escape.roff
+        11: variable.parameter.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+        7: entity.name.roff
+        8: constant.character.escape.current-escape-char.gnu.roff
+        9: punctuation.definition.escape.roff
+    - match: ((?:((\\)E)|(\\))(\?))(.*?)((\\)(\?))
+      captures:
+        1: constant.character.escape.embed-diversion.start.gnu.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.script.roff
+        6: string.interpolated.roff
+        7: constant.character.escape.embed-diversion.start.gnu.roff
+        8: punctuation.definition.escape.roff
+        9: punctuation.definition.script.roff
+    - match: '((?:((\\)E)|(\\))\$[*@^])'
+      scope: constant.character.escape.function.concatenated-arguments.gnu.roff
+      captures:
+        1: variable.language.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+    - match: '((?:((\\)E)|(\\))\$(\())(\S{2})'
+      scope: constant.character.escape.function.interpolate-argument.gnu.roff
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+    - match: '((?:((\\)E)|(\\))\$(\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.interpolate-argument.gnu.roff
+        - meta_content_scope: variable.parameter.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-name
+  escapes-full:
+    - match: (\\)E?e
+      scope: constant.character.escape.current-escape-char.roff
+      captures:
+        1: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))´
+      scope: constant.character.escape.acute-accent.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))`
+      scope: constant.character.escape.grave-accent.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))-
+      scope: constant.character.escape.minus.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: '(?:((\\)E)|(\\)) '
+      scope: constant.character.escape.space.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))0
+      scope: constant.character.escape.space.digit-width.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))\|
+      scope: constant.character.escape.space.one-sixth-em.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))\^
+      scope: constant.character.escape.space.one-twelfth-em.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))&
+      scope: constant.character.escape.zero-width-marker.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))%
+      scope: constant.character.escape.hyphenation-char.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))c
+      scope: constant.character.escape.connect.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))d
+      scope: constant.character.escape.downwards.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))p
+      scope: constant.character.escape.spread-line.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))r
+      scope: constant.character.escape.reverse.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: (?:((\\)E)|(\\))u
+      scope: constant.character.escape.upwards.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: '(?:((\\)E)|(\\))(\()(\S{2})'
+      scope: constant.character.escape.function.named-char.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.brace.roff
+        4: punctuation.definition.escape.roff
+        5: variable.parameter.roff
+    - match: '(?:((\\)E)|(\\))(\[)'
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.named-char.gnu.roff
+        - match: '(\S*?)(\])|(?<!\\)(?=$)'
+          captures:
+            2: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-params
+        - match: '(?:[^\s\]\\]|\\(?!E?["#]).)+'
+          scope: variable.parameter.roff
+    - match: '(?:^(\.|''+)[ \t]*)?(\\\{(?:\\(?=\R|$))?)'
+      scope: meta.function.begin.roff
+      captures:
+        1: punctuation.definition.request.roff
+        2: punctuation.section.conditional.begin.roff
+    - match: '(?:^(\.|''+)[ \t]*)?(\\\}(?:\\(?=\R|$))?)'
+      scope: meta.function.end.roff
+      captures:
+        1: punctuation.definition.request.roff
+        2: punctuation.section.conditional.end.roff
+    - match: '((?:((\\)E)|(\\))[bCDhHSlLovwxXN])((.))'
+      captures:
+        1: entity.name.function.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: string.other.roff
+        6: punctuation.definition.begin.roff
+      push:
+        - meta_scope: constant.character.escape.function.roff
+        - meta_content_scope: string.other.roff
+        - match: (\6)|(?<!\\)(?=$)
+          captures:
+            0: string.other.roff
+            1: punctuation.definition.end.roff
+          pop: true
+        - include: escapes
+    - match: (?:((\\)E)|(\\))!
+      captures:
+        0: constant.character.escape.transparent-line.roff
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+      push:
+        - meta_scope: meta.throughput.roff
+        - match: (?<!\\)$
+          pop: true
+        - include: escapes-copymode
+    - match: '(?:((\\)E)|(\\))f[RP1]'
+      scope: constant.character.escape.font.roff
+      captures:
+        0: entity.name.roff
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+    - match: '((?:((\\)E)|(\\))f(?:[I2]|(\()CI|(\[)\s*(?:[I2]|CI)\s*(\])))'
+      captures:
+        0: constant.character.escape.font.roff
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.section.begin.bracket.square.roff
+        6: punctuation.section.end.bracket.square.roff
+      push:
+        - match: '(?=\\E?f[\[A-Za-z0-9])|^(?=[.'']\s*(?:(?:SH|SS|P|[HILPT]P|di)\b)|\.)'
+          pop: true
+        - include: main
+        - include: italic-word
+    - match: '((?:((\\)E)|(\\))f(?:[B3]|(\()CB|(\[)\s*(?:[B3]|CB)\s*(\])))'
+      captures:
+        0: constant.character.escape.font.roff
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: punctuation.section.begin.bracket.square.roff
+        7: punctuation.section.end.bracket.square.roff
+      push:
+        - match: '(?=\\E?f[\[A-Za-z0-9])|^(?=[.'']\s*(?:(?:SH|SS|P|[HILPT]P|di)\b)|\.)'
+          pop: true
+        - include: main
+        - include: bold-word
+    - match: '((?:((\\)E)|(\\))f(?:4|(\()BI|(\[)\s*BI\s*(\])))'
+      captures:
+        0: constant.character.escape.font.roff
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: punctuation.section.begin.bracket.square.roff
+        7: punctuation.section.end.bracket.square.roff
+      push:
+        - match: '(?=\\E?f[\[A-Za-z0-9])|^(?=[.'']\s*(?:(?:SH|SS|P|[HILPT]P|di)\b)|\.)'
+          pop: true
+        - include: main
+        - include: bold-italic-word
+    - match: '((?:((\\)E)|(\\))f(?:(\()C[WR]|(\[)\s*C[WR]\s*(\])))'
+      captures:
+        0: constant.character.escape.font.roff
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: punctuation.section.begin.bracket.square.roff
+        7: punctuation.section.end.bracket.square.roff
+      push:
+        - match: '(?=\\E?f[\[A-Za-z0-9])|^(?=[.'']\s*(?:(?:SH|SS|P|[HILPT]P|di)\b)|\.)'
+          pop: true
+        - include: main
+        - include: monospace-word
+    - match: '((?:((\\)E)|(\\))[Ff](\[))'
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.font.gnu.roff
+        - meta_content_scope: variable.parameter.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: escapes
+    - match: '((?:((\\)E)|(\\))[Ff](\())(\S{2})|((?:((\\)E)|(\\))[Ff])(\S)'
+      scope: constant.character.escape.function.font.roff
+      captures:
+        1: entity.name.roff
+        10: punctuation.definition.escape.roff
+        11: variable.parameter.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+        7: entity.name.roff
+        8: constant.character.escape.current-escape-char.gnu.roff
+        9: punctuation.definition.escape.roff
+    - match: '((?:((\\)E)|(\\))g(\())(\S{2})|((?:((\\)E)|(\\))g)(\S)'
+      scope: constant.character.escape.function.format-register.roff
+      captures:
+        1: entity.name.roff
+        10: punctuation.definition.escape.roff
+        11: variable.parameter.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+        7: entity.name.roff
+        8: constant.character.escape.current-escape-char.gnu.roff
+        9: punctuation.definition.escape.roff
+    - match: ((?:((\\)E)|(\\))k)(\S)
+      scope: constant.character.escape.function.mark-input.roff
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: variable.parameter.roff
+    - match: '((?:((\\)E)|(\\))s[-+]?(\()?)(\d+)'
+      scope: constant.character.escape.function.point-size.roff
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.brace.roff
+        6: variable.parameter.roff
+    - match: '((?:((\\)E)|(\\))z)([^\s\\])'
+      scope: constant.character.escape.function.zero-width-print.roff
+      captures:
+        1: entity.name.roff
+        2: constant.character.escape.current-escape-char.gnu.roff
+        3: punctuation.definition.escape.roff
+        4: punctuation.definition.escape.roff
+        5: variable.parameter.roff
+    - match: (?:((\\)E)|(\\))\S
+      scope: constant.character.escape.misc.roff
+      captures:
+        1: constant.character.escape.current-escape-char.gnu.roff
+        2: punctuation.definition.escape.roff
+        3: punctuation.definition.escape.roff
+  even-bold:
+    - match: '(?<=^|\s|")(?!"|\\E?")((?:[^\s"\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.bold.roff
+        - match: '(?=[ \t])|(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+  even-bold-after-italic:
+    - match: (")
+      captures:
+        0: markup.bold.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_content_scope: markup.bold.roff
+        - match: '(("))([^"\s]+[ \t]*)?|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: markup.bold.roff
+            2: punctuation.definition.string.end.roff
+            3: markup.italic.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+  even-bold-after-roman:
+    - match: (")
+      captures:
+        0: markup.bold.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_content_scope: markup.bold.roff
+        - match: '(("))([^"\s]+[ \t]*)?|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: markup.bold.roff
+            2: punctuation.definition.string.end.roff
+            3: markup.plain.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+  even-italic:
+    - match: '(?<=^|\s|")(?!"|\\E?")((?:[^\s"\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.italic.roff
+        - match: '(?=[ \t])|(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+  even-italic-after-bold:
+    - match: (")
+      captures:
+        0: markup.italic.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_content_scope: markup.italic.roff
+        - match: '(("))([^"\s]+[ \t]*)?|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: markup.italic.roff
+            2: punctuation.definition.string.end.roff
+            3: markup.bold.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+  even-italic-after-roman:
+    - match: (")
+      captures:
+        0: markup.italic.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_content_scope: markup.italic.roff
+        - match: '(("))([^"\s]+[ \t]*)?|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: markup.italic.roff
+            2: punctuation.definition.string.end.roff
+            3: markup.plain.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+  even-roman:
+    - match: '(?<=^|\s|")(?!"|\\E?")((?:[^\s"\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.plain.roff
+        - match: '(?=[ \t])|(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+  even-roman-after-bold:
+    - match: (")
+      captures:
+        0: markup.plain.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_content_scope: markup.plain.roff
+        - match: '(("))([^"\s]+[ \t]*)?|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: markup.plain.roff
+            2: punctuation.definition.string.end.roff
+            3: markup.bold.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+  even-roman-after-italic:
+    - match: (")
+      captures:
+        0: markup.plain.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_content_scope: markup.plain.roff
+        - match: '(("))([^"\s]+[ \t]*)?|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: markup.plain.roff
+            2: punctuation.definition.string.end.roff
+            3: markup.italic.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+  generic-parameter:
+    - match: '[^\s\\]+'
+      scope: variable.parameter.roff
+  ignore:
+    - match: '^([.''])[ \t]*(ig)[ \t]+(?!\\E?["#]|\\+\$\d+)(("[^"]+")|\S+?(?=\s|\\E?["#]))(.*)$'
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+        3: keyword.control.terminator.roff
+      push:
+        - meta_content_scope: comment.block.ignored-input.with-terminator.roff
+        - match: '^([.''])[ \t]*(\3)(?=\s|$|\\)'
+          captures:
+            1: punctuation.definition.request.roff
+            2: keyword.control.terminator.roff
+          pop: true
+        - include: register-expansion
+    - match: '^([.''])[ \t]*(ig)(?=\s|\\E?["#])(.*)$'
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: comment.block.ignored-input.roff
+        - match: '^([.''])[ \t]*\.(?=\s|\\E?["#])'
+          captures:
+            0: punctuation.definition.request.roff
+          pop: true
+        - include: register-expansion
+  italic-first:
+    - match: '\G[ \t]*(?!")(?=(?:[^\s\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.italic.roff
+        - match: '(?<![^\\]\\|^\\)(?=\s|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+    - match: (")(")
+      scope: markup.italic.roff
+      captures:
+        0: string.quoted.double.empty.roff
+        1: punctuation.definition.string.begin.roff
+        2: punctuation.definition.string.end.roff
+    - match: '\G[ \t]*(")'
+      captures:
+        0: string.quoted.double.roff
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: markup.italic.roff
+        - meta_content_scope: string.quoted.double.roff
+        - match: ((?:"")*)"(?!")|(?<!\\)(?:$|\R)|(?=\\E?")
+          captures:
+            0: punctuation.definition.string.end.roff
+            1: markup.italic.roff
+          pop: true
+        - include: string-escapes
+    - include: escapes
+    - include: string
+  italic-word:
+    - match: \S+?(?=\\|$|\s)
+      scope: markup.italic.roff
+  long-name:
+    - match: \G\s*
+      push:
+        - meta_scope: variable.parameter.other.roff
+        - match: '(?=\]|\s)'
+          pop: true
+        - include: escapes
+    - include: escapes
+    - include: string
+    - include: number
+  long-params:
+    - include: escapes
+    - include: string
+    - include: number
+    - include: arithmetic
+    - match: '[^\\\s\]]+'
+      scope: variable.parameter.roff
+  macros:
+    - include: man
+    - include: mdoc
+    - include: ms
+    - include: mm
+    - include: me
+    - include: www
+    - match: '^([.''])[ \t]*((?:[^\s\\]|\\(?!E?[#"]).)+)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.macro.roff
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: param-group
+  man:
+    - match: '^([.''])[ \t]*(RE|RS|SM|BT|PT)(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.man.macro.roff"
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - match: '^([.''])[ \t]*((AT|DT|PD|UC))(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: invalid.deprecated.roff
+      push:
+        - meta_scope: "meta.deprecated.function.${2:/downcase}.man.macro.roff"
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - match: '^([.''])[ \t]*(TH)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.name.function.roff
+      push:
+        - meta_scope: markup.heading.title.function.man.macro.roff
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: escapes
+    - match: '^([.''])[ \t]*(SH)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.name.function.roff
+      push:
+        - meta_scope: markup.heading.section.function.man.macro.roff
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: escapes
+    - match: '^([.''])[ \t]*(SS)(?=\s)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.name.function.roff
+      push:
+        - meta_scope: markup.heading.subsection.function.man.macro.roff
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: escapes
+    - match: '^([.''])[ \t]*(EX)\s*(\\E?[#"].*)?$'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - meta_content_scope: markup.raw.roff
+        - match: '^([.''])[ \t]*(EE)(?=\s|\\E?[#"])'
+          captures:
+            0: meta.function.man.macro.roff
+            1: punctuation.definition.function.macro.roff
+            2: entity.name.function.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(LP|PP?)(?=\s|\\E?["#])'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.paragraph.man.macro.roff
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: params
+    - match: '^([.''])[ \t]*(IP)(?=\s|\\E?["#])'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.indented-paragraph.man.macro.roff
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - match: '^([.''])[ \t]*(TP|TQ)(?=\s|\\E?["#])(.*)?$\R?'
+      captures:
+        0: meta.function.titled-paragraph.man.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - match: ^(.*)(?<!\\)$
+          captures:
+            0: markup.heading.paragraph.roff
+          pop: true
+        - match: .+
+          captures:
+    - match: '^([.''])[ \t]*((HP))(?=\s|\\E?["#])'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: invalid.deprecated.roff
+      push:
+        - meta_scope: meta.deprecated.function.hanging-paragraph.man.macro.roff
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - match: '^([.''])[ \t]*(MT)(?=\s|\\E?["#])'
+      captures:
+        1: punctuation.definition.macro.gnu.roff
+        2: entity.function.name.gnu.roff
+      push:
+        - meta_scope: meta.function.mailto.hyperlink.man.macro.gnu.roff
+        - match: '^([.''])[ \t]*(ME)(?=\s|\\E?["#])(.*)\s*(\\E?["#].*)?$'
+          captures:
+            1: punctuation.definition.macro.gnu.roff
+            2: entity.function.name.gnu.roff
+          pop: true
+        - include: underline-first
+    - match: '^([.''])[ \t]*(UR)(?=\s|\\E?["#])'
+      captures:
+        1: punctuation.definition.macro.gnu.roff
+        2: entity.function.name.gnu.roff
+      push:
+        - meta_scope: meta.function.hyperlink.man.macro.gnu.roff
+        - match: '^([.''])[ \t]*(UE)(?=\s|\\E?["#])(.*)\s*(\\E?["#].*)?$'
+          captures:
+            1: punctuation.definition.macro.gnu.roff
+            2: entity.function.name.gnu.roff
+          pop: true
+        - include: underline-first
+    - match: '^([.''])[ \t]*(SY)(?=\s|\\E?["#])'
+      captures:
+        0: meta.function.begin.synopsis.man.macro.gnu.roff
+        1: punctuation.definition.macro.gnu.roff
+        2: entity.function.name.gnu.roff
+      push:
+        - meta_scope: meta.command-synopsis.roff
+        - match: '^([.''])[ \t]*(YS)(?=\s|\\E?["#])'
+          captures:
+            0: meta.function.end.synopsis.man.macro.gnu.roff
+            1: punctuation.definition.macro.gnu.roff
+            2: entity.function.name.gnu.roff
+          pop: true
+        - include: bold-first
+        - match: '^([.''])[ \t]*(OP)(?=\s)'
+          captures:
+            1: punctuation.definition.macro.gnu.roff
+            2: entity.function.name.gnu.roff
+          push:
+            - meta_scope: meta.function.option-description.man.macro.gnu.roff
+            - match: (?<!\\)(?=\R|$)|(?=\\E?")
+              pop: true
+            - match: \G
+              push:
+                - meta_scope: function-call.arguments.roff
+                - match: '(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+                  pop: true
+                - include: odd-bold
+                - include: even-italic-after-bold
+                - include: even-italic
+                - include: bridge-escapes
+            - include: escapes
+        - include: main
+    - match: '^([.''])[ \t]*(S?B)(\s*\\E?[#"].*$)?(?=$|[ \t]+|\\)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '^(?=[.''])|(?=\\E?")|(?!\\E?#)((\S+[ \t]*)(?<![^\\]\\)(?:\R|$))'
+          captures:
+            1: markup.bold.roff
+          pop: true
+        - include: main
+        - match: \S+
+          scope: markup.bold.roff
+    - match: '^([.''])[ \t]*(I)(\s*\\E?[#"].*$)?(?=$|[ \t]+|\\)'
+      captures:
+        0: meta.function.man.macro.roff
+        1: punctuation.definition.function.macro.roff
+        2: entity.name.function.roff
+      push:
+        - match: '^(?=[.''])|(?=\\E?")|(?!\\E?#)((\S+[ \t]*)(?<![^\\]\\)(?:\R|$))'
+          captures:
+            1: markup.italic.roff
+          pop: true
+        - include: main
+        - match: \S+
+          scope: markup.italic.roff
+    - include: alternating-fonts
+  mdoc:
+    - match: '^([.''])\s*(Bf)[ \t]+(-emphasis|Em)(?=\s)(.*)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.option.mdoc.macro.roff
+      push:
+        - meta_scope: meta.function.begin-emphasis.unparsed.macro.mdoc.roff
+        - match: '^(?=[.'']\s*[BE]f\s)'
+          pop: true
+        - include: main
+        - include: italic-word
+    - match: '^([.''])\s*(Bf)[ \t]+(-literal|Li)(?=\s)(.*)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.option.mdoc.macro.roff
+      push:
+        - meta_scope: meta.function.begin-literal.unparsed.macro.mdoc.roff
+        - match: '^(?=[.'']\s*[BE]f\s)'
+          pop: true
+        - include: main
+        - include: monospace-word
+    - match: '^([.''])\s*(Bf)[ \t]+(-symbolic|Sy)(?=\s)(.*)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.option.mdoc.macro.roff
+      push:
+        - meta_scope: meta.function.begin-symbolic.unparsed.macro.mdoc.roff
+        - match: '^(?=[.'']\s*[BE]f\s)'
+          pop: true
+        - include: main
+        - include: bold-word
+    - match: '^([.''])\s*(Rs)(?=\s)(.*)$'
+      captures:
+        0: meta.function.unparsed.macro.mdoc.roff
+        1: punctuation.definition.macro.mdoc.roff
+        2: entity.function.name.mdoc.roff
+      push:
+        - meta_content_scope: meta.citation.mdoc.roff
+        - match: '^([.''])\s*(Re)(?=\s)'
+          captures:
+            0: meta.function.unparsed.macro.mdoc.roff
+            1: punctuation.definition.mdoc.macro.roff
+            2: entity.function.name.mdoc.roff
+          pop: true
+        - include: refer
+    - match: '^([.''])\s*(Bd)\s+(-literal)(?=\s|$)(.*)'
+      captures:
+        0: meta.function.$2.unparsed.macro.mdoc.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - match: '^([.''])\s*(Ed)(?=\s|$)'
+          captures:
+            0: meta.function.$2.unparsed.macro.mdoc.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - match: ^(?:\S*.*?\s+)?HTML:\s*$\R?
+          push:
+            - meta_scope: meta.html-snippet.mdoc.roff
+            - match: ^(?!\t|\s*$)
+              pop: true
+            - match: .+
+              scope: text.embedded.html.basic
+              captures:
+        - match: ^(?:\S*.*?\s+)?JavaScript:\s*$\R?
+          push:
+            - meta_scope: meta.js-snippet.mdoc.roff
+            - match: ^(?!\t|\s*$)
+              pop: true
+            - match: .+
+              captures:
+        - match: ^(?:\S*.*?\s+)?CSS:\s*$\R?
+          push:
+            - meta_scope: meta.css-snippet.mdoc.roff
+            - match: ^(?!\t|\s*$)
+              pop: true
+            - include: scope:source.css
+        - match: '^(?:\S*.*?\s+)?(?i:Bash|(?:Bourne[\s-]?)?Shell(?:[\s-]?Script)?):\s*$\R?'
+          push:
+            - meta_scope: meta.shell-snippet.mdoc.roff
+            - match: ^(?!\t|\s*$)
+              pop: true
+            - match: .+
+              captures:
+        - include: main
+    - match: '^([.''])\s*(%[ABCDIJNOPQRTUV]|B[dfklt]|br|D[bdt]|E[dfklx]|F[do]|Hf|In|L[bp]|Nd|Os|Pp|R[esv]|Sm|sp|Ud)(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.$2.unparsed.macro.mdoc.roff
+        - match: (?<!\\)$
+          pop: true
+        - include: mdoc-unparsed
+    - match: |-
+        (?x)^([.'])\s*
+        (Ac|Ad|An|Ao|Ap|Aq|Ar|At|Bc|Bo|Bq|Brc|Bro|Brq|Bsx|Bx|Cd|Cm|D1|Dc
+        |Dl|Do|Dq|Dv|Dx|Ec|Em|En|Eo|Eq|Er|Es|Ev|Fa|Fc|Fl|Fn|Fr|Ft|Fx|Ic
+        |It|Li|Lk|Me|Ms|Mt|Nm|No|Ns|Nx|Oc|Oo|Op|Ot|Ox|Pa|Pc|Pf|Po|Pq|Qc
+        |Ql|Qo|Qq|Rd|Sc|Sh|So|Sq|Ss|St|Sx|Sy|Ta|Tn|Ux|Va|Vt|Xc|Xo|Xr)
+        (?=\s)
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.$2.parsed.macro.mdoc.roff
+        - match: (?<!\\)$
+          pop: true
+        - include: mdoc-callables
+        - include: mdoc-args
+        - include: generic-parameter
+  mdoc-args:
+    - include: escapes
+    - include: string
+    - match: \$(?=Mdocdate)
+      captures:
+        0: punctuation.section.begin.date.roff
+      push:
+        - meta_scope: string.quoted.other.date.roff
+        - match: \$
+          captures:
+            0: punctuation.section.end.date.roff
+          pop: true
+    - match: '(?<=\s)[(\[.,:|;)\]?!](?=\s|$)'
+      scope: punctuation.delimiter.mdoc.macro.roff
+    - match: |-
+        (?x)
+        (?<=\s) (-)
+        (alpha|beta|bullet|centered|column|compact|dash|devel|diag|emphasis|enum|file|filled|hang
+        |hyphen|inset|item|literal|nested|nosplit|ohang|ragged|split|std|symbolic|tag|type|unfilled
+        |width|words|offset(?:\s+(?:left|center|indent|indent-two|right))?)(?=\s)
+      scope: constant.language.option.mdoc.macro.roff
+      captures:
+        1: punctuation.definition.dash.roff
+  mdoc-callables:
+    - match: (?<=Em|Ar)\G|(?<=\s)(Em|Ar)(?=\s)
+      captures:
+        1: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.$1.callable.macro.mdoc.roff
+        - match: |-
+            (?x)
+            (?<!\\)$ |
+            (?=
+            	\s+
+            	(?:Ac|Ad|An|Ao|Ap|Aq|Ar|At|Bc|Bo|Bq|Brc|Bro|Brq|Bsx|Bx|Cd|Cm|Dc|Do|Dq|Dv|Dx|Ec|Em
+            	|En|Eo|Er|Es|Ev|Fa|Fc|Fl|Fn|Fr|Ft|Fx|Ic|Li|Lk|Ms|Mt|Nm|No|Ns|Nx|Oc|Oo|Op|Ot|Ox|Pa
+            	|Pc|Pf|Po|Pq|Qc|Ql|Qo|Qq|Sc|So|Sq|Sx|Sy|Ta|Tn|Ux|Va|Vt|Xc|Xo|Xr)
+            	\s | \\E? (?:"|f[\[A-Za-z0-9])
+            )
+          pop: true
+        - include: mdoc-args
+        - include: main
+        - include: italic-word
+    - match: (?<=Sy|Fl|Cm)\G|(?<=\s)(Sy|Fl|Cm)(?=\s)
+      captures:
+        1: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.$1.callable.macro.mdoc.roff
+        - match: |-
+            (?x)
+            (?<!\\)$ |
+            (?=
+            	\s+
+            	(?:Ac|Ad|An|Ao|Ap|Aq|Ar|At|Bc|Bo|Bq|Brc|Bro|Brq|Bsx|Bx|Cd|Cm|Dc|Do|Dq|Dv|Dx|Ec|Em
+            	|En|Eo|Er|Es|Ev|Fa|Fc|Fl|Fn|Fr|Ft|Fx|Ic|Li|Lk|Ms|Mt|Nm|No|Ns|Nx|Oc|Oo|Op|Ot|Ox|Pa
+            	|Pc|Pf|Po|Pq|Qc|Ql|Qo|Qq|Sc|So|Sq|Sx|Sy|Ta|Tn|Ux|Va|Vt|Xc|Xo|Xr)
+            	\s | \\E? (?:"|f[\[A-Za-z0-9])
+            )
+          pop: true
+        - include: mdoc-args
+        - include: main
+        - include: bold-word
+    - match: (?<=Li)\G|(?<=\s)(Li)(?=\s)
+      captures:
+        1: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.$1.callable.macro.mdoc.roff
+        - match: |-
+            (?x)
+            (?<!\\)$ |
+            (?=
+            	\s+
+            	(?:Ac|Ad|An|Ao|Ap|Aq|Ar|At|Bc|Bo|Bq|Brc|Bro|Brq|Bsx|Bx|Cd|Cm|Dc|Do|Dq|Dv|Dx|Ec|Em
+            	|En|Eo|Er|Es|Ev|Fa|Fc|Fl|Fn|Fr|Ft|Fx|Ic|Li|Lk|Ms|Mt|Nm|No|Ns|Nx|Oc|Oo|Op|Ot|Ox|Pa
+            	|Pc|Pf|Po|Pq|Qc|Ql|Qo|Qq|Sc|So|Sq|Sx|Sy|Ta|Tn|Ux|Va|Vt|Xc|Xo|Xr)
+            	\s | \\E? (?:"|f[\[A-Za-z0-9])
+            )
+          pop: true
+        - include: mdoc-args
+        - include: main
+        - include: monospace-word
+    - match: (?<=Lk|Mt)\G|(?<=\s)(Lk|Mt)(?=\s|$)\s*
+      captures:
+        1: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.$1.callable.macro.mdoc.roff
+        - match: $|(?=\\E?")|(\S+?)(?=$|\s|\\E?")
+          captures:
+            0: string.other.link.roff
+            1: markup.underline.link.hyperlink.mdoc.roff
+          pop: true
+    - match: |-
+        (?x) (?<=[ \t])
+        (Ac|Ad|An|Ao|Ap|Aq|Ar|At|Bc|Bo|Bq|Brc|Bro|Brq|Bsx|Bx|Cd|Cm|Dc|Do|Dq|Dv|Dx|Ec|En
+        |Eo|Er|Es|Ev|Fa|Fc|Fl|Fn|Fr|Ft|Fx|Ic|Li|Lk|Ms|Mt|Nm|No|Ns|Nx|Oc|Oo|Op|Ot|Ox|Pa|Pc
+        |Pf|Po|Pq|Qc|Ql|Qo|Qq|Sc|So|Sq|Sx|Ta|Tn|Ux|Va|Vt|Xc|Xo|Xr)(?=\s)
+      scope: meta.function.$1.callable.macro.mdoc.roff
+      captures:
+        1: entity.function.name.roff
+  mdoc-unparsed:
+    - include: mdoc-args
+    - include: generic-parameter
+  me:
+    - match: |-
+        (?x) ^([.'])[ \t]*
+        ((?:[()][cdfqxz]|\+\+|\+c)|
+        (1c|2c|EN|EQ|GE|GS|PE|PS|TE|TH|TS|ba|bc|bu|bx|hx
+        |hl|ip|lp|np|pd|pp|r|re|sk|sm|sz|tp|uh|xp)(?=\s))
+      captures:
+        1: punctuation.definition.macro.roff
+        3: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${3:/downcase}.me.macro.roff"
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: params
+    - match: '^([.''])[ \t]*(\(l)(?=\s)'
+      captures:
+        0: meta.function.list.begin.me.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: markup.list.unnumbered.roff
+        - match: '^([.''])[ \t]*(\)l)(?=\s)'
+          captures:
+            0: meta.function.list.end.me.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(b)(?=\s)'
+      captures:
+        0: meta.function.bold-text.me.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: function-call.arguments.roff
+        - match: '(?<![^\\]\\|^\\)(?=$|\R)|(?=\\E?")'
+          pop: true
+        - include: bold-first
+    - match: '^([.''])[ \t]*(i)(?=\s)'
+      captures:
+        0: meta.function.italic-text.me.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: function-call.arguments.roff
+        - match: '(?<![^\\]\\|^\\)(?=$|\R)|(?=\\E?")'
+          pop: true
+        - include: italic-first
+    - match: '^([.''])[ \t]*(bi)(?=\s)'
+      captures:
+        0: meta.function.bold-italic-text.me.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: function-call.arguments.roff
+        - match: '(?<![^\\]\\|^\\)(?=$|\R)|(?=\\E?")'
+          pop: true
+        - include: bold-italic-first
+    - match: '^([.''])[ \t]*(u)(?=\s|$)\s*'
+      captures:
+        0: meta.function.underline-text.me.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: function-call.arguments.roff
+        - match: '(?<![^\\]\\|^\\)(?=$|\R)|(?=\\E?")'
+          pop: true
+        - include: underline-first
+    - match: '^([.''])[ \t]*(sh)[ \t]+((?!")\S+)\b[ \t]*(?!$|\R|\\E?")'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: variable.parameter.roff
+      push:
+        - meta_scope: markup.heading.section.function.me.macro.roff
+        - match: '(?<![^\\]\\|^\\)(?=$|\R)|(?=\\E?")'
+          pop: true
+        - include: bold-first
+    - match: '^([.''])[ \t]*(of|oh|he|eh|fo|ef)(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.me.macro.roff"
+        - meta_content_scope: function-call.arguments.roff
+        - match: (?<!\\)(?=\R|$)|(?=\\E?")
+          pop: true
+        - include: "3-part-title"
+        - include: escapes
+        - include: string
+  mm:
+    - match: |-
+        (?x) ^([.'])[ \t]*
+        (1C|2C|AE|AF|AL|APP|APPSK|AS|AST|AT|AU|AV|AVL|B1|B2|BE|BL|BS|BVL
+        |COVER|COVEND|DE|DF|DL|DS|EC|EF|EH|EN|EOP|EPIC|EQ|EX|FC|FD|FE|FG
+        |FS|GETHN|GETPN|GETR|GETST|H|HC|HM|HU|HX|HY|HZ|IA|IE|INITI|INITR
+        |IND|INDP|ISODATE|LB|LC|LE|LI|LT|LO|MC|ML|MT|MOVE|MULB|MULN|MULE
+        |nP|NCOL|NS|ND|OF|OH|OP|PGFORM|PGNH|PIC|PE|PF|PH|PS|PX?|RD|RF|RL
+        |RP|RS|S|SA|SETR|SG|SK|SM|SP|TA?B|TC|TE|TL|TM|TP|TS|TX|TY|VERBON
+        |VERBOFF|VL|VM|WA|WE|WC|\)E)(?=\s)
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.mm.macro.roff"
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: params
+  monospace-word:
+    - match: \S+?(?=\\|$|\s)
+      scope: markup.raw.monospaced.roff
+  ms:
+    - match: |-
+        (?x) ^([.'])[ \t]*
+        (1C|2C|AB|AE|AI|AU|B1|B2|BT|BX|DA|DE|DS|EN|EQ|FE|FS|IP|KE|KF|KS|LG
+        |LP|MC|ND|NH|NL|P1|PE|PP|PS|PT|PX|QP|RP|SH|SM|TA|TC|TE|TL|TS|XA|XE
+        |XP|XS)(?=\s)
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.ms.macro.roff"
+        - match: (?<!\\)(?=\R|$)|(?=\\E?")
+          pop: true
+        - include: params
+    - match: '^([.''])[ \t]*([EO][FH])(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.ms.macro.roff"
+        - meta_content_scope: function-call.arguments.roff
+        - match: (?<!\\)(?=\R|$)|(?=\\E?")
+          pop: true
+        - include: "3-part-title"
+        - include: escapes
+        - include: string
+    - match: '^([.''])[ \t]*((De|Ds))(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: invalid.deprecated.roff
+      push:
+        - meta_scope: "meta.deprecated.function.${2:/downcase}.ms.macro.roff"
+        - meta_content_scope: function-call.arguments.roff
+        - match: (?<!\\)$|(?=\s*\\E?")
+          pop: true
+        - include: escapes
+        - include: string
+    - match: '^([.''])[ \t]*(CW)(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.cw.ms.macro.roff
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - match: '\G[ \t]*(?!")(?=(?:[^\s\\]|\\(?!E?").)+)'
+          push:
+            - meta_scope: markup.raw.roff
+            - match: '(?<![^\\]\\|^\\)(?=\s|$)|(?=\\E?")'
+              pop: true
+            - include: escapes
+        - match: (")(")
+          scope: markup.raw.roff
+          captures:
+            0: string.quoted.double.empty.roff
+            1: punctuation.definition.string.begin.roff
+            2: punctuation.definition.string.end.roff
+        - match: '\G[ \t]*(")'
+          captures:
+            1: punctuation.definition.string.begin.roff
+          push:
+            - meta_scope: string.quoted.double.roff
+            - meta_content_scope: markup.raw.roff
+            - match: ((?:"")*)"(?!")|(?<!\\)$|(?=\\E?")
+              captures:
+                0: punctuation.definition.string.end.roff
+                1: markup.raw.roff
+              pop: true
+            - include: string-escapes
+        - include: escapes
+        - include: string
+    - match: '^([.''])[ \t]*(UL)(?=\s|$)\s*'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.ul.ms.macro.roff
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: underline-first
+  number:
+    - match: '(?!\d+(?:/|[cfimnPpsuvz]\w))(\|)?(?:(?<!\w)[-+])?(?:\d+(?:\.\d*)?|\.\d+|(?<=[-+])\.)([cfimnPpsuvz])?'
+      scope: constant.numeric.roff
+      captures:
+        1: keyword.operator.absolute.roff
+        2: keyword.other.unit.roff
+  odd-bold:
+    - match: '[ \t]+(")'
+      captures:
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: markup.bold.roff
+        - match: '(")[ \t]*|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: punctuation.definition.string.end.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+    - match: '[ \t]+(\\$\R?)'
+      push:
+        - meta_scope: markup.bold.roff
+        - match: '(?<!^)[ \t]+|(?=\\E?")|(?<!\\)(?=\R|$)'
+          pop: true
+        - include: escapes
+        - match: '^[ \t]+'
+          push:
+            - match: (?=\S)|(?<!\\)(?:$|\R)
+              pop: true
+    - match: '[ \t]+(?!")((?:[^\s"\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.bold.roff
+        - match: '[ \t]+|(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+  odd-italic:
+    - match: '[ \t]+(")'
+      captures:
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: markup.italic.roff
+        - match: '(")[ \t]*|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: punctuation.definition.string.end.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+    - match: '[ \t]+(\\$\R?)'
+      push:
+        - meta_scope: markup.italic.roff
+        - match: '(?<!^)[ \t]+|(?=\\E?")|(?<!\\)(?=\R|$)'
+          pop: true
+        - include: escapes
+        - match: '^[ \t]+'
+          push:
+            - match: (?=\S)|(?<!\\)(?:$|\R)
+              pop: true
+    - match: '[ \t]+(?!")((?:[^\s"\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.italic.roff
+        - match: '[ \t]+|(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+  odd-roman:
+    - match: '[ \t]+(")'
+      captures:
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: markup.plain.roff
+        - match: '(")[ \t]*|(?=\\E?")|(?<![^\\]\\|^\\)(?=\R|$)'
+          captures:
+            1: punctuation.definition.string.end.roff
+          pop: true
+        - match: '((?:[^"\\]|""|\\(?!E?").)+)(?!$)'
+          captures:
+        - include: string-escapes
+    - match: '[ \t]+(\\$\R?)'
+      push:
+        - meta_scope: markup.plain.roff
+        - match: '(?<!^)[ \t]+|(?=\\E?")|(?<!\\)(?=\R|$)'
+          pop: true
+        - include: escapes
+        - match: '^[ \t]+'
+          push:
+            - match: (?=\S)|(?<!\\)(?:$|\R)
+              pop: true
+    - match: '[ \t]+(?!")((?:[^\s"\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: markup.plain.roff
+        - match: '[ \t]+|(?<![^\\]\\|^\\)(?=\R|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+  param-group:
+    - match: \G|^
+      push:
+        - meta_scope: function-call.arguments.roff
+        - match: \Z|$
+          pop: true
+        - include: params
+  params:
+    - include: escapes
+    - include: string
+    - include: number
+    - include: generic-parameter
+  preprocessors:
+    - match: '^([.''])[ \t]*(TS)(?=$|\s|\\E?["#])(.*)'
+      captures:
+        0: meta.function.begin.table.section.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: markup.other.table.preprocessor.tbl.roff
+        - match: '^([.''])[ \t]*(TE)(?=$|\s|\\E?["#])'
+          captures:
+            0: meta.function.end.table.section.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.name.function.roff
+          pop: true
+        - include: tbl
+    - match: '^([.''])[ \t]*(EQ)(?=$|\s|\\E?["#])[ \t]*([LIC]\b)?\s*([^\\"]+|\\[^"])*(\\E?".*)?$'
+      captures:
+        0: meta.function.begin.math.section.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.alignment-mode.eqn.roff
+        4: string.unquoted.equation-label.eqn.roff
+      push:
+        - meta_content_scope: markup.other.math.preprocessor.eqn.roff
+        - match: '^([.''])[ \t]*(EN)(?=$|\s|\\E?["#])'
+          captures:
+            0: meta.function.end.math.section.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.name.function.roff
+          pop: true
+        - include: eqn
+    - match: '^([.''])[ \t]*(\[)\s*([-$''\w.\\]*?)\s*(\\E?["#].*)?$'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: punctuation.section.function.begin.roff
+        3: string.unquoted.opening-text.refer.roff
+      push:
+        - meta_content_scope: meta.citation.roff
+        - match: '^([.''])[ \t]*(\])\s*([-$''\w.\\]*?)(?=\s|$|\\E?")'
+          captures:
+            1: punctuation.definition.macro.roff
+            2: punctuation.section.function.end.roff
+            3: string.unquoted.closing-text.refer.roff
+          pop: true
+        - match: \G
+          push:
+            - match: '$|(?=\\E?[#"])'
+              pop: true
+            - match: '^[#\[\]]+'
+              scope: constant.character.flags.refer.gnu.roff
+            - include: params
+        - include: refer
+    - match: '^([.''])[ \t]*(Perl)[ \t]+(begin|start)(?=$|\s|\\E?["#])(.*)$'
+      captures:
+        0: meta.function.begin.perl.macro.gnu.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.embedding-control.roff
+      push:
+        - meta_content_scope: source.embedded.perl.gnu.roff
+        - match: '^([.''])[ \t]*(Perl)[ \t]+(end|stop)(?=$|\s|\\E?["#])'
+          captures:
+            0: meta.function.end.perl.macro.gnu.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+            3: constant.language.embedding-control.roff
+          pop: true
+        - include: scope:source.perl
+    - match: '^([.''])[ \t]*(lilypond)[ \t]+(begin|start)(?=$|\s|\\E?["#])(.*)$'
+      captures:
+        0: meta.function.begin.lilypond.macro.gnu.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.embedding-control.roff
+      push:
+        - meta_content_scope: source.embedded.lilypond.gnu.roff
+        - match: '^([.''])[ \t]*(lilypond)[ \t]+(end|stop)(?=$|\s|\\E?["#])'
+          captures:
+            0: meta.function.end.lilypond.macro.gnu.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+            3: constant.language.embedding-control.roff
+          pop: true
+        - include: scope:source.lilypond
+    - match: '^([.''])[ \t]*(pinyin)[ \t]+(begin|start)(?=$|\s|\\E?["#])(.*)$'
+      captures:
+        0: meta.function.begin.pinyin.macro.gnu.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.language.embedding-control.roff
+      push:
+        - meta_content_scope: meta.pinyin.gnu.roff
+        - match: '^([.''])[ \t]*(pinyin)[ \t]+(end|stop)(?=$|\s|\\E?["#])'
+          captures:
+            0: meta.function.end.pinyin.macro.gnu.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+            3: constant.language.embedding-control.roff
+          pop: true
+        - include: main
+    - include: scope:source.pic#tags
+    - include: scope:source.ideal#tags
+    - include: scope:source.gremlin
+  refer:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.refer.roff
+      push:
+        - meta_scope: comment.line.refer.roff
+        - match: $
+          pop: true
+    - match: "@"
+      scope: variable.other.readonly.author-names.refer.roff
+    - match: '^([.''])?\s*(%)([A-Z])(?=\s)'
+      captures:
+        1: punctuation.definition.macro.mdoc.roff
+        2: punctuation.definition.percentage-sign.refer.roff
+        3: variable.other.readonly.key-letter.refer.roff
+      push:
+        - meta_scope: meta.structure.dictionary.refer.roff
+        - meta_content_scope: meta.structure.dictionary.value.refer.roff
+        - match: (?<!\\)$
+          pop: true
+        - match: \G
+          push:
+            - meta_scope: string.unquoted.refer.roff
+            - match: (?<!\\)$
+              pop: true
+            - match: '[-+''"<>\].*\[~!&?:]'
+              scope: meta.symbol.refer.roff
+            - include: refer
+        - include: escapes
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: string.quoted.single.refer.roff
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.roff
+          pop: true
+    - match: '(%+)[\daiA-Z]'
+      scope: variable.other.readonly.formatted.refer.roff
+      captures:
+        1: punctuation.definition.percentage-sign.refer.roff
+    - match: |-
+        (?x)
+        (?<=\S)(?:\*|[-+]\d+|(\.)(?:[-+]?y|[lucran]))(?=\s|$) |
+        (?<=\S)[~!&?:](?=\S)
+      scope: keyword.operator.label-expression.refer.roff
+      captures:
+        1: punctuation.separator.period.full-stop.refer.roff
+    - match: <
+      captures:
+        0: punctuation.bracket.angle.refer.roff
+      push:
+        - match: '>|^(?=\.\])'
+          captures:
+            0: punctuation.bracket.angle.refer.roff
+          pop: true
+        - include: refer
+    - match: \(
+      captures:
+        0: punctuation.bracket.round.refer.roff
+      push:
+        - match: '\)|^(?=\.\])'
+          captures:
+            0: punctuation.bracket.round.refer.roff
+          pop: true
+        - include: refer
+    - match: |-
+        (?x)\b
+        (?:no-)?
+        (?:abbreviate|abbreviate-label-ranges|accumulate|annotate|compatible|date-as-label
+        |default-database|discard|et-al|label-in-reference|label-in-text|move-punctuation
+        |reverse|search-ignore|search-truncate|short-label|sort|sort-adjacent-labels)\b
+      scope: keyword.operator.negatable.refer.roff
+      captures:
+        0: entity.function.name.refer.roff
+    - match: \b(articles|bibliography|capitalize|join-authors|label|separate-label-second-parts)\b
+      scope: keyword.operator.refer.roff
+      captures:
+        0: entity.function.name.refer.roff
+    - match: ^\s*\b(database|include)\b
+      captures:
+        0: keyword.operator.refer.roff
+        1: entity.function.name.refer.roff
+      push:
+        - match: (?<!\\)$
+          pop: true
+        - include: escapes
+        - match: '((?:[^\\\s]|\\(?!E?").)+)'
+          scope: string.other.link.filename.refer.roff
+          captures:
+            0: markup.link.underline.refer.roff
+    - include: string
+    - include: escapes
+  register-expansion:
+    - match: '(\|)?((?:((\\)E)|((?:(?<=\|)\\*?)?\\))n([-+])?(\[))'
+      captures:
+        1: keyword.operator.absolute.roff
+        2: entity.name.roff
+        3: constant.character.escape.current-escape-char.gnu.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.escape.roff
+        6: keyword.operator.arithmetic.roff
+        7: punctuation.section.begin.bracket.square.roff
+      push:
+        - meta_scope: constant.character.escape.function.expand-register.gnu.roff
+        - match: '(\])|(?<!\\)(?=$)'
+          captures:
+            1: punctuation.section.end.bracket.square.roff
+          pop: true
+        - include: long-name
+    - match: |-
+        (?x)
+
+        # 1: keyword.operator.absolute.roff
+        (\|)?
+
+        # 2: entity.name.roff
+        (
+        	(?:
+        		# 3: constant.character.escape.current-escape-char.gnu.roff
+        		(
+        			# 4: punctuation.definition.escape.roff
+        			(\\)E
+        		)
+        		|
+        		# 5: punctuation.definition.escape.roff
+        		(
+        			(?:(?<=\|)\\*?)?
+        			\\
+        		)
+        	)
+        	n
+        	([-+])?   # 6: keyword.operator.arithmetic.roff
+        	(\()     # 7: punctuation.definition.brace.roff
+        )
+
+        # Name of register
+        (?:
+        	# 8: constant.language.predefined.register.roff
+        	(ct|dl|dn|dw|dy|ln|mo|nl|sb|st|yr)
+        	|
+        	# 9: constant.language.predefined.register.gnu.roff
+        	(c\.)
+        	|
+        	# 10: constant.language.predefined.register.readonly.roff
+        	(\${2}  |  \.[$aAbcdfFhHijklLnopRTstuvVwxyz])
+        	|
+        	# 11: constant.language.predefined.register.readonly.gnu.roff
+        	(\.[CgmMOPUxyY])
+        	|
+        	# 12: variable.parameter.roff
+        	(\S{2})
+        )
+
+        |
+
+        # 13: keyword.operator.absolute.roff
+        (\|)?
+
+        # 14: entity.name.roff
+        (
+        	(?:
+        		# 15: constant.character.escape.current-escape-char.gnu.roff
+        		(
+        			# 16: punctuation.definition.escape.roff
+        			(\\)E
+        		)
+        		|
+        		# 17: punctuation.definition.escape.roff
+        		(
+        			(?:(?<=\|)\\*?)?
+        			\\
+        		)
+        	)
+        	n
+        )
+
+        # 18: keyword.operator.arithmetic.roff
+        ([-+])?
+
+        # Name of register
+        (?:
+        	(%) |  # 19: constant.language.predefined.register.roff
+        	(\S)  # 20: variable.parameter.roff
+        )
+      scope: constant.character.escape.function.expand-register.roff
+      captures:
+        1: keyword.operator.absolute.roff
+        10: constant.language.predefined.register.readonly.roff
+        11: constant.language.predefined.register.readonly.gnu.roff
+        12: variable.parameter.roff
+        13: keyword.operator.absolute.roff
+        14: entity.name.roff
+        15: constant.character.escape.current-escape-char.gnu.roff
+        16: punctuation.definition.escape.roff
+        17: punctuation.definition.escape.roff
+        18: keyword.operator.arithmetic.roff
+        19: constant.language.predefined.register.roff
+        2: entity.name.roff
+        20: variable.parameter.roff
+        3: constant.character.escape.current-escape-char.gnu.roff
+        4: punctuation.definition.escape.roff
+        5: punctuation.definition.escape.roff
+        6: keyword.operator.arithmetic.roff
+        7: punctuation.definition.brace.roff
+        8: constant.language.predefined.register.roff
+        9: constant.language.predefined.register.gnu.roff
+  requests:
+    - match: |-
+        (?x) ^([.'])[ \t]*
+        (aln|als|asciify|backtrace|blm|boxa|box|brp|cflags|chop|close|composite|color
+        |cp|devicem|device|do|ecs|ecr|evc|fam|fchar|fcolor|fschar|fspecial|ftr|fzoom
+        |gcolor|hcode|hla|hlm|hpfa|hpfcode|hpf|hym|hys|itc|kern|length|linetabs|lsm
+        |mso|nop|nroff|opena|open|output|pev|pnr|psbb|pso|ptr|pvs|rchar|rfschar|rj
+        |rnn|schar|shc|shift|sizes|special|spreadwarn|sty|substring|tkf|tm1|tmc|trf
+        |trin|trnt|troff|unformat|vpt|warnscale|warn|writec|writem|write)
+        (?=\s|\\E?["#])
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.request.$2.gnu.roff
+        - match: (?<!\\)(?=\R|$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - match: '^([.''])[ \t]*(class)[ \t]+(\S+)'
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+        3: variable.parameter.roff
+      push:
+        - meta_scope: meta.function.request.assign-class.gnu.roff
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - match: '[^\s\\]+(-)[^\s\\]+'
+          captures:
+            0: string.unquoted.character-range.roff
+            1: punctuation.separator.dash.roff
+        - include: params
+    - match: '^([.''])[ \t]*(char)[ \t]*(\S+)?[ \t]*(.*)(?=$|\\E?["#])'
+      captures:
+        1: punctuation.definition.request.roff
+        2: storage.type.var.roff
+        3: variable.parameter.roff
+      push:
+        - meta_scope: meta.function.request.$2.gnu.roff
+        - match: '(?<!\\)(?=$)|(?=\\E?["#])'
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(defcolor)(?=\s)[ \t]*((?:[^\s\\]|\\(?!E?["#]).)*)[ \t]*(rgb|cmyk?|gr[ae]y)?'
+      captures:
+        1: punctuation.definition.request.roff
+        2: storage.type.var.roff
+        3: string.other.colour-name.roff
+        4: constant.language.colour-scheme.roff
+      push:
+        - meta_scope: meta.function.request.define-colour.gnu.roff
+        - match: '(?<!\\)(?=$)|(?=\\E?["#])'
+          pop: true
+        - match: "(#{1,2})[A-Fa-f0-9]+"
+          scope: constant.other.colour.hex.roff
+          captures:
+            1: punctuation.definition.colour.roff
+        - include: params
+    - match: '^([.''])[ \t]*(break|continue|return|while)(?=\s)'
+      captures:
+        0: meta.function.request.control.gnu.roff
+        1: punctuation.definition.request.roff
+        2: keyword.control.roff
+      push:
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - match: '^([.''])[ \t]*(ab|tm)(?=\s|\\E?["#])'
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.request.$2.roff
+        - meta_content_scope: string.unquoted.roff
+        - match: (?<!\\)(?=\R|$)|(?=\\E?")
+          pop: true
+        - include: escapes-copymode
+    - match: |-
+        (?x) ^([.'])[ \t]*
+        (ab|ad|af|bd|bp|br|c2|cc|ce|cf|ch|cs|da|di|dt|ec|em|eo|ev
+        |ex|fc|fi|fl|fp|ft|hc|hw|hy|in|it|lc|lg|lf|ll|ls|lt|mc|mk
+        |na|ne|nf|nh|nm|nn|ns|nx|os|pc|pi|pl|pm|pn|po|ps|rd|rm|rn
+        |rr|rs|rt|so|sp|ss|sv|sy|ta|tc|ti|tm|tr|uf|vs|wh)
+        (?=\s|\d+\s*$|\\E?["#])
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.request.$2.roff
+        - match: (?<!\\)(?=\R|$)|(?=\\E?")
+          pop: true
+        - include: param-group
+    - include: conditionals
+    - include: definition
+    - include: ignore
+    - include: underlines
+    - match: '^([.''])[ \t]*(nr)[ \t]*(?:(%|ct|dl|dn|dw|dy|ln|mo|nl|sb|st|yr)|(c\.)|(\${2}|\.[$aAbcdfFhHijklLnopRTstuvVwxyz])|(\.[CgmMOPUxyY])|(\S+))?[ \t]*(.*)$'
+      captures:
+        1: punctuation.definition.request.roff
+        2: storage.type.var.roff
+        3: constant.language.predefined.register.roff
+        4: constant.language.predefined.register.gnu.roff
+        5: invalid.illegal.readonly.register.roff
+        6: invalid.illegal.readonly.register.gnu.roff
+        7: variable.parameter.roff
+      push:
+        - meta_scope: meta.function.request.$2.roff
+        - match: (?<!\\)$
+          pop: true
+    - match: '^([.''])[ \t]*([ad]s1?)[ \t]+(((?:[^\s\\]|\\(?!E?").)+))?'
+      captures:
+        1: punctuation.definition.request.roff
+        2: storage.type.var.roff
+        3: variable.parameter.roff
+        4: entity.name.roff
+      push:
+        - meta_scope: meta.function.request.$2.roff
+        - meta_content_scope: string.unquoted.roff
+        - match: (?<!\\)$
+          pop: true
+        - include: escapes-clipped
+        - include: escapes
+    - match: '^([.''])[ \t]*(tl)(?=\s)'
+      captures:
+        1: punctuation.definition.request.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.function.request.$2.roff
+        - meta_content_scope: function-call.arguments.roff
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: "3-part-title"
+        - include: params
+  string:
+    - match: '(?<=(?<=[^\\]|^)\s|^)(")(")(?=\s|$)'
+      scope: string.quoted.double.empty.roff
+      captures:
+        1: punctuation.definition.string.begin.roff
+        2: punctuation.definition.string.end.roff
+    - match: '(?<=(?<=[^\\]|^)\s|^)"(?!")'
+      captures:
+        0: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: string.quoted.double.roff
+        - match: (?<!")"(?!")|(?<!\\)$|(?=\\E?")
+          captures:
+            0: punctuation.definition.string.end.roff
+          pop: true
+        - include: string-escapes
+  string-escapes:
+    - match: '""'
+      scope: constant.character.escape.quote.double.roff
+    - include: escapes
+  tbl:
+    - match: '\G|^((\.)T&)[ \t]*$'
+      captures:
+        1: entity.function.name.roff
+        2: punctuation.definition.macro.roff
+      push:
+        - meta_scope: meta.function-call.arguments.tbl.roff
+        - match: '(\.)$\R?|^(?=[.''][ \t]*TE(?=\s))'
+          captures:
+            2: punctuation.terminator.section.tbl.roff
+          pop: true
+        - match: ^(?=\.)
+          push:
+            - match: '^(?=[.''][ \t]*TE(?=\s|\\E?["#]))'
+              pop: true
+            - include: main
+        - match: ^(.+)(;)$
+          captures:
+            2: punctuation.terminator.line.tbl.roff
+        - match: "[ABCEFILNPRSTUVWZabcefilnprstuvwz^]"
+          scope: constant.language.key-letter.tbl.roff
+        - match: "[|_=]"
+          scope: punctuation.keyword.tbl.roff
+        - match: '[-+]?\d+'
+          scope: constant.numeric.tbl.roff
+        - match: \.
+          scope: punctuation.delimiter.period.full-stop.tbl.roff
+        - match: ","
+          scope: punctuation.separator.comma.tbl.roff
+        - include: params
+    - match: '^\s*([=_]|\\_)\s*$'
+      scope: punctuation.keyword.tbl.roff
+    - match: (?<!\\)((\\)R)(.)
+      scope: constant.character.escape.repeat.tbl.roff
+      captures:
+        1: keyword.operator.tbl.roff
+        2: punctuation.definition.escape.roff
+        3: string.unquoted.tbl.roff
+    - match: (\\)\^
+      scope: constant.character.escape.vertical-span.tbl.roff
+      captures:
+        0: keyword.operator.tbl.roff
+        1: punctuation.definition.escape.roff
+    - match: 'T(\{)'
+      captures:
+        0: keyword.operator.section.begin.tbl.roff
+        1: punctuation.embedded.tbl.roff
+      push:
+        - meta_scope: meta.multiline-cell.tbl.roff
+        - meta_content_scope: string.unquoted.tbl.roff
+        - match: '^T(\})|^(?=[.''][ \t]*TE\b)'
+          captures:
+            0: keyword.operator.section.end.tbl.roff
+            1: punctuation.embedded.tbl.roff
+          pop: true
+        - include: main
+    - include: main
+  underline-first:
+    - match: '\G[ \t]*(?!")(?=(?:[^\s\\]|\\(?!E?").)+)'
+      push:
+        - meta_scope: string.other.link.roff
+        - meta_content_scope: markup.underline.roff
+        - match: '(?<![^\\]\\|^\\)(?=\s|$)|(?=\\E?")'
+          pop: true
+        - include: escapes
+    - match: (")(")
+      scope: string.quoted.double.empty.roff
+    - match: '\G[ \t]*(")'
+      captures:
+        1: punctuation.definition.string.begin.roff
+      push:
+        - meta_scope: string.other.link.roff
+        - meta_content_scope: markup.underline.roff
+        - match: ((?:"")*)"(?!")|(?<!\\)$|(?=\\E?")
+          captures:
+            0: punctuation.definition.string.end.roff
+            1: markup.underline.roff
+          pop: true
+        - include: string-escapes
+    - include: escapes
+    - include: string
+  underlines:
+    - match: '^([.''])[ \t]*(ul|cu)\s*(0+)(?:(?!\\E?")\D)*(?=\s|$)(.*)$'
+      scope: meta.request.$2.roff
+      captures:
+        1: punctuation.definition.function.request.roff
+        2: entity.function.name.roff
+        3: constant.numeric.roff
+    - match: '^([.''])[ \t]*(ul|cu)(?=\s|$|\\)(.*?)$\R?'
+      captures:
+        1: punctuation.definition.function.request.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: meta.request.$2.roff
+        - match: (?!\G)(?<!\\)$
+          pop: true
+        - match: '(?:^|\G)(?=[.'']|\\E?!)(.*)$\R?'
+          push:
+            - match: (?!\G)^
+              pop: true
+        - match: '(?:^|\G)(?![.''])'
+          push:
+            - meta_scope: string.other.link.roff
+            - meta_content_scope: markup.underline.roff
+            - match: (?!\G)(?<!\\)$
+              pop: true
+  www:
+    - match: |-
+        (?x) ^([.'])[ \t]*
+        (ALN|BCL|BGIMG|DC|DLE|DLS|HEAD|HR|HTM?L|HX|JOBNAME
+        |LI|LINKSTYLE|LK|LNE|LNS|MPIMG|NHR|P?IMG|TAG)(?=\s)
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.www.macro.roff"
+        - match: (?<!\\)$|(?=\\E?")
+          pop: true
+        - include: params
+    - match: '^([.''])[ \t]*(URL|FTP|MTO)(?=\s)'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.www.macro.roff"
+        - match: (?<!\\)(?=$)|(?=\\E?")
+          pop: true
+        - include: underline-first
+    - match: '^([.''])[ \t]*(CDS)(?=\s|\\E?["#])\s*(\\E?[#"].*)?$'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.www.macro.roff"
+        - meta_content_scope: markup.raw.roff
+        - match: '^([.''])[ \t]*(CDE)(?=\s|\\E?["#])'
+          captures:
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(HnS)(?=\s)(?:\s*(\d+))?(?:\s*(\\E?[#"].*)$)?'
+      captures:
+        0: "meta.function.${2:/downcase}.macro.roff"
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: constant.numeric.roff
+      push:
+        - meta_scope: markup.heading.$3.www.macro.roff
+        - meta_content_scope: string.unquoted.heading.roff
+        - match: '^([.''])[ \t]*(HnE)(?=\s)(.*)$'
+          captures:
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(OLS)(?=\s)\s*(\\E?[#"].*)?$'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.www.macro.roff"
+        - meta_content_scope: markup.list.ordered.roff
+        - match: '^([.''])[ \t]*(OLE)(?=\s)'
+          captures:
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(ULS)(?=\s)\s*(\\E?[#"].*)?$'
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_scope: "meta.function.${2:/downcase}.www.macro.roff"
+        - meta_content_scope: markup.list.ordered.roff
+        - match: '^([.''])[ \t]*(ULE)(?=\s)'
+          captures:
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: main

@@ -1,0 +1,750 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: reStructuredText
+file_extensions:
+  - rst
+  - rest
+first_line_match: |-
+  (?x)
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		rst
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+  	|
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		rst
+  	(?=\s|:|$)
+scope: text.restructuredtext
+contexts:
+  main:
+    - include: all
+  all:
+    - include: escape
+    - include: line-blocks
+    - include: tables
+    - include: headings
+    - include: substitution-definition
+    - include: directives
+    - include: raw-blocks
+    - include: inlines
+    - include: tag-name
+    - include: doctests
+    - include: domains
+    - include: comments
+  anonymous-link:
+    - match: \s*(__)\s+(.+)
+      scope: meta.link.restructuredtext
+      captures:
+        1: punctuation.definition.link.restructuredtext
+        2: markup.underline.link.restructuredtext
+  citations:
+    - match: '^(\.\.)\s+((\[)[A-z][A-z0-9]*(\]))(_)\s+(.*)'
+      scope: meta.link.citation.def.restructuredtext
+      captures:
+        1: punctuation.definition.link.restructuredtext
+        2: constant.other.citation.link.restructuredtext
+        3: punctuation.definition.constant.restructuredtext
+        4: punctuation.definition.constant.restructuredtext
+        5: punctuation.definition.constant.restructuredtext
+        6: string.other.citation.restructuredtext
+    - match: '((\[)[A-z][A-z0-9_-]*(\]))(_)'
+      scope: meta.link.citation.restructuredtext
+      captures:
+        1: constant.other.citation.link.restructuredtext
+        2: punctuation.definition.constant.restructuredtext
+        3: punctuation.definition.constant.restructuredtext
+        4: punctuation.definition.constant.restructuredtext
+  comments:
+    - match: '^(\.\.)[\t ]*$\n?'
+      captures:
+        1: punctuation.definition.comment.restructuredtext
+      push:
+        - meta_scope: comment.block.empty-start.double-dot.restructuredtext
+        - match: ^(?<=\G)\s*$\n?|^(?=\S)
+          pop: true
+        - match: ^(\s+).*?\S+\s*$\n
+          push:
+            - match: ^\s*$\n|^(?=\S)
+              pop: true
+    - match: '^([\t ]*)(\.\.)[\t ]*$\n?'
+      captures:
+        2: punctuation.definition.comment.restructuredtext
+      push:
+        - meta_scope: comment.block.empty-start.double-dot.restructuredtext
+        - match: ^(?!\1\s*\S)|^(?<!\G)\s*$\n?|^(?=\S)
+          pop: true
+        - match: ^(\s+).*?\S+\s*$\n
+          push:
+            - match: ^\s*$\n|^\s*(?=\S)
+              pop: true
+    - match: ^(\s*)(\.\.)(?=\s|$)
+      captures:
+        2: punctuation.definition.comment.restructuredtext
+      push:
+        - meta_scope: comment.block.double-dot.restructuredtext
+        - match: '^(?!\1[\t\s]+\S|\s*$)|^(?=\S)'
+          pop: true
+  directive-options:
+    - match: '(:[^:]+:)\s*(.*)'
+      scope: meta.directive-option.restructuredtext
+      captures:
+        2: string.other.tag-value.restructuredtext
+  directives:
+    - match: ^(\s*)(\.\.)\s(image)(::)\s*(\S+)
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.image.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: image-options
+    - match: ^(\s*)(\.\.)\s(figure)(::)\s*(\S+)
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.figure.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: image-options
+        - include: all
+    - match: '^([ \t]*)(\.\.)\s(raw)(::)\s+(html)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:text.html.basic
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(coffee-?script)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.coffee
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.coffee
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(js|javascript)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.js
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.js
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(typescript)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.ts
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.ts
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(json)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.json
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.json
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(css)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.css
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.css
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(xml)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.xml
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:text.xml
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(ruby)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.ruby
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.ruby
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(java)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.java
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.java
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(erlang)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.erlang
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.erlang
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(csharp|c#)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.cs
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.cs
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(php[3-5]?)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.php
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.php
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(shell|(ba|k)?sh)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.shell
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.shell
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(py(thon)?|sage)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.python
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.python
+    - match: '^([ \t]*)(\.\.)\s(ipython)(::)\s+(py(thon)?)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.python
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.python
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(stata)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.stata
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.stata
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(sas)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.python
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.python
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(objective-?c|obj-?c)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.objc
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.objc
+    - match: '^([ \t]*)(\.\.)\s(code(?:-block)?)(::)\s+(yaml)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: entity.name.directive.restructuredtext
+      push:
+        - meta_content_scope: source.embedded.yaml
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:source.yaml
+    - match: '^([ \t]*)(\.\.)\s(math)(::)\s*$'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: source.embedded.latex
+        - meta_content_scope: markup.math.block.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: scope:text.tex#math
+    - match: ^\s*(\.\.)\s(option)(::)\s*(.+)?$
+      scope: meta.option.directive.restructuredtext
+      captures:
+        1: punctuation.definition.directive.restructuredtext
+        2: support.directive.restructuredtext
+        3: punctuation.separator.key-value.restructuredtext
+    - match: '^\s*(\.\.)\s([A-z][-A-z0-9_]+)(::)\s*$'
+      scope: meta.other.directive.restructuredtext
+      captures:
+        1: punctuation.definition.directive.restructuredtext
+        2: support.directive.restructuredtext
+        3: punctuation.separator.key-value.restructuredtext
+    - match: '^\s*(\.\.)\s([A-z][-A-z0-9_]+)(::)\s+(.+?)\s*$'
+      scope: meta.other.directive.restructuredtext
+      captures:
+        1: punctuation.definition.directive.restructuredtext
+        2: support.directive.restructuredtext
+        3: punctuation.separator.key-value.restructuredtext
+        4: entity.name.directive.restructuredtext
+  doctests:
+    - match: ^(\s*)(>>>)\s+(.*)$\n
+      captures:
+        2: punctuation.separator.prompt.doctest.restructuredtext
+      push:
+        - meta_scope: meta.doctest.restructuredtext
+        - meta_content_scope: markup.raw.restructuredtext
+        - match: ^\s*$|^(?=\1>>> )|^(?=>>>)|^(?!\1)\s+\S
+          pop: true
+  doctree-options:
+    - match: (:class:)\s*(.*)
+      scope: meta.doctree-option.class.restructuredtext
+      captures:
+        2: string.other.class-list.restructuredtext
+    - match: (:name:)\s*(.*)
+      scope: meta.doctree-option.name.restructuredtext
+      captures:
+        2: string.other.name.restructuredtext
+  domains:
+    - match: '^(\s*)(\.\.)\s+(py)(:)([^:]+)(::)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: support.directive.restructuredtext
+        6: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.sphinx-domain.restructuredtext
+        - meta_content_scope: source.embedded.python
+        - match: '^(?!\s*$|\1[ \t]{6,}\S)'
+          pop: true
+        - match: '(?:\G|^)([^(]*)(\()([^\\)]*\\[^)]*)(\))'
+          captures:
+            2: punctuation.parenthesis.begin.python
+            4: punctuation.parenthesis.end.python
+        - include: scope:source.python
+    - match: '^(\s*)(\.\.)\s+(c)(:)([^:]+)(::)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: support.directive.restructuredtext
+        6: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.sphinx-domain.restructuredtext
+        - meta_content_scope: source.embedded.c
+        - match: '^(?!\s*$|\1[ \t]{5,}\S)'
+          pop: true
+        - include: scope:source.c
+    - match: '^(\s*)(\.\.)\s+(cpp)(::?)([^:]+)(::)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: support.directive.restructuredtext
+        6: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.sphinx-domain.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]{5,}\S)'
+          pop: true
+        - match: (.+)(\\?)$
+          captures:
+            1: source.embedded.cpp
+            2: constant.character.escape.newline.restructuredtext
+    - match: '^(\s*)(\.\.)\s+(js)(:)([^:]+)(::)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: support.directive.restructuredtext
+        6: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.sphinx-domain.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]{5,}\S)'
+          pop: true
+        - match: (.+)(\\?)$
+          captures:
+            1: source.embedded.js
+            2: constant.character.escape.newline.restructuredtext
+    - match: '^(\s*)(\.\.)\s+([^:]+)(::?)([^:]+)(::)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: support.directive.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+        5: support.directive.restructuredtext
+        6: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.sphinx-domain.restructuredtext
+        - meta_content_scope: string.unquoted.domain.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]{5,}\S)'
+          pop: true
+  emphasis:
+    - match: '\*\*(?=[^\*\s])'
+      captures:
+        0: punctuation.definition.bold.begin.restructuredtext
+      push:
+        - meta_scope: markup.bold.restructuredtext
+        - match: \*\*|^(?=\s*$)
+          captures:
+            0: punctuation.definition.bold.end.restructuredtext
+          pop: true
+        - include: inlines
+    - match: '(?<!\\)\*(?=[^\*\s])'
+      captures:
+        0: punctuation.definition.italic.begin.restructuredtext
+      push:
+        - meta_scope: markup.italic.restructuredtext
+        - match: (?<!\\)\*|^(?=\s*$)
+          captures:
+            0: punctuation.definition.italic.end.restructuredtext
+          pop: true
+        - include: inlines
+  escape:
+    - match: \\.
+      scope: constant.character.escape.backslash.restructuredtext
+  footnotes:
+    - match: '^(\s*)(\.\.)\s+((\[)(((#?)[^\]]*?)|\*)(\]))\s+'
+      captures:
+        2: punctuation.definition.link.restructuredtext
+        3: constant.other.footnote.link.restructuredtext
+        4: punctuation.definition.constant.restructuredtext
+        7: punctuation.definition.constant.restructuredtext
+        8: punctuation.definition.constant.restructuredtext
+      push:
+        - meta_scope: meta.link.footnote.def.restructuredtext
+        - meta_content_scope: string.other.footnote.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          captures:
+            2: punctuation.definition.link.restructuredtext
+            3: constant.other.footnote.link.restructuredtext
+            4: punctuation.definition.constant.restructuredtext
+            7: punctuation.definition.constant.restructuredtext
+            8: punctuation.definition.constant.restructuredtext
+          pop: true
+        - include: inlines
+    - match: '((\[)[0-9]+(\]))(_)'
+      scope: meta.link.footnote.numeric.restructuredtext
+      captures:
+        1: constant.other.footnote.link
+        2: punctuation.definition.constant.restructuredtext
+        3: punctuation.definition.constant.restructuredtext
+        4: punctuation.definition.constant.restructuredtext
+    - match: '((\[#)[A-z0-9_]*(\]))(_)'
+      scope: meta.link.footnote.auto.restructuredtext
+      captures:
+        1: constant.other.footnote.link
+        2: punctuation.definition.constant.restructuredtext
+        3: punctuation.definition.constant.restructuredtext
+        4: punctuation.definition.constant.restructuredtext
+    - match: '((\[)\*(\]))(_)'
+      scope: meta.link.footnote.symbol.auto.restructuredtext
+      captures:
+        1: constant.other.footnote.link.restructuredtext
+        2: punctuation.definition.constant.restructuredtext
+        3: punctuation.definition.constant.restructuredtext
+        4: punctuation.definition.constant.restructuredtext
+  headings:
+    - match: '^(([-=~`#"^+*:.''_])\2{2,})(?=\s*$)'
+      scope: markup.heading.restructuredtext
+      captures:
+        1: punctuation.definition.heading.restructuredtext
+  image-options:
+    - match: (:alt:)\s*(.*)
+      scope: meta.image-option.alt.restructuredtext
+      captures:
+        2: string.other.tag-value.restructuredtext
+    - match: (:height:)\s*(.*)
+      scope: meta.image-option.height.restructuredtext
+      captures:
+    - match: (:width:)\s*(.*)
+      scope: meta.image-option.width.restructuredtext
+      captures:
+    - match: (:scale:)\s*(.*)
+      scope: meta.image-option.scale.restructuredtext
+      captures:
+    - match: (:align:)\s*(?:(top|middle|bottom|left|center|right)\b)?
+      scope: meta.image-option.align.restructuredtext
+      captures:
+        2: keyword.language.image-alignment.restructuredtext
+    - match: (:target:)\s*(.*)?
+      scope: meta.image-option.target.restructuredtext
+      captures:
+        2: string.other.target.restructuredtext
+    - include: doctree-options
+    - include: directive-options
+  inlines:
+    - include: escape
+    - include: emphasis
+    - include: link-definition
+    - include: substitution
+    - include: literal
+    - include: math-inline
+    - include: interpreted-line
+    - include: anonymous-link
+    - include: link-reference
+    - include: interpreted-block
+    - include: link-text
+    - include: footnotes
+    - include: citations
+  interpreted-block:
+    - match: "(:)([-A-z0-9:_.]*?)(:)(`)"
+      captures:
+        1: punctuation.definition.intepreted.restructuredtext
+        2: entity.name.role.restructuredtext
+        3: punctuation.definition.intepreted.restructuredtext
+        4: punctuation.definition.intepreted.restructuredtext
+      push:
+        - meta_scope: markup.other.command.restructuredtext
+        - meta_content_scope: string.other.interpreted.restructuredtext
+        - match: (`)
+          captures:
+            1: punctuation.definition.intepreted.restructuredtext
+          pop: true
+        - match: '(?<=:manpage:`)\G([-.\w]+)(\()(\d+)(\))'
+          scope: meta.manpage.link.inline.restructuredtext
+          captures:
+            1: markup.bold.manpage-name.restructuredtext
+            2: punctuation.definition.round.bracket.begin.restructuredtext
+            3: constant.numeric.integer.restructuredtext
+            4: punctuation.definition.round.bracket.begin.restructuredtext
+  interpreted-line:
+    - match: "(`)[^`]+(`)(?!_)"
+      scope: markup.other.command.restructuredtext
+      captures:
+        1: punctuation.definition.intepreted.restructuredtext
+        2: punctuation.definition.intepreted.restructuredtext
+  length:
+    - match: '[\d.]+\s*(?i:(em|ex|px|in|cm|mm|pt|pc)|(%))?'
+      scope: constant.numeric.length.restructuredtext
+      captures:
+        1: "keyword.other.${1:/downcase}-unit.restructuredtext"
+        2: keyword.other.percentile-unit.restructuredtext
+  line-blocks:
+    - match: ^(\s*)(\|)(?!.*?(?<=\S)\|)
+      captures:
+        2: punctuation.separator.line-block.restructuredtext
+      push:
+        - meta_scope: meta.line-block.restructuredtext
+        - match: ^(?=\s*$\n?)
+          pop: true
+        - match: ^\s*(\|)
+          captures:
+            0: punctuation.separator.line-block.restructuredtext
+        - include: inlines
+  link-definition:
+    - match: '(\.\.)\s+(_)([-.:+\d\w\s()/]+?)(:)\s+(.*)'
+      scope: meta.link.reference.def.restructuredtext
+      captures:
+        1: punctuation.definition.link.restructuredtext
+        2: punctuation.definition.string.restructuredtext
+        3: string.other.link.title.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+    - match: '(\.\.)\s+(_`)([^`]+)(`:)\s+(.*)'
+      scope: meta.link.reference.def.restructuredtext
+      captures:
+        1: punctuation.definition.link.restructuredtext
+        2: punctuation.definition.string.restructuredtext
+        3: string.other.link.title.restructuredtext
+        4: punctuation.separator.key-value.restructuredtext
+  link-reference:
+    - match: '\b([-.:+_\d\w]+)(_)\b'
+      scope: meta.link.reference
+      captures:
+        1: string.other.link.title.restructuredtext
+        2: punctuation.definition.link.restructuredtext
+    - match: (`)(.*?)(`__?)
+      scope: meta.link.reference
+      captures:
+        1: punctuation.definition.link.restructuredtext
+        2: string.other.link.title.restructuredtext
+        3: punctuation.definition.link.restructuredtext
+  link-text:
+    - match: '(`)([^<`]+)\s+(<)(.*?)(>)(`_)'
+      scope: meta.link.inline.restructuredtext
+      captures:
+        1: punctuation.definition.link.restructuredtext
+        2: string.other.link.title.restructuredtext
+        3: punctuation.definition.location.restructuredtext
+        4: markup.underline.link.restructuredtext
+        5: punctuation.definition.location.restructuredtext
+        6: punctuation.definition.link.restructuredtext
+  literal:
+    - match: "``"
+      captures:
+        0: punctuation.definition.raw.begin.restructuredtext
+      push:
+        - meta_scope: markup.raw.restructuredtext
+        - match: '``((?=[^`\w\d])|$)'
+          captures:
+            0: punctuation.definition.raw.end.restructuredtext
+          pop: true
+  math-inline:
+    - match: (:)(math)(:)(`)
+      captures:
+        1: punctuation.definition.intepreted.restructuredtext
+        2: entity.name.role.restructuredtext
+        3: punctuation.definition.intepreted.restructuredtext
+        4: punctuation.definition.intepreted.restructuredtext
+      push:
+        - meta_scope: markup.other.command.restructuredtext
+        - meta_content_scope: markup.math.inline.restructuredtext
+        - match: (`)
+          captures:
+            1: punctuation.definition.intepreted.restructuredtext
+          pop: true
+        - include: scope:text.tex#math
+  raw-blocks:
+    - match: ^(?!\s*\.\.\s\w+)(\s*)(.*)(::)$
+      captures:
+        3: punctuation.section.raw.restructuredtext
+      push:
+        - meta_content_scope: meta.raw.block.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - match: .+
+          scope: markup.raw.inner.restructuredtext
+  substitution:
+    - match: '(?<!\\)(\|)[^|]+(?<!\\)(\|_{0,2})'
+      scope: support.variable.substitution.restructuredtext
+      captures:
+        1: punctuation.definition.substitution.restructuredtext
+        2: punctuation.definition.substitution.restructuredtext
+  substitution-definition:
+    - match: '^(\s*)(\.\.)\s(\|)(?=\S)([^\|]+)((?<=\S)\|)\s+(image)(::)\s*(\S+)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: punctuation.definition.substitution.start.restructuredtext
+        4: entity.name.substitution.restructuredtext
+        5: punctuation.definition.substitution.end.restructuredtext
+        6: support.directive.restructuredtext
+        7: punctuation.separator.key-value.restructuredtext
+      push:
+        - meta_scope: meta.substitution-definition.image.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: image-options
+    - match: '^(\s*)(\.\.)\s(\|)(?=\S)([^\|]+)((?<=\S)\|)\s+(\S+.*(?=::))(::)(.*)'
+      captures:
+        2: punctuation.definition.directive.restructuredtext
+        3: punctuation.definition.substitution.start.restructuredtext
+        4: entity.name.substitution.restructuredtext
+        5: punctuation.definition.substitution.end.restructuredtext
+        6: support.directive.restructuredtext
+        7: punctuation.separator.key-value.restructuredtext
+        8: string.unquoted.substitution.data.restructuredtext
+      push:
+        - meta_scope: meta.substitution-definition.restructuredtext
+        - match: '^(?!\s*$|\1[ \t]+\S)'
+          pop: true
+        - include: directive-options
+  table-borders:
+    - match: \+(?=-+(?=\+|$))
+      captures:
+        0: punctuation.definition.table.joint.restructuredtext
+      push:
+        - meta_content_scope: punctuation.definition.table.row-divider.restructuredtext
+        - match: (?=\+(?=-)|$)|\+(?=\s|$)
+          captures:
+            0: punctuation.definition.table.joint.restructuredtext
+          pop: true
+    - match: \+(?==+(?=\+|$))
+      captures:
+        0: punctuation.definition.table.joint.restructuredtext
+      push:
+        - meta_content_scope: punctuation.definition.table.header.row-divider.restructuredtext
+        - match: (?=\+(?==)|$)|\+\s*$
+          captures:
+            0: punctuation.definition.table.joint.restructuredtext
+          pop: true
+    - match: \|
+      scope: punctuation.definition.table.header.column-divider.restructuredtext
+  tables:
+    - match: '(?=((\+-[+-]+))|((\+=[+=]+))\s*$)'
+      push:
+        - meta_scope: meta.table.grid-table.restructuredtext
+        - meta_content_scope: markup.other.table.restructuredtext
+        - match: ^\s*$
+          pop: true
+        - include: table-borders
+        - include: inlines
+    - match: |-
+        (?x)
+        ^\s*-{2,}\s+-{2,}(?:\s+-{2,})*\s*$
+        |
+        ^\s*={2,}\s+={2,}(?:\s+={2,})*\s*$
+      scope: punctuation.definition.table.simple-divider.restructuredtext
+  tag-name:
+    - match: '(:)[A-Za-z][\w\s=.-]*(:)'
+      scope: entity.name.tag.restructuredtext
+      captures:
+        1: punctuation.definition.field.restructuredtext
+        2: punctuation.definition.field.restructuredtext
+  uri:
+    - match: \S+
+      scope: string.other.uri.restructuredtext
+      captures:
+        0: markup.link.underline.restructuredtext

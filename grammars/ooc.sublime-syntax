@@ -1,0 +1,419 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ooc
+file_extensions:
+  - ooc
+scope: source.ooc
+contexts:
+  main:
+    - include: comments
+    - include: keywords
+    - include: imports
+    - include: literals
+    - include: block
+    - include: function_decl
+    - include: class_decl
+    - include: interface_decl
+    - include: cover_decl
+    - include: function_call
+    - include: variable_decl
+    - include: member_access
+  block:
+    - match: '\{'
+      push:
+        - meta_scope: meta.block.ooc
+        - match: "}"
+          pop: true
+        - include: comments
+        - include: keywords
+        - include: literals
+        - include: block
+        - include: function_decl
+        - include: variable_decl
+        - include: function_call
+        - include: member_access
+  class_decl:
+    - match: |-
+        (?mx)
+                    ([_A-Z]\w* \s*) : \s* (abstract\s+)? (class)
+                    (?:
+                        \s*<\s*([^<]+)\s*>\s*
+                    )?
+        		   (?:
+                        \s* (extends)
+                    )?
+
+      scope: meta.class.ooc
+      captures:
+        1: entity.name.type.class.ooc
+        2: storage.modifier.abstract.ooc
+        3: storage.type.class.ooc
+        4: support.type.generic.ooc
+        5: storage.modifier.extends.class.ooc
+        6: entity.other.inherited-class.ooc
+  comments:
+    - match: ^/\* =(\s*.*?)\s*= \*/$\n?
+      scope: comment.block.ooc
+      captures:
+        1: meta.toc-list.banner.block.ooc
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.ooc
+      push:
+        - meta_scope: comment.block.ooc
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.ooc
+          pop: true
+    - match: \*/.*\n
+      scope: invalid.illegal.stray-comment-end.ooc
+    - match: ^// =(\s*.*?)\s*=\s*$\n?
+      scope: comment.line.banner.ooc
+      captures:
+        1: meta.toc-list.banner.line.ooc
+    - match: //
+      captures:
+        0: punctuation.definition.comment.ooc
+      push:
+        - meta_scope: comment.line.double-slash.ooc
+        - match: $\n?
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.ooc
+  cover_decl:
+    - match: |-
+        (?mx)
+        ([_A-Z]\w* \s*) : \s* (cover)
+        (?:
+        (?:
+            \s+(from)\s+(?:([\s\w\d_\*]+?)\s*(?= \s extends | [/{;] | $) )
+        )
+        |
+        (?:
+            \s+(extends)\s+([_A-Z]\w*)\s*
+        )
+        )*
+      scope: meta.definition.cover.ooc
+      captures:
+        1: entity.name.type.cover.ooc
+        2: storage.type.cover.ooc
+        3: storage.modifier.extends.from.ooc
+        4: entity.other.inherited-class.overtype.ooc
+        5: storage.modifier.extends.cover.ooc
+        6: entity.other.inherited-class.supertype.ooc
+  escaped_char:
+    - match: \\.
+      scope: constant.character.escape.ooc
+  function_call:
+    - match: '(?:((?:\.[a-z_]\w*)|(?:[a-z_]\w*)(?:~[a-z_]\w*)?))\('
+      captures:
+        1: support.function.any-method.ooc
+        2: support.function.any-method.ooc
+      push:
+        - meta_scope: meta.function.call.ooc
+        - match: \)
+          pop: true
+        - include: comments
+        - include: keywords
+        - include: literals
+        - include: block
+        - include: function_call
+        - include: member_access
+  function_decl:
+    - match: |-
+        (?mx)
+                    	        (operator\s+(?:(?:[+\-/\*=!<>]|\[\])=?|\[\]|[<>=]|=|as))
+                	            [\s\w~]*?
+                	            \(
+      captures:
+        1: entity.name.function.ooc
+      push:
+        - meta_scope: meta.function.operator.ooc
+        - match: |-
+            (?mx)\)
+
+                    			(?:\s*(->) \s*
+                    		    (?:
+            						(?:(This) |
+                    		        ([A-Z_]\w*))
+                    		        ([@*]*)
+                    		    ))?
+          captures:
+            1: keyword.other.return-type.ooc
+            2: storage.type.class.this.ooc
+            3: storage.type.ooc
+            4: storage.modifier.pointer-arith.ooc
+          pop: true
+        - include: comments
+        - include: keywords
+        - include: parameters
+    - match: |-
+        (?mx)
+                		        ([_a-z]\w*) \s* : \s*
+                		            ((?:(?:static|proto|inline|final|abstract)\s+)*)
+                		            (?:(extern|unmangled)(?:\s*\(([^\)]+)\))?\s+
+                		                ((?:(?:static|proto|inline|final|abstract)\s+)*)
+                		            )?
+
+                		            (func)
+
+        							(?:\s*@)?
+
+                		            (?:\s*(~[A-Za-z_]\w*))?
+
+                                    (?:
+                                        \s*<\s*([^<]+)\s*>
+                                    )?
+
+                		            \s* \(
+      captures:
+        1: entity.name.function.ooc
+        2: keyword.other.ooc
+        3: keyword.other.extern.ooc
+        4: support.function.c
+        5: keyword.other.ooc
+        6: storage.type.function.ooc
+        7: storage.modifier.func-tag.ooc
+        8: support.type.generic.ooc
+        9: keyword.other.return-type.ooc
+        10: storage.type.ooc
+        11: storage.modifier.pointer-arith.ooc
+      push:
+        - meta_scope: meta.function.params.ooc
+        - match: |-
+            (?mx)\)
+            					(?:\s*(->) \s*
+                    		    (?:
+            						(?:(This) |
+                    		        ([A-Z_]\w*))
+                    		        ([@*]*)
+                    		    ))?
+          captures:
+            1: keyword.other.ooc
+            2: storage.type.class.this.ooc
+            3: storage.type.ooc
+            4: storage.modifier.pointer-arith.ooc
+          pop: true
+        - include: comments
+        - include: keywords
+        - include: parameters
+    - match: |-
+        (?mx)
+                		        ([_a-z]\w*) \s* : \s*
+
+                		            ((?:(?:static|proto|inline|final|abstract)\s+)*)
+                		            (?:(extern|unmangled)(?:\s*\(([^\)]+)\))?\s+
+                		                ((?:(?:static|proto|inline|final|abstract)\s+)*)
+                		            )?
+
+                		            (func)
+
+                		            (?:\s*(~[A-Za-z_]\w*))?
+
+                                    (?:
+                                        \s*<\s*([^<]+)\s*>
+                                    )?
+
+                                    (?:\s*(->) \s*
+                        		    (?:
+        								(?:(This) |
+                        		        ([A-Z_]\w*))
+                        		        ([@*]*)
+                        		    ))?
+
+      scope: meta.function.noparams.ooc
+      captures:
+        1: entity.name.function.ooc
+        2: keyword.other.ooc
+        3: keyword.other.extern.ooc
+        4: support.function.c
+        5: keyword.other.ooc
+        6: storage.type.function.ooc
+        7: storage.modifier.func-tag.ooc
+        8: support.type.generic.ooc
+        9: keyword.other.return-type.ooc
+        10: storage.type.class.this.ooc
+        11: storage.type.ooc
+        12: storage.modifier.pointer-arith.ooc
+  imports:
+    - match: \b(?:use|include|import)\b
+      push:
+        - meta_scope: keyword.control.import.ooc
+        - match: ;|$
+          pop: true
+        - include: comments
+  interface_decl:
+    - match: |-
+        (?mx)
+        ([_A-Z]\w* \s*) : \s* (interface)
+        (?:
+            \s*<\s*([^<]+)\s*>\s*
+        )?
+      scope: meta.interface.ooc
+      captures:
+        1: entity.name.type.class.ooc
+        2: storage.modifier.abstract.ooc
+        3: storage.type.class.ooc
+        4: support.type.generic.ooc
+        5: storage.modifier.extends.class.ooc
+        6: entity.other.inherited-class.ooc
+  keywords:
+    - match: \b(?:if|else|while|do|for|in|switch|match|case|return|break|continue|default)\b
+      scope: keyword.control.ooc
+    - match: \bthis\b
+      scope: variable.language.this.ooc
+    - match: '\b(This)([@&*]*|\b)'
+      scope: meta.type.class.this.ooc
+      captures:
+        1: storage.type.class.this.ooc
+        2: storage.modifier.pointer-arith.ooc
+    - match: (?:&&|\|\||\#|!)
+      scope: keyword.operator.logical.ooc
+    - include: return_type
+    - match: "(?:[<>!=]=|=>|[><])"
+      scope: keyword.operator.comparison.ooc
+    - match: '(?:[\*+\-/|&:]|<{2,3}|>{2,3})?='
+      scope: keyword.operator.assignment.ooc
+    - match: '(?:[\*\-\+/|&]|<{2,3}|>{2,3})'
+      scope: keyword.operator.arithmetic.ooc
+    - match: \b(?:true|false)\b
+      scope: constant.language.boolean.ooc
+    - match: \bnull\b
+      scope: constant.language.null.ooc
+    - match: \bconst\b
+      scope: keyword.other.directive.const.ooc
+    - match: \bstatic\b
+      scope: keyword.other.directive.static.ooc
+    - match: '\b(as)\s*([A-Z_]\w*)([@&]*)'
+      scope: meta.operator.as.ooc
+      captures:
+        1: keyword.operator.logical.as.ooc
+        2: storage.type.ooc
+        3: storage.modifier.pointer-arith.ooc
+    - match: \b(Func)\s*\(
+      captures:
+        1: storage.type.function.pointer.ooc
+      push:
+        - meta_scope: meta.function.pointer.ooc
+        - match: \)
+          pop: true
+        - include: keywords
+        - include: parameters
+    - match: (?mx)\bFunc\b
+      scope: meta.function.pointer.ooc
+      captures:
+        1: storage.type.function.pointer.ooc
+  literals:
+    - include: ooc_numbers
+    - include: ooc_char
+    - include: ooc_string
+  member_access:
+    - match: '([a-zA-Z_]\w*)\s+(?=[a-zA-Z_])'
+      scope: variable.other.accessed.ooc
+  ooc_char:
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.ooc
+        - match: "'"
+          pop: true
+        - include: escaped_char
+  ooc_numbers:
+    - match: "(0c[0-7]+)"
+      scope: constant.numeric.integer.octal.ooc
+    - match: "(0x[0-9a-fA-F]+)"
+      scope: constant.numeric.integer.hexadecimal.ooc
+    - match: "(0b[01]+)"
+      scope: constant.numeric.integer.binary.ooc
+    - match: |-
+        (?x) (?<! 0[bcx] ) (
+            (?: (?:[0-9]*)\.(?:[0-9]+) | (?:[0-9]+)\.(?:[0-9]*) )
+            (?: [eE][+\-]?\d+)?
+        )
+      scope: constant.numeric.float.ooc
+    - match: '(?x)\b([0-9]+)(?: [eE][+\-]?\d+)?'
+      scope: constant.numeric.integer.ooc
+  ooc_string:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.ooc
+        - match: '"'
+          pop: true
+        - include: escaped_char
+  parameters:
+    - include: comments
+    - include: keywords
+    - match: '([_A-Z]\w*)([&@*]*)'
+      scope: meta.function.nameless-typed.ooc
+      captures:
+        1: storage.type.ooc
+        2: storage.modifier.pointer-arith.ooc
+    - match: ':\s*([A-Z_]\w*([@&*]*))'
+      scope: meta.function.parameter.type.ooc
+      captures:
+        1: storage.type.ooc
+        2: storage.modifier.pointer-arith.ooc
+    - match: '([=.])?([a-zA-Z_]\w*)'
+      scope: meta.function.parameter.name.ooc
+      captures:
+        1: keyword.operator.assignment.parameter.ooc
+        2: variable.parameter.ooc
+  return_type:
+    - match: |-
+        (?mx)
+        		    (\-\>) \s*
+        		    (?:
+        				(?:(This) |
+        		        ([A-Z_]\w*))
+        		        ([@*]*)
+        		    )
+      scope: meta.function.return-type.ooc
+      captures:
+        1: keyword.other.return-type.ooc
+        2: storage.type.class.this.ooc
+        3: storage.type.ooc
+        4: storage.modifier.pointer-arith.ooc
+  var_explicit_decl:
+    - match: '[_a-zA-Z]\w*\s*(?=,|:[^=])'
+      captures:
+        0: variable.other.ooc
+      push:
+        - meta_scope: meta.definition.variable.explicit.ooc
+        - match: |-
+            (?mx)(?:
+            			(?:
+            			    :\s*
+            			    (?:
+            			        (?:
+            			            (?:
+            			                (static) |
+            			                (const) |
+            			                (extern) (?:\s* \( \s* ([^\)]+) \s* \) )?
+            			            ) \s+
+            			        )*
+                            )
+            			    (?: (?: (This) | ([A-Z_]\w*)) ([@&]*) )
+            				(?: \s* \<\s*([A-Z_]\w*)\s*\> )?
+            			) | ; | $ )
+          captures:
+            1: keyword.other.ooc
+            2: keyword.other.ooc
+            3: keyword.other.ooc
+            4: storage.type.c
+            5: storage.type.class.this.ooc
+            6: storage.type.ooc
+            7: storage.modifier.pointer-arith.ooc
+            8: support.type.generic.ooc
+          pop: true
+        - include: comments
+        - match: '[_a-zA-Z]\w*'
+          scope: variable.other.ooc
+  var_inferred_decl:
+    - match: '(?x)([a-zA-Z_]\w*)\s*(?= := )'
+      scope: meta.definition.variable.inferred.ooc
+      captures:
+        1: variable.other.ooc
+        2: storage.type.ooc
+  variable_decl:
+    - include: var_inferred_decl
+    - include: var_explicit_decl

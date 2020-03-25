@@ -1,0 +1,716 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Turing
+file_extensions:
+  - t
+  - tu
+scope: source.turing
+contexts:
+  main:
+    - include: comments
+    - include: boolean
+    - include: strings
+    - include: numbers
+    - include: for
+    - include: cc
+    - include: case
+    - include: types
+    - include: function
+    - include: keywords
+    - include: modifiers
+    - include: variables
+    - include: punctuation
+    - include: forward
+    - include: procedure
+    - include: process
+    - include: handler
+    - include: class
+    - include: type
+    - include: record
+    - include: union
+    - include: function-call
+    - include: stdlib
+  boolean:
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.$1.turing
+  case:
+    - match: \b(case)\s+(\w+)\s+(of)\b
+      captures:
+        1: keyword.control.case.turing
+        2: variable.parameter.turing
+        3: keyword.operator.of.turing
+      push:
+        - meta_scope: meta.scope.case-block.turing
+        - match: \b(end\s+case)\b
+          captures:
+            1: keyword.control.end.case.turing
+          pop: true
+        - include: label
+        - include: main
+  cc:
+    - match: ^\s*((#)((?:end\s+)?if|elsif|else))
+      scope: meta.preprocessor.$3.turing
+      captures:
+        1: keyword.control.directive.conditional.turing
+        2: punctuation.definition.directive.turing
+  class:
+    - match: ^\s*(class|module|monitor)\s+(\w+)
+      captures:
+        1: storage.type.$1.turing
+        2: entity.name.type.class.turing
+      push:
+        - meta_scope: meta.scope.$1-block.turing
+        - match: \b(end)\s+(\2)
+          captures:
+            1: keyword.control.end.turing
+            2: entity.name.type.class.turing
+          pop: true
+        - include: class-innards
+        - include: main
+  class-innards:
+    - match: \b(import|export)\b
+      captures:
+        1: keyword.control.$1.turing
+      push:
+        - match: (?=$|%|/\*)
+          pop: true
+        - include: list
+        - include: main
+    - match: \b(inherit)\b
+      captures:
+        1: storage.modifier.inherit.turing
+      push:
+        - meta_scope: meta.other.inherited-class.turing
+        - match: \w+
+          captures:
+            0: entity.other.inherited-class.turing
+          pop: true
+        - include: main
+    - match: \b(implement(?:\s+by)?)\b
+      captures:
+        1: storage.modifier.implements.turing
+      push:
+        - meta_scope: meta.other.$1.turing
+        - match: \w+
+          captures:
+            0: entity.other.inherited-class.turing
+          pop: true
+        - include: main
+  comments:
+    - match: "%"
+      captures:
+        0: punctuation.definition.comment.turing
+      push:
+        - meta_scope: comment.line.percentage.turing
+        - match: $
+          pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.turing
+      push:
+        - meta_scope: comment.block.bracketed.turing
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.turing
+          pop: true
+  escapes:
+    - match: \\"
+      scope: constant.character.escape.double-quote.turing
+    - match: \\'
+      scope: constant.character.escape.single-quote.turing
+    - match: '\\[nN]'
+      scope: constant.character.escape.newline.turing
+    - match: '\\[tT]'
+      scope: constant.character.escape.tab.turing
+    - match: '\\[fF]'
+      scope: constant.character.escape.form-feed.turing
+    - match: '\\[rR]'
+      scope: constant.character.escape.return.turing
+    - match: '\\[bB]'
+      scope: constant.character.escape.backspace.turing
+    - match: '\\[eE]'
+      scope: constant.character.escape.esc.turing
+    - match: \\\\
+      scope: constant.character.escape.backslash.turing
+  for:
+    - match: \b(for)\b(?:\s+(decreasing)\b)?
+      captures:
+        1: keyword.control.for.turing
+        2: keyword.operator.decreasing.turing
+      push:
+        - meta_scope: meta.for-loop.turing
+        - match: \b(end)\s+(for)
+          captures:
+            1: keyword.control.end.turing
+            2: keyword.control.for.turing
+          pop: true
+        - match: \G(.*?)\b(by)\b
+          captures:
+            2: keyword.control.by.turing
+        - include: main
+  forward:
+    - match: \b(deferred|forward)\s+(procedure|proc)\s+(\w+)
+      captures:
+        1: storage.modifier.$1.turing
+        2: storage.type.function.turing
+        3: entity.name.function.turing
+      push:
+        - meta_scope: meta.$1.procedure.turing
+        - match: (?=$|%|/\*)
+          pop: true
+        - include: parameters
+        - include: main
+    - match: \b(deferred|forward)\s+(function|fcn)\s+(\w+)
+      captures:
+        1: storage.modifier.$1.turing
+        2: storage.type.function.turing
+        3: entity.name.function.turing
+      push:
+        - meta_scope: meta.$1.function.turing
+        - match: (?=$|%|/\*)
+          pop: true
+        - include: parameters
+        - include: main
+  function:
+    - match: |-
+        (?x)
+        \b
+        (?:
+        	(body)          # 1: storage.modifier.body.turing
+        	\s+
+        )?
+        (function|fcn)      # 2: storage.type.turing
+        (?:
+        	\s+
+        	(pervasive|\*) # 3: storage.modifier.pervasive.turing
+        )?
+        \s+
+        (\w+)              # 4: entity.name.function.turing
+        \s*
+        (                   # 5: meta.function.parameters.turing
+        	(\()           # 6: punctuation.definition.parameters.begin.turing
+        	(.*)            # 7: include: “#param-declarations”
+        	(\))           # 8: punctuation.definition.parameters.end.turing
+        )
+        \s*
+        (:)                 # 9: punctuation.separator.key-value.turing
+        \s*
+        (\w+)              # 10: storage.type.type-spec.turing
+      captures:
+        1: storage.modifier.body.turing
+        10: storage.type.type-spec.turing
+        2: storage.type.turing
+        3: storage.modifier.pervasive.turing
+        4: entity.name.function.turing
+        5: meta.function.parameters.turing
+        6: punctuation.definition.parameters.begin.turing
+        8: punctuation.definition.parameters.end.turing
+        9: punctuation.separator.key-value.turing
+      push:
+        - meta_scope: meta.function.turing
+        - match: \b(end)\s+(\4)
+          captures:
+            1: keyword.control.end.turing
+            2: entity.name.function.turing
+          pop: true
+        - match: ^\s*(pre|init|post)(?=\s|$)
+          captures:
+            1: keyword.function.$1.turing
+          push:
+            - meta_scope: meta.$1-function.turing
+            - match: $
+              pop: true
+            - include: main
+        - include: main
+  function-call:
+    - match: '(([\w.]+))\s*(\()'
+      captures:
+        1: entity.function.name.turing
+        3: punctuation.definition.arguments.begin.turing
+      push:
+        - meta_scope: meta.function-call.turing
+        - meta_content_scope: meta.function-call.arguments.turing
+        - match: \)
+          captures:
+            0: punctuation.definition.arguments.end.turing
+          pop: true
+        - include: main
+    - match: '^\s*(([\w.]+))\s*(?=$|%|/\*)'
+      scope: meta.function-call.turing
+      captures:
+        1: entity.function.name.turing
+  function-name:
+    - include: stdlib
+    - match: \.
+      scope: punctuation.separator.method.turing
+  handler:
+    - match: \b(handler)\s*(\()\s*(\w+)\s*(\))
+      captures:
+        1: storage.type.handler.turing
+        2: punctuation.definition.arguments.begin.turing
+        3: variable.parameter.handler.turing
+        4: punctuation.definition.arguments.end.turing
+      push:
+        - meta_scope: meta.scope.handler.turing
+        - match: \b(end)\s+(handler)\b
+          captures:
+            1: keyword.control.end.turing
+            2: storage.type.handler.turing
+          pop: true
+        - include: main
+  keyboard-constants:
+    - match: |-
+        (?x)\b(?:
+        (?:KEY|ORD)_(?:
+        	F1[0-2]|F[1-9]|CTRL_[A-Z]|ALT_[A-Z0-9]|(?:CTRL|ALT|SHIFT)_(?:F1[0-2]|F[1-9])|
+        	ALT(?:_EQUALS|_MINUS)?|BACK_TAB|BACKSPACE|CTRL|DELETE|END|ENTER|ESC|HOME|INSERT|KEYPAD_5|PGDN|PGUP|SHIFT|SHIFT_TAB|TAB|
+        	CTRL_(?:BACKSLASH|BACKSPACE|CARET|(?:UP|RIGHT|LEFT|DOWN)_ARROW|CLOSE_BRACKET|DELETE|END|HOME|INSERT|OPEN_BRACKET|PGDN|PGUP|UNDERSCORE)|
+        	(?:UP|RIGHT|LEFT|DOWN)_ARROW)
+        |
+        ORD_(?:
+        	AMPERSAND|APOSTROPHE|ASTERISK|BACKSLASH|BAR|CARET|COLON|COMMA|DOT|EQUALS|(?:GREATER|LESS)_THAN|
+        	(?:CLOSE|OPEN)_(?:BRACE|BRACKET|PARENTHESIS)|(?:EXCALAMATION|HAS|QUESTION|QUOTATION)_MARK|MINUS|
+        	(?:AT|DOLLAR|PERCENT)_SIGN|PERIOD|PLUS|SEMICOLON|SINGLE_QUOTE|SLASH|SPACE|TILDE|UNDERSCORE|[A-Z0-9]|LOWER_[A-Z])
+        )\b
+      scope: support.constant.keyboard.turing
+  keywords:
+    - match: \b((?:end\s+)?if|then|elsif|else|(?:end\s+)?loop|exit|when|include|in)\b
+      scope: keyword.control.$1.turing
+    - match: \b(and|not|x?or)\b
+      scope: keyword.operator.logical.$1.turing
+    - match: \b(all|bits|div|lower|mod|nil|rem|shl|shr|unit|upper)\b
+      scope: keyword.operator.$1.turing
+    - match: \b(assert|begin|break|close|exit|fork|free|get|init|invariant|new|objectclass|open|pause|put|quit|read|result|return|seek|signal|tag|tell|wait|write)\b
+      scope: keyword.other.statement.$1.turing
+    - match: \b(char)\s*(\()(\d+)(\))
+      scope: storage.type.$3-char.turing
+      captures:
+        2: punctuation.definition.arguments.begin.turing
+        4: punctuation.definition.arguments.end.turing
+    - match: |-
+        (?x)\b
+        (black|blue|brightblue|brightcyan|brightgreen|brightmagenta|brightpurple|brightred
+        |brightwhite|brown|colou?r[bf]g|cyan|darkgr[ae]y|gr[ae]y|green|magenta|purple|red
+        |white|yellow)\b
+      scope: constant.other.colour.turing
+    - match: \b(skip|self)\b
+      scope: constant.language.$1.turing
+  label:
+    - match: \b(label)\b
+      captures:
+        1: keyword.other.statement.label.turing
+      push:
+        - meta_scope: meta.label.turing
+        - match: ":"
+          captures:
+            0: punctuation.separator.key-value.turing
+          pop: true
+        - include: main
+        - include: list
+  list:
+    - match: \w+
+      scope: variable.name.turing
+    - match: ","
+      scope: meta.delimiter.object.comma.turing
+  math-routines:
+    - match: \b(abs|arccos|arccosd|arcsin|arcsind|arctan|arctand|cos|cosd|exp|ln|max|min|sign|sin|sind|tan|tand|sqrt)\b
+      scope: "support.function.${1:/downcase}.turing"
+  modifiers:
+    - match: \b(unchecked|checked)\b
+      scope: storage.modifier.$1.compiler-directive.oot.turing
+    - match: \b(unqualified|~\.)\b
+      scope: storage.modifier.unqualified.turing
+    - match: \b(external|flexible|opaque|register)\b
+      scope: storage.modifier.$1.turing
+  modules:
+    - match: '\b(Concurrency)\b(?:(\.)(empty|[gs]etpriority|simutime)?\b)?'
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: support.function.$3.turing
+    - match: \b(Config)\b(?:(\.)(Display|Lang|Machine)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Dir)\b(?:(\.)(Change|Close|Create|Current|Delete|Get|GetLong|Open)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Draw)\b(?:(\.)(Arc|Box|Cls|Dot|Fill|FillArc|FillBox|FillMapleLeaf|FillOval|FillPolygon|FillStar|Line|MapleLeaf|Oval|Polygon|Star|Text)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Error)\b(?:(\.)(Last|LastMsg|LastStr|Msg|Str|Trip)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(ErrorNum|Exceptions)\b(?:(\.)(\w+)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(File)\b(?:(\.)(Copy|Delete|DiskFree|Exists|Rename|Status)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Font)\b(?:(\.)(Draw|Free|GetName|GetSize|GetStyle|Name|New|Sizes|StartName|StartSize|Width)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: |-
+        (?x)\b(GUI)\b(?:(\.)
+        (AddLine|AddText|Alert|Alert2|Alert3|AlertFull|Choose|ChooseFull|ClearText|CloseWindow|CreateButton|CreateButtonFull
+        |CreateCanvas|CreateCanvasFull|CreateCheckBox|CreateCheckBoxFull|CreateFrame|CreateHorizontalScrollBar|CreateHorizontalScrollBarFull
+        |CreateHorizontalSlider|CreateLabel|CreateLabelFull|CreateLabelledFrame|CreateLine|CreateMenu|CreateMenuItem|CreateMenuItemFull
+        |CreatePicture|CreatePictureButton|CreatePictureButtonFull|CreatePictureRadioButton|CreatePictureRadioButtonFull|CreateRadioButton
+        |CreateRadioButtonFull|CreateTextBox|CreateTextBoxFull|CreateTextField|CreateTextFieldFull|CreateVerticalScrollBar|CreateVerticalScrollBarFull
+        |CreateVerticalSlider|Disable|Dispose|DrawArc|DrawBox|DrawCls|DrawDot|DrawFill|DrawFillArc|DrawFillBox|DrawFillMapleLeaf|DrawFillOval
+        |DrawFillPolygon|DrawFillStar|DrawLine|DrawMapleLeaf|DrawOval|DrawPolygon|DrawStar|DrawText|Enable|FontDraw|GetCheckBox|GetEventTime
+        |GetEventWidgetID|GetEventWindow|GetHeight|GetMenuBarHeight|GetScrollBarWidth|GetSliderValue|GetText|GetVersion|GetWidth|GetX|GetY|Hide
+        |HideMenuBar|OpenFile|OpenFileFull|PicDraw|PicNew|PicScreenLoad|PicScreenSave|ProcessEvent|Quit|Refresh|SaveFile|SaveFileFull|SelectRadio
+        |SetActive|SetBackgroundColor|SetBackgroundColour|SetCheckBox|SetDefault|SetDisplayWhenCreated|SetKeyEventHandler|SetLabel|SetMouseEventHandler
+        |SetNullEventHandler|SetPosition|SetPositionAndSize|SetScrollAmount|SetSelection|SetSize|SetSliderMinMax|SetSliderReverse|SetSliderSize
+        |SetSliderValue|SetText|SetXOR|Show|ShowMenuBar)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Input)\b(?:(\.)(getch|getchar|hasch|KeyDown|Pause)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Joystick)\b(?:(\.)(GetInfo)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Keyboard)\b(?:(\.)(\w+)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+    - match: \b(Limits)\b(?:(\.)(DefaultFW|DefaultEW|minint|maxint|minnat|maxnat)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: (?x)\b(Math)\b(?:(\.)(?:(PI|E)|(Distance|DistancePointLine)|(\w+))?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.constant.${3:/downcase}.turing"
+        4: "support.function.${4:/downcase}.turing"
+    - match: \b(Mouse)\b(?:(\.)(ButtonChoose|ButtonMoved|ButtonWait|Where)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Music)\b(?:(\.)(Play|PlayFile|PlayFileStop|Sound|SoundOff)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: |-
+        (?x)
+        \b(Net)\b(?:(\.)
+        (BytesAvailable|CharAvailable|CloseConnection|HostAddressFromName|HostNameFromAddress
+        |LineAvailable|LocalAddress|LocalName|OpenConnection|OpenURLConnection|TokenAvailable
+        |WaitForConnection)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(PC)\b(?:(\.)(ParallelGet|ParallelPut)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: |-
+        (?x)
+        \b(Pic)\b(?:(\.)
+        (Blend|Blur|Draw|DrawFrames|DrawFramesBack|DrawSpecial|DrawSpecialBack|FileNew
+        |FileNewFrames|Flip|Frames|Free|Height|Mirror|New|Rotate|Save|Scale|ScreenLoad
+        |ScreenSave|SetTransparentColou?r|Width)?
+        \b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Rand)\b(?:(\.)(Int|Next|Real|Reset|Seed|Set)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: '\b(RGB)\b(?:(\.)(AddColou?r|[GS]etColou?r|maxcolou?r)?\b)?'
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Sprite)\b(?:(\.)(Animate|ChangePic|Free|Hide|New|SetFrameRate|SetHeight|SetPosition|Show)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Stream)\b(?:(\.)(eof|Flush|FlushAll)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Str)\b(?:(\.)(\w+)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+    - match: \b(Sys)\b(?:(\.)(Exec|FetchArg|GetComputerName|GetEnv|GetPid|GetUserName|Nargs)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Text)\b(?:(\.)(Cls|Colou?r|Colou?rBack|Locate|LocateXY|maxcol|maxrow|WhatCol|WhatColou?r|WhatColou?rBack|WhatRow)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Time)\b(?:(\.)(Date|DateSec|Delay|Elapsed|ElapsedCPU|PartsSec|Sec|SecDate|SecParts)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(TypeConv)\b(?:(\.)(\w+)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+    - match: \b(View)\b(?:(\.)(ClipAdd|ClipOff|ClipSet|maxcolou?r|maxx|maxy|Set|Update|WhatDotColou?r)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+    - match: \b(Window)\b(?:(\.)(Close|GetActive|GetPosition|GetSelect|Hide|Open|Select|Set|SetActive|SetPosition|Show|Update)?\b)?
+      captures:
+        1: "support.class.${1:/downcase}.turing"
+        2: meta.delimiter.property.period.turing
+        3: "support.function.${3:/downcase}.turing"
+  numbers:
+    - match: "16#[A-Fa-f0-9]+"
+      scope: constant.numeric.base-16.hex.turing
+    - match: (\d+)#\d+
+      scope: constant.numeric.base-$1.turing
+    - match: '\b\d+\.\d+(?:[Ee][\+\-]?\d+)?\b'
+      scope: constant.numeric.float.turing
+    - match: \b\d+\b
+      scope: constant.numeric.int.turing
+  param-declarations:
+    - match: \b(\w+)\s+(:)\s+((\w+))
+      captures:
+        1: variable.parameter.function.turing
+        2: storage.type.turing
+  parameters:
+    - match: \G\s*(\()
+      captures:
+        1: punctuation.definition.arguments.begin.turing
+      push:
+        - meta_scope: meta.function.parameters.turing
+        - match: \)
+          captures:
+            0: punctuation.definition.arguments.end.turing
+          pop: true
+        - include: main
+        - match: \w+
+          scope: variable.parameter.function.turing
+  procedure:
+    - match: \b(?:(body)\s+)?(procedure|proc)\s+(\w+)
+      captures:
+        1: storage.modifier.$1.turing
+        2: storage.type.function.turing
+        3: entity.name.function.turing
+      push:
+        - meta_scope: meta.scope.procedure.turing
+        - match: \b(end)\s+(\3)
+          captures:
+            1: keyword.control.end.turing
+            2: entity.name.function.turing
+          pop: true
+        - include: parameters
+        - include: main
+  process:
+    - match: \b(process)(?:\s+(pervasive|\*)(?=\s))?\s+(\w+)
+      captures:
+        1: storage.type.function.turing
+        2: storage.modifier.pervasive.turing
+        3: entity.name.function.turing
+      push:
+        - meta_scope: meta.scope.process.turing
+        - match: \b(end)\s+(\3)
+          captures:
+            1: keyword.control.end.turing
+            2: entity.name.function.turing
+          pop: true
+        - include: parameters
+        - include: main
+  punctuation:
+    - match: \.\.
+      scope: punctuation.definition.range.turing
+    - match: ":="
+      scope: punctuation.separator.key-value.assignment.turing
+    - match: "->"
+      scope: punctuation.separator.class.accessor.turing
+    - match: \+
+      scope: keyword.operator.arithmetic.add.turing
+    - match: "-"
+      scope: keyword.operator.arithmetic.subtract.turing
+    - match: \*
+      scope: keyword.operator.arithmetic.multiply.turing
+    - match: \/
+      scope: keyword.operator.arithmetic.divide.turing
+    - match: <=
+      scope: keyword.operator.logical.equal-or-less.subset.turing
+    - match: ">="
+      scope: keyword.operator.logical.equal-or-greater.superset.turing
+    - match: <
+      scope: keyword.operator.logical.less.turing
+    - match: ">"
+      scope: keyword.operator.logical.greater.turing
+    - match: "="
+      scope: keyword.operator.logical.equal.turing
+    - match: not=|~=
+      scope: keyword.operator.logical.not.turing
+    - match: \^
+      scope: keyword.operator.pointer-following.turing
+    - match: "#"
+      scope: keyword.operator.type-cheat.turing
+    - match: "@"
+      scope: keyword.operator.indirection.turing
+    - match: ":"
+      scope: punctuation.separator.key-value.turing
+    - match: \(
+      scope: punctuation.definition.arguments.begin.turing
+    - match: \)
+      scope: punctuation.definition.arguments.end.turing
+  record:
+    - match: (?:^|\s+)(record)(?:$|\s+)
+      captures:
+        1: storage.type.record.turing
+      push:
+        - meta_scope: meta.scope.record-block.turing
+        - match: \b(end)\s+(record)\b
+          captures:
+            1: keyword.control.end.turing
+            2: storage.type.record.turing
+          pop: true
+        - match: ((\s*\w+\s*,?)+)(:)
+          captures:
+            3: punctuation.separator.record.key-value.turing
+        - include: main
+  stdlib:
+    - include: modules
+    - include: stdproc
+    - match: \b(anyclass)\b
+      scope: support.class.anyclass.turing
+    - include: keyboard-constants
+    - include: math-routines
+    - include: str-routines
+    - include: typeconv-routines
+  stdproc:
+    - match: |-
+        (?x)\b
+        (addr|buttonchoose|buttonmoved|buttonwait|clock|cls|colou?r|colou?rback|date|delay|drawarc|drawbox|drawdot
+        |drawfill|drawfillarc|drawfillbox|drawfillmapleleaf|drawfilloval|drawfillpolygon|drawfillstar|drawline
+        |drawmapleleaf|drawoval|drawpic|drawpolygon|drawstar|empty|eof|fetcharg|getch|getchar|getenv|getpid
+        |getpriority|hasch|locate|locatexy|maxcol|maxcolou?r|maxint|maxnat|maxrow|maxx|maxy|minint|minnat
+        |mousewhere|nargs|parallelget|parallelput|play|playdone|pred|rand|randint|randnext|randomize
+        |randseed|setpriority|setscreen|simutime|sizeof|sizepic|sound|succ|sysclock|takepic|time|wallclock
+        |whatcol|whatcolou?r|whatcolou?rback|whatdotcolou?r|whatrow)\b
+      scope: "support.function.${1:/downcase}.turing"
+  str-routines:
+    - match: \b(Lower|Upper|Trim|index|length|repeat)\b
+      scope: "support.function.${1:/downcase}.turing"
+  strings:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.turing
+        - match: '"'
+          pop: true
+        - include: escapes
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.turing
+        - match: "'"
+          pop: true
+        - include: escapes
+  type:
+    - match: \b(type)(?:\s+(pervasive|\*)(?=\s))?\s+(\w+)
+      captures:
+        1: storage.type.turing
+        2: storage.modifier.pervasive.turing
+        3: entity.name.type.turing
+  typeconv-routines:
+    - match: \b(ceil|chr|erealstr|floor|frealstr|intreal|intstr|natreal|natstr|ord|realstr|round|strint|strintok|strnat|strnatok|strreal|strrealok)\b
+      scope: "support.function.${1:/downcase}.turing"
+  types:
+    - match: '\b(addressint|array|boolean|char|collection|enum|int[124]?|nat[124]?|real[48]?|pointer\s+to|set\s+of|string)\b'
+      scope: storage.type.$1-type.turing
+  union:
+    - match: \b(union)\s+(\w+)\s*(:)(.*)\b(of)\b
+      captures:
+        1: storage.type.union.turing
+        2: entity.name.union.turing
+        3: punctuation.separator.key-value.turing
+        5: keyword.operator.of.turing
+      push:
+        - meta_scope: meta.scope.union.turing
+        - match: \b(end)\s+(union)\b
+          captures:
+            1: keyword.control.end.turing
+            2: storage.type.union.turing
+          pop: true
+        - include: label
+        - include: main
+  variables:
+    - match: \b(var|const)\s+
+      captures:
+        1: storage.type.$1.turing
+      push:
+        - meta_scope: meta.variable-declaration.turing
+        - match: (:=?)\s*((?!\d)((?:\w+(?:\s+to)?)(?:\s*\(\s*\d+\s*\))?))?\s*(:=)?
+          captures:
+            1: punctuation.separator.key-value.turing
+            2: storage.type.type-spec.turing
+            4: punctuation.separator.key-value.turing
+          pop: true
+        - match: \G(?:\s*(pervasive|\*)(?=\s))?\s*(register)(?=\s)
+          captures:
+            1: storage.modifier.pervasive.oot.turing
+            2: storage.modifier.register.oot.turing
+        - include: types
+        - include: list
+    - match: (\w+)\s*(:=)
+      captures:
+        1: variable.name.turing
+        2: punctuation.separator.key-value.turing
+      push:
+        - meta_scope: meta.variable-assignment.turing
+        - match: (?=\S)
+          pop: true
+    - match: \b(bind)\b
+      captures:
+        1: keyword.operator.bind.turing
+      push:
+        - meta_scope: meta.binding.turing
+        - match: (?=$|%|/\*)
+          pop: true
+        - match: \b(var)\b
+          captures:
+            1: storage.type.$1.turing
+          push:
+            - match: \b(to)\b
+              captures:
+                1: keyword.operator.to.turing
+              pop: true
+            - include: list
+        - include: list

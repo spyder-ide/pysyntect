@@ -1,0 +1,224 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Roff (Intermediate Output)
+first_line_match: ^x\s*T\s+(dvi|html|lbp|lj4|ps|post|pdf|ascii|cp1047|latin1|utf8|X75|X75-12|X100|X100-12)(?=\s|$)
+scope: source.ditroff
+contexts:
+  main:
+    - include: comment
+    - include: deviceControl
+    - include: colourMode
+    - include: print
+    - include: font
+    - include: eol
+    - include: move
+    - include: size
+    - include: page
+    - include: graphics
+    - include: movePrint
+    - include: wordSpace
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.ditroff
+      push:
+        - meta_scope: comment.line.number-sign.ditroff
+        - match: $
+          pop: true
+  colourMode:
+    - match: (?:(m)|^\s*(D)\s*(F))\s*(d)
+      scope: meta.colour-mode.default.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.function.ditroff
+        3: entity.name.subcommand.ditroff
+        4: constant.language.colour-scheme.ditroff
+    - match: '(?:(m)|^\s*(D)\s*(F))\s*(r)((?:\s*\d+){3})'
+      scope: meta.colour-mode.rgb.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.function.ditroff
+        3: entity.name.subcommand.ditroff
+        4: constant.language.colour-scheme.ditroff
+    - match: '(?:(m)|^\s*(D)\s*(F))\s*(k)((?:\s*\d+){4})'
+      scope: meta.colour-mode.cmyk.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.function.ditroff
+        3: entity.name.subcommand.ditroff
+        4: constant.language.colour-scheme.ditroff
+    - match: '(?:(m)|^\s*(D)\s*(F))\s*(c)((?:\s*\d+){3})'
+      scope: meta.colour-mode.cmy.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.function.ditroff
+        3: entity.name.subcommand.ditroff
+        4: constant.language.colour-scheme.ditroff
+    - match: (?:(m)|^\s*(D)\s*(F))\s*(g)\s*(\d+)
+      scope: meta.colour-mode.grey.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.function.ditroff
+        3: entity.name.subcommand.ditroff
+        4: constant.language.colour-scheme.ditroff
+  deviceControl:
+    - match: (x)\s*(X\S*)
+      captures:
+        1: keyword.operator.other.ditroff
+        2: keyword.device.control.ditroff
+      push:
+        - meta_scope: meta.custom.device-control.ditroff
+        - meta_content_scope: string.raw.unquoted.heredoc.ditroff
+        - match: ^(?!\+)
+          pop: true
+        - match: ^\+
+          scope: keyword.operator.line-continuation.gnu.ditroff
+    - match: (x)\s*
+      captures:
+        1: keyword.operator.other.ditroff
+      push:
+        - meta_scope: meta.device-control.ditroff
+        - match: (?=$|#)
+          pop: true
+        - match: '\G([ipst]\S*)\s*?(?=$|#)'
+          scope: keyword.device.control.ditroff
+        - match: \G(u\S*)\s+(?:(1|0)|(\d+))\s*?(?=$|#)
+          scope: meta.space-underlining.gnu.ditroff
+          captures:
+            1: keyword.device.control.ditroff
+            2: constant.numeric.integer.ditroff
+            3: invalid.illegal.argument.ditroff
+        - match: \G(F\S*)\s+(\S+)\s*?(?=$|#)
+          scope: meta.source-filename.gnu.ditroff
+          captures:
+            1: keyword.device.control.ditroff
+            2: variable.parameter.filename.ditroff
+        - match: \G(T\S*)\s+((\S+))
+          scope: meta.typesetter-device.ditroff
+          captures:
+            1: keyword.device.control.ditroff
+            2: variable.parameter.ditroff
+        - match: '\G(r\S*)((?:\s+(\d+)){1,3})\s*?(?=$|#)'
+          scope: meta.device-resolution.ditroff
+          captures:
+            1: keyword.device.control.ditroff
+        - match: '\G(f\S*)(?:\s+(\d+))?(?:\s+([-\w]+))?\s*?(?=$|#)'
+          scope: meta.mount-font.ditroff
+          captures:
+            1: keyword.device.control.ditroff
+            2: constant.numeric.integer.ditroff
+            3: variable.parameter.ditroff
+        - match: '\G([HS]\S*)(?:\s+(-?\d+))?\s*?(?=$|#)'
+          scope: meta.set-character-property.ditroff
+          captures:
+            1: keyword.device.control.ditroff
+            2: constant.numeric.ditroff
+        - match: \G(\S+)
+          captures:
+            1: keyword.device.control.ditroff
+          push:
+            - meta_scope: meta.unknown-command.ditroff
+            - match: (?=$|#)
+              pop: true
+  eol:
+    - match: '(n)((?:\s*\d+){2})'
+      scope: meta.end-of-line.ditroff
+      captures:
+        1: entity.name.function.ditroff
+  font:
+    - match: (f)\s*(\d+)
+      scope: meta.change-font.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.numeric.integer.ditroff
+  graphics:
+    - match: ^\s*(D)\s*(C)\s*(\d+)(?:\s+(\d+))?
+      scope: meta.graphics.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.subcommand.ditroff
+        3: constant.numeric.integer.ditroff
+        4: comment.dummy.argument.ditroff
+    - match: '^\s*(D)\s*(E)((?:\s*(\d+)){1,2})'
+      scope: meta.graphics.gnu.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.subcommand.ditroff
+    - match: '^\s*(D)\s*([lceafptP~])'
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.subcommand.ditroff
+      push:
+        - meta_scope: meta.graphics.ditroff
+        - match: (?=$|#)
+          pop: true
+        - include: scope:text.roff#number
+    - match: '^\s*(D)\s*([^\s\\])'
+      captures:
+        1: entity.name.function.ditroff
+        2: entity.name.custom.subcommand.ditroff
+      push:
+        - meta_scope: meta.graphics.unknown-command.ditroff
+        - meta_content_scope: variable.parameter.ditroff
+        - match: (?=$|#)
+          pop: true
+  move:
+    - match: '([HhVv])\s*(-?\d+)'
+      scope: meta.move.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.numeric.integer.ditroff
+  movePrint:
+    - match: '(\d{2})(.)'
+      scope: meta.move-and-print.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.character.ditroff
+  page:
+    - match: (p)\s*(\d+)
+      scope: meta.start-page.ditroff
+      captures:
+        1: keyword.control.page.output
+        2: constant.numeric.integer.output
+  print:
+    - match: (N)\s*(-?\d+)
+      scope: meta.print-character.indexed.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.numeric.integer.ditroff
+    - match: (c)\s*(\S)|(C)\s*(\S+)
+      scope: meta.print-character.ditroff
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.character.ditroff
+        3: entity.name.function.ditroff
+        4: string.unquoted.ditroff
+    - match: ^\s*(t)\s*
+      captures:
+        0: entity.name.function.ditroff
+        1: punctuation.definition.entity.ditroff
+      push:
+        - meta_scope: meta.print-text.gnu.ditroff
+        - meta_content_scope: string.quoted.double.ditroff
+        - match: (?=$)|\s+(\d*)
+          captures:
+            1: comment.dummy.argument.ditroff
+          pop: true
+    - match: ^\s*(u)\s*(-?\d+)\s*
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.numeric.integer.ditroff
+      push:
+        - meta_scope: meta.print-text.track-kerned.gnu.ditroff
+        - meta_content_scope: string.quoted.double.ditroff
+        - match: (?=\s|$)
+          pop: true
+  size:
+    - match: (s)\s*(\d+)
+      captures:
+        1: entity.name.function.ditroff
+        2: constant.numeric.integer.ditroff
+  wordSpace:
+    - match: '(?<=^|[\s\d])w'
+      scope: entity.name.function.word-space.ditroff

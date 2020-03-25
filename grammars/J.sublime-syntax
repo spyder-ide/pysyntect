@@ -1,0 +1,146 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: J
+comment: |
+  Reference to the Oniguruma Regex libraray:
+    https://github.com/kkos/oniguruma/blob/master/doc/RE
+
+  * The reference version for this TextMate grammar is the YAML version here:
+    https://github.com/tikkanz/j-vscode/blob/master/syntaxes/j.tmLanguage.yaml
+    Convert to other formats (JSON, PLIST) using utils (e.g. TextMate Languages extension for VS Code)
+  * Some in comments throughout the grammar
+file_extensions:
+  - ijs
+  - ijt
+first_line_match: ^#!.*\bjconsole\s*$
+scope: source.j
+contexts:
+  main:
+    - include: operator
+    - include: copula
+    - include: string
+    - include: bracket
+    - include: explicit_defn
+    - include: noun_defn
+    - include: number
+    - include: note
+    - include: comment
+  comment:
+    - match: NB\.
+      captures:
+        0: punctuation.definition.comment.begin.j
+      push:
+        - meta_scope: comment.line.j
+        - match: \n
+          pop: true
+  bracket:
+    - match: (?:\(|\)|,)(?!('|(?:\.'))*\.?')
+      scope: meta.bracket.j
+  copula:
+    - match: "=:"
+      scope: copula.global.j
+    - match: '=\.'
+      scope: copula.local.j
+  explicit_arg:
+    - match: '\b[nmuvxy](?![\w.:])'
+      comment: argument identifiers within explicit definition blocks
+      scope: variable.parameter.j
+  explicit_defn:
+    - match: '\b([1-4]|13|adverb|conjunction|verb|monad|dyad)\s+(:\s*0|define)\b'
+      captures:
+        0: punctuation.definition.explicit.begin.j
+      push:
+        - meta_scope: definition.explicit.block.j
+        - match: ^\s*\)\s*\n
+          captures:
+            0: punctuation.definition.explicit.end.j
+          pop: true
+        - include: explicit_arg
+        - include: operator
+        - include: copula
+        - include: string
+        - include: keyword
+        - include: number
+        - include: comment
+  keyword:
+    - match: '\b(if|do|else|elseif|for|select|case|fcase)\.(?![.:])'
+      scope: keyword.control.j
+    - match: '\b(assert|break|continue|return|while|whilst)\.(?![.:])'
+      scope: keyword.control.j
+    - match: '\b(throw|try|catch|catchd|catcht)\.(?![.:])'
+      scope: keyword.control.j
+    - match: '\b(for_[A-Za-z][A-Za-z_0-9]*|goto_[A-Za-z][A-Za-z_0-9]*|label_[A-Za-z][A-Za-z_0-9]*)\.(?![.:])'
+      scope: keyword.control.j
+    - match: '\bend\.(?![.:])'
+      scope: keyword.control.end.j
+  note:
+    - match: ^\s*\bNote\b
+      captures:
+        0: punctuation.definition.comment.begin.j
+      push:
+        - meta_scope: comment.block.note.j
+        - match: ^\s*\)\s*\n
+          captures:
+            0: punctuation.definition.comment.end.j
+          pop: true
+    - match: '\bNote\b(?!\s*\=[:.])\s*[\''\d].*$'
+      comment: dd
+      scope: comment.line.note.j
+  noun_defn:
+    - match: \b(0|noun)\s+(:\s*0|define)\b
+      comment: multi-line noun definition
+      captures:
+        0: punctuation.definition.string.block.begin.j
+      push:
+        - meta_scope: string.noun.j
+        - match: ^\s*\)\s*\n
+          captures:
+            0: punctuation.definition.explicit.end.j
+          pop: true
+  number:
+    - match: '\b[_0-9][_0-9\.a-zA-Z]*\b(?![.:])'
+      scope: constant.numeric.j
+  operator:
+    - match: '\b(_\.|a\.|a:)(?![.:])'
+      scope: keyword.other.noun.j
+    - match: '((_?[1-9]:)|(\b0:)|({::))(?![.:])'
+      comment: numbers with inflection and double inflections
+      scope: keyword.operator.verb.j
+    - match: '\b((p\.\.)|([AcCeEiIjLopr]\.)|([ipqsux]:))(?![.:])'
+      comment: letters with inflection
+      scope: keyword.operator.verb.j
+    - match: '([<>\+\*\-%$|,#{}^~"?]\.)(?![.:])'
+      comment: symbols with . inflection
+      scope: keyword.operator.verb.j
+    - match: '([<>\+\*\-%$|,#{};~"_/\\\[]:)(?![.:])'
+      comment: "symbols with : inflection"
+      scope: keyword.operator.verb.j
+    - match: '([<>\+\*\-%$|,#{!;^=?\[\]])(?![.:])'
+      comment: symbols with no inflection
+      scope: keyword.operator.verb.j
+    - match: '\b(([bfMt]\.)|(t:))(?![.:])'
+      comment: letters with inflection
+      scope: keyword.operator.adverb.j
+    - match: '(([/\\]\.)|([~/\\}]))(?![.:])'
+      comment: symbols with and without . inflection
+      scope: keyword.operator.adverb.j
+    - match: '\b(([dDHT]\.)|([DLS]:))(?![.:])'
+      comment: letters with inflection
+      scope: keyword.operator.conjunction.j
+    - match: '((&\.:)|([&@!;]\.)|([&@!`^]:)|([&@`"]))(?![.:])'
+      comment: "symbols with double inflection, . or : inflection or no inflection"
+      scope: keyword.operator.conjunction.j
+    - match: '\s(([.:][.:])|([.:]))(?![.:])'
+      comment: ". or : with or without inflection (need leading whitespace)"
+      scope: keyword.operator.conjunction.j
+  string:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.j
+      push:
+        - meta_scope: string.quoted.single.j
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.j
+          pop: true

@@ -1,0 +1,163 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ANTLR
+file_extensions:
+  - g
+  - g4
+scope: source.antlr
+contexts:
+  main:
+    - include: strings
+    - include: comments
+    - match: \boptions\b
+      captures:
+        0: keyword.other.options.antlr
+      push:
+        - meta_scope: meta.options.antlr
+        - match: '(?<=\})'
+          pop: true
+        - match: '\{'
+          captures:
+            0: punctuation.section.options.begin.antlr
+          push:
+            - meta_scope: meta.options-block.antlr
+            - match: '\}'
+              captures:
+                0: punctuation.section.options.end.antlr
+              pop: true
+            - include: strings
+            - include: comments
+            - match: \b\d+\b
+              scope: constant.numeric.antlr
+            - match: \b(k|charVocabulary|filter|greedy|paraphrase|exportVocab|buildAST|defaultErrorHandler|language|namespace|namespaceStd|namespaceAntlr|genHashLines)\b
+              scope: variable.other.option.antlr
+            - match: \b(true|false)\b
+              scope: constant.language.boolean.antlr
+    - match: ^(class)\b\s+(\w+)
+      captures:
+        1: storage.type.antlr
+        2: entity.name.type.class.antlr
+      push:
+        - meta_scope: meta.definition.class.antlr
+        - match: ;
+          captures:
+            1: storage.type.antlr
+            2: entity.name.type.class.antlr
+          pop: true
+        - match: \b(extends)\b\s+
+          captures:
+            1: storage.modifier.antlr
+          push:
+            - meta_scope: meta.definition.class.extends.antlr
+            - match: (?=;)
+              captures:
+                1: storage.modifier.antlr
+              pop: true
+            - match: \b(Parser|Lexer|TreeWalker)\b
+              scope: support.class.antlr
+    - match: ^protected\b
+      scope: storage.modifier.antlr
+    - match: '^[[:upper:]_][[:upper:][:digit:]_]*\b'
+      scope: entity.name.type.token.antlr
+    - match: ^(\w+)(?:\s+(returns\b))?
+      scope: meta.rule.antlr
+      captures:
+        1: entity.name.function.rule.antlr
+        2: keyword.control.antlr
+    - match: '\b[[:upper:]_][[:upper:][:digit:]_]*\b'
+      scope: constant.other.token.antlr
+    - include: nested-curly
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.antlr
+      push:
+        - meta_scope: comment.block.antlr
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.antlr
+          pop: true
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.antlr
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.antlr
+          push:
+            - meta_scope: comment.line.double-slash.antlr
+            - match: \n
+              pop: true
+  nested-curly:
+    - match: '\{'
+      captures:
+        0: punctuation.section.group.begin.antlr
+      push:
+        - meta_scope: source.embedded.java-or-c.antlr
+        - match: '\}'
+          captures:
+            0: punctuation.section.group.end.antlr
+          pop: true
+        - match: \b(break|case|continue|default|do|else|for|goto|if|_Pragma|return|switch|while)\b
+          scope: keyword.control.java-or-c
+        - match: \b(asm|__asm__|auto|bool|_Bool|char|_Complex|double|enum|float|_Imaginary|int|long|short|signed|struct|typedef|union|unsigned|void)\b
+          scope: storage.type.java-or-c
+        - match: \b(const|extern|register|restrict|static|volatile|inline)\b
+          scope: storage.modifier.java-or-c
+        - match: \b(NULL|true|false|TRUE|FALSE)\b
+          scope: constant.language.java-or-c
+        - match: \b(sizeof)\b
+          scope: keyword.operator.sizeof.java-or-c
+        - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b'
+          scope: constant.numeric.java-or-c
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.java-or-c
+          push:
+            - meta_scope: string.quoted.double.java-or-c
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.java-or-c
+              pop: true
+            - match: \\.
+              scope: constant.character.escape.antlr
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.java-or-c
+          push:
+            - meta_scope: string.quoted.single.java-or-c
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.java-or-c
+              pop: true
+            - match: \\.
+              scope: constant.character.escape.antlr
+        - match: \bEOF_CHAR\b
+          scope: support.constant.eof-char.antlr
+        - include: comments
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.antlr
+      push:
+        - meta_scope: string.quoted.double.antlr
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.antlr
+          pop: true
+        - match: '\\(u[0-9A-Fa-f]{4}|.)'
+          scope: constant.character.escape.antlr
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.antlr
+      push:
+        - meta_scope: string.quoted.single.antlr
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.antlr
+          pop: true
+        - match: '\\(u[0-9A-Fa-f]{4}|.)'
+          scope: constant.character.escape.antlr

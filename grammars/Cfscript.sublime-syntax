@@ -1,0 +1,486 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CFScript (do not use)
+comment: This tmLanguage file is used internally by ColdFusion and Component tmLanguage files
+file_extensions: []
+scope: source.cfscript
+contexts:
+  main:
+    - include: comments
+    - include: cfcomments
+    - include: component-operators
+    - include: functions
+    - include: tag-operators
+    - include: cfscript-code
+  braces:
+    - match: "{|}"
+      scope: meta.brace.curly.cfscript
+    - match: \(|\)
+      scope: meta.brace.round.cfscript
+    - match: '([\w]+)?\s*(\[)'
+      captures:
+        1: variable.other.set.cfscript
+        2: punctuation.definition.set.begin.cfscript
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.set.end.cfscript
+          pop: true
+        - include: strings
+        - match: ","
+          scope: punctuation.definition.set.seperator.cfscript
+        - include: main
+  cfcomments:
+    - match: <!---.*--->
+      scope: comment.line.cfml
+    - match: <!---
+      captures:
+        0: punctuation.definition.comment.cfml
+      push:
+        - meta_scope: comment.block.cfml
+        - match: "--->"
+          captures:
+            0: punctuation.definition.comment.cfml
+          pop: true
+        - include: cfcomments
+  cfscript-code:
+    - include: braces
+    - include: closures
+    - include: sql-code
+    - include: keywords
+    - include: function-call
+    - include: constants
+    - include: variables
+    - include: strings
+  closures:
+    - match: (?i:\b(function))\b
+      captures:
+        1: storage.closure.cfscript
+      push:
+        - meta_scope: meta.closure.cfscript
+        - match: "(?={)"
+          pop: true
+        - include: parameters
+  comment-block:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.cfscript
+      push:
+        - meta_scope: comment.block.cfscript
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.cfscript
+          pop: true
+  comments:
+    - match: /\*\*/
+      scope: comment.block.empty.cfscript
+      captures:
+        0: punctuation.definition.comment.cfscript
+    - include: scope:text.html.javadoc
+    - include: comment-block
+    - match: '((//).*?[^\s])\s*$\n?'
+      captures:
+        1: comment.line.double-slash.cfscript
+        2: punctuation.definition.comment.cfscript
+  component-extends-attribute:
+    - match: \b(extends)\b\s*(=)\s*(?=")
+      captures:
+        1: entity.name.tag.operator-attribute.extends.cfml
+        2: keyword.operator.assignment.cfscript
+      push:
+        - meta_scope: meta.component.attribute-with-value.extends.cfml
+        - match: '(?=[\s{])'
+          captures:
+            1: entity.name.tag.operator-attribute.extends.cfml
+            2: keyword.operator.assignment.cfscript
+          pop: true
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.cfscript
+          push:
+            - meta_scope: string.quoted.double.cfml
+            - meta_content_scope: meta.component-operator.extends.value.cfscript
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.cfscript
+              pop: true
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.cfscript
+          push:
+            - meta_scope: string.quoted.single.cfscript
+            - meta_content_scope: meta.component-operator.extends.value.cfscript
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.cfscript
+              pop: true
+  component-operators:
+    - match: |-
+        (?x)
+            \b
+            (?i:
+            (component)
+            )
+            \b
+            \s+
+            (?![\.\/>=,#\)])
+      captures:
+        1: entity.name.tag.operator.component.cfscript
+      push:
+        - meta_scope: meta.operator.cfscript meta.class.component.cfscript
+        - match: '(?=[;{\(])'
+          pop: true
+        - include: component-extends-attribute
+        - match: (?i:(\w+)\s*(?=\=))
+          scope: entity.other.attribute-name.cfscript
+        - include: cfscript-code
+  constants:
+    - match: |-
+        (?x)(
+            (\b[0-9]+)
+            |
+            (\.[0-9]+[0-9\.]*) # decimals
+            |
+            (0(x|X)[0-9a-fA-F]+) # hex
+            # matches really large double/floats
+            |(\.[0-9]+)((e|E)(\+|-)?[0-9]+)?([LlFfUuDd]|UL|ul)?
+            )\b
+      scope: constant.numeric.cfscript
+    - match: \b(?i:(true|false|null))\b
+      scope: constant.language.cfscript
+    - match: '\b_?([A-Z][A-Z0-9_]+)\b'
+      scope: constant.other.cfscript
+  function-call:
+    - match: |-
+        (?x)
+            (?i:
+                (abs|acos|addsoaprequestheader|addsoapresponseheader|ajaxlink|ajaxonload|applicationstop
+                |arrayappend|arrayavg|arrayclear|arraycontains|arraydelete|arraydeleteat
+                |arrayfind|arrayfindnocase|arrayinsertat|arrayisdefined|arrayisempty|arraylen
+                |arraymax|arraymin|arraynew|arrayprepend|arrayresize|arrayset|arraysort|arraysum
+                |arrayswap|arraytolist|asc|asin|atn|authenticatedcontext|authenticateduser|binarydecode
+                |binaryencode|bitand|bitmaskclear|bitmaskread|bitmaskset|bitnot|bitor|bitshln|bitshrn
+                |bitxor|cacheget|cachegetallids|cachegetmetadata|cachegetproperties|cachegetsession
+                |cacheput|cacheremove|cachesetproperties|ceiling|charsetdecode|charsetencode|chr
+                |cjustify|compare|comparenocase|cos|createdate|createdatetime|createobject|createodbcdate
+                |createodbcdatetime|createodbctime|createtime|createtimespan|createuuid|dateadd|datecompare
+                |dateconvert|datediff|dateformat|datepart|day|dayofweek|dayofweekasstring|dayofyear
+                |daysinmonth|daysinyear|decimalformat|decrementvalue|decrypt|decryptbinary
+                |deleteclientvariable|deserializejson|de|directorycreate|directorydelete|directoryexists
+                |directorylist|directoryrename|dollarformat|dotnettocftype|duplicate|encrypt|encryptbinary
+                |entitydelete|entityload|entityloadbyexample|entityloadbypk|entitymerge|entitynew
+                |entityreload|entitysave|entitytoquery|evaluate|exp|expandpath|fileclose|filecopy
+                |filedelete|fileexists|fileiseof|filemove|fileopen|fileread|filereadbinary|filereadline
+                |fileseek|filesetaccessmode|filesetattribute|filesetlastmodified|fileskipbytes|fileupload
+                |fileuploadall|filewrite|filewriteline|find|findnocase|findoneof|firstdayofmonth|fix
+                |formatbasen|generatesecretkey|getauthuser|getbasetagdata|getbasetaglist|getbasetemplatepath
+                |getclientvariableslist|getcomponentmetadata|getcontextroot|getcurrenttemplatepath
+                |getdirectoryfrompath|getencoding|getexception|getfilefrompath|getfileinfo
+                |getfunctioncalledname|getfunctionlist|getgatewayhelper|gethttprequestdata|gethttptimestring
+                |getk2serverdoccount|getk2serverdoccountlimit|getlocale|getlocaledisplayname|getlocalhostip
+                |getmetadata|getmetricdata|getpagecontext|getrequest|getrequesturi|getprinterinfo|getprinterlist|getprofilesections
+                |getprofilestring|getreadableimageformats|getsoaprequest|getsoaprequestheader|getsoapresponse
+                |getsoapresponseheader|gettempdirectory|gettempfile|gettemplatepath|gettickcount
+                |gettimezoneinfo|gettoken|getuserroles|getvfsmetadata|getwriteableimageformats|hash|hour
+                |htmlcodeformat|htmleditformat|iif|imageaddborder|imageblur|imageclearrect|imagecopy
+                |imagecrop|imagedrawarc|imagedrawbeveledrect|imagedrawcubiccurve|imagedrawline|imagedrawlines
+                |imagedrawoval|imagedrawpoint|imagedrawquadraticcurve|imagedrawrect|imagedrawroundrect
+                |imagedrawtext|imageflip|imagegetblob|imagegetbufferedimage|imagegetexifmetadata|imagegetexiftag
+                |imagegetheight|imagegetiptcmetadata|imagegetiptctag|imagegetwidth|imagegrayscale|imageinfo
+                |imagenegative|imagenew|imageoverlay|imagepaste|imageread|imagereadbase64|imageresize
+                |imagerotate|imagerotatedrawingaxis|imagescaletofit|imagesetantialiasing|imagesetbackgroundcolor
+                |imagesetdrawingcolor|imagesetdrawingstroke|imagesetdrawingtransparency|imagesharpen|imageshear
+                |imagesheardrawingaxis|imagetranslate|imagetranslatedrawingaxis|imagewrite|imagewritebase64
+                |imagexordrawingmode|incrementvalue|inputbasen|insert|int|isarray|isauthenticated|isauthorized
+                |isbinary|isboolean|iscustomfunction|isdate|isddx|isdebugmode|isdefined|isimage|isimagefile
+                |isinstanceof|isipv6|isjson|isk2serverabroker|isk2serverdoccountexceeded|isk2serveronline|isleapyear
+                |islocalhost|isnull|isnumeric|isnumericdate|isobject|ispdffile|ispdfobject|isprotected|isquery
+                |issimplevalue|issoaprequest|isspreadsheetfile|isspreadsheetobject|isstruct|isuserinanyrole
+                |isuserinrole|isuserloggedin|isvalid|iswddx|isxml|isxmlattribute|isxmldoc|isxmlelem|isxmlnode
+                |isxmlroot|javacast|jsstringformat|lcase|left|len|listappend|listchangedelims|listcontains
+                |listcontainsnocase|listdeleteat|listfind|listfindnocase|listfirst|listgetat|listinsertat
+                |listlast|listlen|listprepend|listqualify|listrest|listsetat|listsort|listtoarray|listvaluecount
+                |listvaluecountnocase|ljustify|location|log|log10|lscurrencyformat|lsdateformat|lseurocurrencyformat
+                |lsiscurrency|lsisdate|lsisnumeric|lsnumberformat|lsparsecurrency|lsparsedatetime|lsparseeurocurrency
+                |lsparsenumber|lstimeformat|ltrim|max|mid|min|minute|month|monthasstring|now|numberformat|objectequals
+                |objectload|objectsave|ormclearsession|ormclosesession|ormcloseallsessions|ormevictcollection
+                |ormevictentity|ormevictqueries|ormexecutequery|ormflush|ormflushall|ormgetsession|ormgetsessionfactory
+                |ormreload|paragraphformat|parameterexists|parsedatetime|pi|precisionevaluate|preservesinglequotes
+                |quarter|queryaddcolumn|queryaddrow|queryconvertforgrid|querynew|querysetcell|quotedvaluelist
+                |rand|randomize|randrange|refind|refindnocase|rematch|rematchnocase|releasecomobject|removechars
+                |repeatstring|replace|replacelist|replacenocase|rereplace|rereplacenocase|reverse|right|rjustify
+                |round|rtrim|second|sendgatewaymessage|serializejson|setencoding|setlocale|setprofilestring
+                |setvariable|sgn|sin|sleep|spanexcluding|spanincluding|spreadsheetaddcolumn|spreadsheetaddimage
+                |spreadsheetaddfreezepane|spreadsheetaddinfo|spreadsheetaddrow|spreadsheetaddrows|spreadsheetaddsplitpane
+                |spreadsheetcreatesheet|spreadsheetdeletecolumn|spreadsheetdeletecolumns|spreadsheetdeleterow
+                |spreadsheetdeleterows|spreadsheetformatcell|spreadsheetformatcolumn|spreadsheetformatcellrange
+                |spreadsheetformatcolumns|spreadsheetformatrow|spreadsheetformatrows|spreadsheetgetcellcomment
+                |spreadsheetgetcellformula|spreadsheetgetcellvalue|spreadsheetinfo|spreadsheetmergecells
+                |spreadsheetnew|spreadsheetread|spreadsheetreadbinary|spreadsheetremovesheet|spreadsheetsetactivesheet
+                |spreadsheetsetactivesheetnumber|spreadsheetsetcellcomment|spreadsheetsetcellformula|spreadsheetsetcellvalue
+                |spreadsheetsetcolumnwidth|spreadsheetsetfooter|spreadsheetsetheader|spreadsheetsetrowheight
+                |spreadsheetshiftcolumnsspreadsheetshiftrows|spreadsheetwrite|sqr|stripcr|structappend|structclear
+                |structcopy|structcount|structdelete|structfind|structfindkey|structfindvalue|structget|structinsert
+                |structisempty|structkeyarray|structkeyexists|structkeylist|structnew|structsort|structupdate|tan
+                |threadjoin|threadterminate|throw|timeformat|tobase64|tobinary|toscript|tostring|trace|transactioncommit
+                |transactionrollback|transactionsetsavepoint|trim|ucase|urldecode|urlencodedformat|urlsessionformat
+                |val|valuelist|verifyclient|week|wrap|writedump|writelog|writeoutput|xmlchildpos|xmlelemnew
+                |xmlformat|xmlgetnodetype|xmlnew|xmlparse|xmlsearch|xmltransform|xmlvalidate|year|yesnoformat)
+                |
+                (\w+)
+            )
+            \s*
+            (\()
+      captures:
+        1: support.function.cfscript
+        2: entity.name.function-call.cfscript
+        3: punctuation.definition.arguments.begin.cfscript
+      push:
+        - meta_scope: meta.function-call.cfscript
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.cfscript
+          pop: true
+        - match: ","
+          scope: punctuation.definition.seperator.arguments.cfscript
+        - match: (?i:(\w+)\s*(?=\=))
+          scope: entity.other.method-parameter.cfscript
+        - include: cfcomments
+        - include: comments
+        - include: tag-operators
+        - include: cfscript-code
+  function-properties:
+    - match: \b(?i:output)
+      scope: entity.other.attribute-name.output.cfscript
+    - match: '\b([\w]+)'
+      scope: entity.other.attribute-name.any.cfscript
+  functions:
+    - match: |-
+        (?x)^\s*
+            (?:
+                (?: # optional access-control modifier and return-type
+                    (?i:\b(private|package|public|remote)\s+)? # access-control.modifier
+                    (?i:\b
+                        (void)
+                        |
+                        (any|array|binary|boolean|component|date|guid|numeric|query|string|struct|xml|uuid) # return-type.primitive
+                        |
+                        ([A-Za-z0-9_\.$]+) #return-type component/object (may need additional tokens)
+                    )?
+                )
+            )
+            \s*
+            (?i:(function)) # storage.function
+            \s+
+            (?:
+                (init) # entity.name.function.contructor
+                |
+                ([\w\$]+) # entity.name.function
+            )\b
+      captures:
+        1: storage.modifier.access-control.cfscript
+        2: storage.type.return-type.void.cfscript
+        3: storage.type.return-type.primitive.cfscript
+        4: storage.type.return-type.object.cfscript
+        5: storage.type.function.cfscript
+        6: entity.name.function.constructor.cfscript
+        7: entity.name.function.cfscript
+      push:
+        - meta_scope: meta.function.cfscript
+        - match: "(?={)"
+          pop: true
+        - include: parameters
+        - include: comments
+        - include: function-properties
+        - include: cfscript-code
+  keywords:
+    - match: \b(?i:new)\b
+      scope: keyword.other.new.cfscript
+    - match: (===?|!|!=|<=|>=|<|>)
+      scope: keyword.operator.comparison.cfscript
+    - match: \b(?i:(GREATER|LESS|THAN|EQUAL\s+TO|DOES|CONTAINS|EQUAL|EQ|NEQ|LT|LTE|LE|GT|GTE|GE|AND|IS))\b
+      scope: keyword.operator.decision.cfscript
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.cfscript
+    - match: (?i:(\^|\-|\+|\*|\/|\\|%|\-=|\+=|\*=|\/=|%=|\bMOD\b))
+      scope: keyword.operator.arithmetic.cfscript
+    - match: (&|&=)
+      scope: keyword.operator.concat.cfscript
+    - match: (=)
+      scope: keyword.operator.assignment.cfscript
+    - match: \b(?i:(NOT|!|AND|&&|OR|\|\||XOR|EQV|IMP))\b
+      scope: keyword.operator.logical.cfscript
+    - match: (\?|:)
+      scope: keyword.operator.ternary.cfscript
+    - match: ;
+      scope: punctuation.terminator.cfscript
+  nest_hash:
+    - match: "##"
+      scope: string.escaped.hash.cfscript
+    - match: (#)(?=.*#)
+      captures:
+        1: punctuation.definition.hash.begin.cfscript
+      push:
+        - meta_scope: meta.inline.hash.cfscript
+        - meta_content_scope: source.cfscript.embedded.cfscript
+        - match: (#)
+          captures:
+            1: punctuation.definition.hash.end.cfscript
+          pop: true
+        - include: cfscript-code
+  parameters:
+    - match: (\()
+      captures:
+        1: punctuation.definition.parameters.begin.cfscript
+      push:
+        - meta_scope: meta.function.parameters.cfscript
+        - match: (\))
+          captures:
+            1: punctuation.definition.parameters.end.cfscript
+          pop: true
+        - match: (?i:required)
+          scope: keyword.other.required.argument.cfscript
+        - include: storage-types
+        - match: (=)
+          scope: keyword.operator.argument-assignment.cfscript
+        - match: (?i:false|true|no|yes)
+          scope: constant.language.boolean.argument.cfscript
+        - match: (?i:\w)
+          scope: variable.parameter.cfscript
+        - match: ","
+          scope: punctuation.definition.seperator.parameter.cfscript
+        - include: strings
+  sql-code:
+    - match: '([\w+\.]+)\.((?i:setsql))\(\s*["|'']'
+      captures:
+        1: entity.name.function.query.cfscript, meta.toc-list.query.cfscript
+        2: support.function.cfscript
+      push:
+        - meta_scope: source.sql.embedded.cfscript
+        - match: '(["|'']\s*\))'
+          captures:
+            1: punctuation.parenthesis.end.cfscript
+          pop: true
+        - include: nest_hash
+        - include: scope:source.sql
+  storage-types:
+    - match: \b(?i:(function|string|date|struct|array|void|binary|numeric|boolean|query|xml|uuid|any))\b
+      scope: storage.type.primitive.cfscript
+  string-quoted-double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.cfscript
+      push:
+        - meta_scope: string.quoted.double.cfscript
+        - match: '"(?!")'
+          captures:
+            0: punctuation.definition.string.end.cfscript
+          pop: true
+        - match: ("")
+          scope: constant.character.escape.quoted.double.cfscript
+        - include: nest_hash
+  string-quoted-single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.cfscript
+      push:
+        - meta_scope: string.quoted.single.cfscript
+        - match: "'(?!')"
+          captures:
+            0: punctuation.definition.string.end.cfscript
+          pop: true
+        - match: ('')
+          scope: constant.character.escape.quoted.single.cfscript
+        - include: nest_hash
+  strings:
+    - include: string-quoted-double
+    - include: string-quoted-single
+  tag-operators:
+    - match: \b(else\s+if|else|if)\b
+      scope: keyword.control.operator.conditional.cfscript
+    - match: \b(switch|case|default)\b
+      scope: keyword.control.operator.switch.cfscript
+    - match: |-
+        (?x)^[\s}]*
+            (?i:
+            (lock)|(transaction)|(thread)|(abort)
+            |(exit)|(include)|(param)|(thread)|(import)
+            |(rethrow|throw)|(property)|(interface)|(location)
+            |(break)|(pageencoding)|(schedule)|(return)|(try|catch|finally)
+            |(for|in|do|while|break|continue)
+            |(trace)|(savecontent)|(http|httpparam)
+            )
+            \b
+            \s*
+            (?![^\w|"|'|\(|{|;])
+      captures:
+        1: entity.name.tag.operator.lock.cfscript
+        10: keyword.control.operator.catch-exception.cfscript
+        11: entity.name.tag.operator.property.cfscript
+        12: entity.name.tag.operator.interface.cfscript
+        13: entity.name.tag.operator.location.cfscript
+        14: keyword.control.operator.break.cfscript
+        15: entity.name.tag.operator.pageencoding.cfscript
+        16: entity.name.tag.operator.schedule.cfscript
+        17: keyword.control.operator.return.cfscript
+        18: keyword.control.operator.catch-exception.cfscript
+        19: keyword.control.operator.loop.cfscript
+        2: entity.name.tag.operator.transaction.cfscript
+        20: entity.name.tag.operator.trace.cfscript
+        21: entity.name.tag.operator.savecontent.cfscript
+        22: entity.name.tag.operator.http.cfscript
+        3: entity.name.tag.operator.thread.cfscript
+        4: keyword.control.operator.abort.cfscript
+        5: keyword.control.operator.exit.cfscript
+        6: entity.name.tag.operator.include.cfscript
+        7: entity.name.tag.operator.param.cfscript
+        8: entity.name.tag.operator.thread.cfscript
+        9: entity.name.tag.operator.import.cfscript
+      push:
+        - meta_scope: meta.operator.cfscript
+        - match: "(;)|({)"
+          captures:
+            1: punctuation.terminator.cfscript
+            3: meta.brace.curly.cfscript
+          pop: true
+        - match: \(
+          captures:
+            0: meta.brace.curly.cfscript
+          push:
+            - match: \)
+              captures:
+                0: meta.brace.curly.cfscript
+              pop: true
+            - match: ","
+              scope: punctuation.definition.seperator.arguments.cfscript
+            - match: (?i:(\w+)\s*(?=\=))
+              scope: entity.other.operator-parameter.cfscript
+            - include: cfscript-code
+        - match: (?i:(\w+)\s*(?=\=))
+          scope: entity.other.attribute-name.cfscript
+        - include: cfcomments
+        - include: comments
+        - include: cfscript-code
+  variables:
+    - match: \b(?i:var)\b
+      scope: storage.modifier.var.cfscript
+    - match: \b(?i:(this|key))(?!\.)
+      scope: variable.language.cfscript
+    - match: (\.)
+      scope: punctuation.definition.seperator.variable.cfscript
+    - match: |-
+        (?x)
+        (?i:
+            \b
+            (application|arguments|attributes|caller|cgi|client|
+                cookie|flash|form|local|request|server|session|
+                this|thistag|thread|thread local|url|variables|
+                super|self|argumentcollection)
+            \b
+            |
+            (\w+)
+        )
+      captures:
+        1: variable.language.cfscript
+        2: variable.other.cfscript

@@ -1,0 +1,333 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Jison
+file_extensions:
+  - jison
+scope: source.jison
+contexts:
+  main:
+    - match: "%%"
+      captures:
+        0: meta.separator.section.jison
+      push:
+        - match: ""
+          pop: true
+        - match: "%%"
+          captures:
+            0: meta.separator.section.jison
+          push:
+            - match: ""
+              pop: true
+            - match: \G
+              push:
+                - meta_scope: meta.section.epilogue.jison
+                - meta_content_scope: source.js.embedded.jison
+                - match: ""
+                  pop: true
+                - include: epilogue_section
+        - match: \G
+          push:
+            - meta_scope: meta.section.rules.jison
+            - match: (?=%%)
+              pop: true
+            - include: rules_section
+    - match: ^
+      push:
+        - meta_scope: meta.section.declarations.jison
+        - match: (?=%%)
+          pop: true
+        - include: declarations_section
+  actions:
+    - match: '\{\{'
+      captures:
+        0: punctuation.definition.action.begin.jison
+      push:
+        - meta_scope: meta.action.jison
+        - meta_content_scope: source.js.embedded.jison
+        - match: '\}\}'
+          captures:
+            0: punctuation.definition.action.end.jison
+          pop: true
+        - include: scope:source.js
+    - match: '(?=%\{)'
+      push:
+        - meta_scope: meta.action.jison
+        - match: '(?<=%\})'
+          pop: true
+        - include: user_code_blocks
+  comments:
+    - match: //
+      captures:
+        0: punctuation.definition.comment.jison
+      push:
+        - meta_scope: comment.line.double-slash.jison
+        - match: $
+          pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.jison
+      push:
+        - meta_scope: comment.block.jison
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.jison
+          pop: true
+  declarations_section:
+    - include: comments
+    - match: ^\s*(%lex)\s*$
+      captures:
+        1: entity.name.tag.lexer.begin.jison
+      push:
+        - match: ^\s*(/lex)\b
+          captures:
+            1: entity.name.tag.lexer.end.jison
+          pop: true
+        - match: "%%"
+          captures:
+            0: meta.separator.section.jisonlex
+          push:
+            - match: (?=/lex)
+              pop: true
+            - match: ^%%
+              captures:
+                0: meta.separator.section.jisonlex
+              push:
+                - match: (?=/lex)
+                  pop: true
+                - match: \G
+                  push:
+                    - meta_scope: meta.section.user-code.jisonlex
+                    - meta_content_scope: source.js.embedded.jisonlex
+                    - match: (?=/lex)
+                      pop: true
+                    - include: scope:source.jisonlex#user_code_section
+            - match: \G
+              push:
+                - meta_scope: meta.section.rules.jisonlex
+                - match: ^(?=%%|/lex)
+                  pop: true
+                - include: scope:source.jisonlex#rules_section
+        - match: ^
+          push:
+            - meta_scope: meta.section.definitions.jisonlex
+            - match: (?=%%|/lex)
+              pop: true
+            - include: scope:source.jisonlex#definitions_section
+    - match: '(?=%\{)'
+      push:
+        - meta_scope: meta.section.prologue.jison
+        - match: '(?<=%\})'
+          pop: true
+        - include: user_code_blocks
+    - include: options_declarations
+    - match: '%(ebnf|left|nonassoc|parse-param|right|start)\b'
+      scope: keyword.other.declaration.$1.jison
+    - include: include_declarations
+    - match: '%(code)\b'
+      captures:
+        0: keyword.other.declaration.$1.jison
+      push:
+        - meta_scope: meta.code.jison
+        - match: $
+          pop: true
+        - include: comments
+        - include: rule_actions
+        - match: (init|required)
+          scope: keyword.other.code-qualifier.$1.jison
+        - include: quoted_strings
+        - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+          scope: string.unquoted.jison
+    - match: '%(parser-type)\b'
+      captures:
+        0: keyword.other.declaration.$1.jison
+      push:
+        - meta_scope: meta.parser-type.jison
+        - match: $
+          pop: true
+        - include: comments
+        - include: quoted_strings
+        - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+          scope: string.unquoted.jison
+    - match: '%(token)\b'
+      captures:
+        0: keyword.other.declaration.$1.jison
+      push:
+        - meta_scope: meta.token.jison
+        - match: $|(%%|;)
+          captures:
+            1: punctuation.terminator.declaration.token.jison
+          pop: true
+        - include: comments
+        - include: numbers
+        - include: quoted_strings
+        - match: '<[[:alpha:]_](?:[\w-]*\w)?>'
+          scope: invalid.unimplemented.jison
+        - match: \S+
+          scope: entity.other.token.jison
+    - match: '%(debug|import)\b'
+      scope: keyword.other.declaration.$1.jison
+    - match: '%prec\b'
+      scope: invalid.illegal.jison
+    - match: '%[[:alpha:]_](?:[\w-]*\w)?\b'
+      scope: invalid.unimplemented.jison
+    - include: numbers
+    - include: quoted_strings
+  epilogue_section:
+    - include: user_code_include_declarations
+    - include: scope:source.js
+  include_declarations:
+    - match: (%(include))\s*
+      captures:
+        1: keyword.other.declaration.$2.jison
+      push:
+        - meta_scope: meta.include.jison
+        - match: '(?<=[''"])|(?=\s)'
+          pop: true
+        - include: include_paths
+  include_paths:
+    - include: quoted_strings
+    - match: (?=\S)
+      push:
+        - meta_scope: string.unquoted.jison
+        - match: (?=\s)
+          pop: true
+        - include: scope:source.js#string_escapes
+  numbers:
+    - match: "(0[Xx])([0-9A-Fa-f]+)"
+      captures:
+        1: storage.type.number.jison
+        2: constant.numeric.integer.hexadecimal.jison
+    - match: \d+
+      scope: constant.numeric.integer.decimal.jison
+  options_declarations:
+    - match: '%options\b'
+      captures:
+        0: keyword.other.options.jison
+      push:
+        - meta_scope: meta.options.jison
+        - match: ^(?=\S|\s*$)
+          pop: true
+        - include: comments
+        - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+          scope: entity.name.constant.jison
+        - match: (=)\s*
+          captures:
+            1: keyword.operator.option.assignment.jison
+          push:
+            - match: '(?<=[''"])|(?=\s)'
+              pop: true
+            - include: comments
+            - match: \b(true|false)\b
+              scope: constant.language.boolean.$1.jison
+            - include: numbers
+            - include: quoted_strings
+            - match: \S+
+              scope: string.unquoted.jison
+        - include: quoted_strings
+  quoted_strings:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.jison
+        - match: '"'
+          pop: true
+        - include: scope:source.js#string_escapes
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.jison
+        - match: "'"
+          pop: true
+        - include: scope:source.js#string_escapes
+  rule_actions:
+    - include: actions
+    - match: '\{'
+      captures:
+        0: punctuation.definition.action.begin.jison
+      push:
+        - meta_scope: meta.action.jison
+        - meta_content_scope: source.js.embedded.jison
+        - match: '\}'
+          captures:
+            0: punctuation.definition.action.end.jison
+          pop: true
+        - include: scope:source.js
+    - include: include_declarations
+    - match: "->|→"
+      captures:
+        0: punctuation.definition.action.arrow.jison
+      push:
+        - meta_scope: meta.action.jison
+        - meta_content_scope: source.js.embedded.jison
+        - match: $
+          pop: true
+        - include: scope:source.js
+  rules_section:
+    - include: comments
+    - include: actions
+    - include: include_declarations
+    - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+      captures:
+        0: entity.name.constant.rule-result.jison
+      push:
+        - meta_scope: meta.rule.jison
+        - match: ;
+          captures:
+            0: punctuation.terminator.rule.jison
+          pop: true
+        - include: comments
+        - match: ":"
+          captures:
+            0: keyword.operator.rule-components.assignment.jison
+          push:
+            - meta_scope: meta.rule-components.jison
+            - match: (?=;)
+              pop: true
+            - include: comments
+            - include: quoted_strings
+            - match: '(\[)([[:alpha:]_](?:[\w-]*\w)?)(\])'
+              captures:
+                1: punctuation.definition.named-reference.begin.jison
+                2: entity.name.other.reference.jison
+                3: punctuation.definition.named-reference.end.jison
+            - match: (%(prec))\s*
+              captures:
+                1: keyword.other.$2.jison
+              push:
+                - meta_scope: meta.prec.jison
+                - match: '(?<=[''"])|(?=\s)'
+                  pop: true
+                - include: comments
+                - include: quoted_strings
+                - match: (?=\S)
+                  push:
+                    - meta_scope: constant.other.token.jison
+                    - match: (?=\s)
+                      pop: true
+            - match: \|
+              scope: keyword.operator.rule-components.separator.jison
+            - match: \b(?:EOF|error)\b
+              scope: keyword.other.$0.jison
+            - match: '(?:%(?:e(?:mpty|psilon))|\b[Ɛɛεϵ])\b'
+              scope: keyword.other.empty.jison
+            - include: rule_actions
+  user_code_blocks:
+    - match: '%\{'
+      captures:
+        0: punctuation.definition.user-code-block.begin.jison
+      push:
+        - meta_scope: meta.user-code-block.jison
+        - meta_content_scope: source.js.embedded.jison
+        - match: '%\}'
+          captures:
+            0: punctuation.definition.user-code-block.end.jison
+          pop: true
+        - include: scope:source.js
+  user_code_include_declarations:
+    - match: ^(%(include))\s*
+      captures:
+        1: keyword.other.declaration.$2.jison
+      push:
+        - meta_scope: meta.include.jison
+        - match: '(?<=[''"])|(?=\s)'
+          pop: true
+        - include: include_paths

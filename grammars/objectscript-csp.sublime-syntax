@@ -1,0 +1,12 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ObjectScript CSP
+file_extensions:
+  - csp
+scope: source.objectscript_csp
+contexts:
+  main:
+    - include: inline-html
+  inline-html:
+    - include: scope:text.html.basic

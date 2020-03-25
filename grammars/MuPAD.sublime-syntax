@@ -1,0 +1,73 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: MuPAD
+comment: MuPAD code -- christopher.creutzig@mathworks.com, based on Pascal mode by chris@cjack.com.
+file_extensions:
+  - mu
+  - tst
+scope: source.mupad
+contexts:
+  main:
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.mupad
+        - match: $
+          pop: true
+        - include: scope:text.plain
+    - include: blockcomment
+    - match: \b(axiom|end_axiom|category|end_category|begin|break|case|do|downto|elif|else|end_case|end_for|end_if|end_proc|end_repeat|end_while|for|from|if|%if|local|name|next|of|option|otherwise|proc|quit|repeat|save|step|then|to|until|while|domain|end|inherits|end_domain)\b
+      scope: keyword.control.mupad
+    - match: \b(intersect|minus|union)\b|->|-->|\.
+      scope: keyword.operator.mupad
+    - match: \b(div|mod)\b|\+|-|\*|/|\^|\|
+      scope: keyword.operator.arithmetic.mupad
+    - match: \b(and|in|not|or|xor)\b|>|<|<>|=|<=>|<==|==>|\|\||&&
+      scope: keyword.operator.logical.mupad
+    - match: ":="
+      scope: keyword.operator.assignment.mupad
+    - match: "::"
+      scope: punctuation.accessor.mupad
+    - match: ;
+      scope: punctuation.terminator.mupad
+    - match: ","
+      scope: punctuation.separator.mupad
+    - match: \b(E|FAIL|FALSE|I|NIL|TRUE|UNKNOWN|PI|EULER|CATALAN|infinity|undefined)\b
+      scope: constant.language.mupad
+    - match: '(\b[a-zA-Z_#]\w*\b|`.*?`)'
+      scope: entity.name.variable.mupad
+    - match: '(?:\b([a-zA-Z_]w+(?:::\w+)*|`.*?`)\s*:=\s*)\bproc\b\s*\((.*?)\)'
+      scope: declaration.function.mupad.one
+      captures:
+        1: entity.name.function.mupad
+        2: variable.parameter.mupad
+    - match: '(?:\b([a-zA-Z_]w+(?:::\w+)*|`.*?`)\s*:=\s*)\s*\((.*?)\)\s*--?>'
+      scope: declaration.function.mupad.two
+      captures:
+        1: entity.name.function.mupad
+        2: variable.parameter.mupad
+    - match: '(?:\b([a-zA-Z_]w+(?:::\w+)*|`.*?`)\s*:=\s*)\s*(\w+)\s*--?>'
+      scope: declaration.function.mupad.three
+      captures:
+        1: entity.name.function.mupad
+        2: variable.parameter.mupad
+    - match: '\b(([0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?[ij]?)\b'
+      scope: constant.numeric.mupad
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.mupad
+        - match: '"'
+          pop: true
+        - include: string_escaped_char
+  blockcomment:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.mupad
+        - match: \*/
+          pop: true
+        - include: blockcomment
+  string_escaped_char:
+    - match: '\\(\\|[bntr"])'
+      scope: constant.character.escape.mupad
+    - match: \\.
+      scope: invalid.illegal.unknown-escape.mupad

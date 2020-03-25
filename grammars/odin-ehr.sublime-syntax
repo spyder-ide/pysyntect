@@ -1,0 +1,306 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Object Data Instance Notation
+file_extensions:
+  - odin
+scope: source.odin-ehr
+contexts:
+  main:
+    - include: comment
+    - include: string
+    - include: boolean
+    - include: date
+    - include: path
+    - include: scope:etc#num
+    - include: scope:etc#url
+    - include: interval
+    - include: schema
+    - include: attribute
+    - include: type
+    - include: block
+    - include: plugin
+    - include: typedef
+    - include: term
+    - include: key
+    - include: escape
+    - include: scope:etc#ellipsis
+    - match: ","
+      scope: punctuation.delimiter.comma.odin-ehr
+    - match: "="
+      scope: keyword.operator.assignment.odin-ehr
+    - match: ;
+      scope: punctuation.terminator.statement.odin-ehr
+  comment:
+    - match: "--"
+      captures:
+        0: punctuation.definition.comment.odin-ehr
+      push:
+        - meta_scope: comment.line.double-dash.odin-ehr
+        - match: $
+          pop: true
+  attribute:
+    - match: '\b(?=[a-z])[A-Za-z0-9_]+'
+      scope: entity.other.attribute-name.odin-ehr
+  block:
+    - match: <
+      captures:
+        0: punctuation.definition.block.begin.odin-ehr
+      push:
+        - meta_scope: meta.block.odin-ehr
+        - match: ">"
+          captures:
+            0: punctuation.definition.block.end.odin-ehr
+          pop: true
+        - include: main
+  boolean:
+    - match: (?i)\b(False|True)\b
+      scope: "constant.language.boolean.${1:/downcase}.odin-ehr"
+  date:
+    - match: '((\d{4})(-)(\d{2}|\?{2})(-)(\d{2}|\?{2})(T))((\d{2}|\?{2})(:)(\d{2}|\?{2})(:)(\d{2}|\?{2}))'
+      captures:
+        1: meta.date.partial.odin-ehr
+        10: punctuation.separator.time.colon.odin-ehr
+        11: constant.numeric.minute.odin-ehr
+        12: punctuation.separator.time.colon.odin-ehr
+        13: constant.numeric.second.odin-ehr
+        2: constant.numeric.year.odin-ehr
+        3: punctuation.separator.date.dash.odin-ehr
+        4: constant.numeric.month.odin-ehr
+        5: punctuation.separator.date.dash.odin-ehr
+        6: constant.numeric.day.odin-ehr
+        7: constant.language.datetime-separator.odin-ehr
+        8: meta.time.partial.odin-ehr
+        9: constant.numeric.hour.odin-ehr
+    - match: '(\d{2})(:)(\d{2}|\?{2})(:)(\?{2})'
+      scope: meta.time.partial.odin-ehr
+      captures:
+        1: constant.numeric.hour.odin-ehr
+        2: punctuation.separator.time.colon.odin-ehr
+        3: constant.numeric.minute.odin-ehr
+        4: punctuation.separator.time.colon.odin-ehr
+        5: constant.numeric.second.odin-ehr
+    - match: '(\d{4})(-)(\d{2}|\?{2})(-)(\?{2})'
+      scope: meta.date.partial.odin-ehr
+      captures:
+        1: constant.numeric.year.odin-ehr
+        2: punctuation.separator.date.dash.odin-ehr
+        3: constant.numeric.month.odin-ehr
+        4: punctuation.separator.date.dash.odin-ehr
+        5: constant.numeric.day.odin-ehr
+    - match: '(\d{2})(:)(\d{2})(:)(\d{2})((,)(\d+))?(Z|([-+])\d{4})?'
+      scope: meta.time.odin-ehr
+      captures:
+        1: constant.numeric.hour.odin-ehr
+        10: punctuation.separator.timezone.odin-ehr
+        2: punctuation.separator.time.colon.odin-ehr
+        3: constant.numeric.minute.odin-ehr
+        4: punctuation.separator.time.colon.odin-ehr
+        5: constant.numeric.second.odin-ehr
+        6: meta.time.fraction.odin-ehr
+        7: punctuation.separator.time.comma.odin-ehr
+        8: constant.numeric.second.odin-ehr
+        9: constant.numeric.timezone.odin-ehr
+    - match: '((\d{4})(-)(\d{2})(-)(\d{2})(T))((\d{2})(?:(:)(\d{2}))?)'
+      captures:
+        1: meta.date.partial.odin-ehr
+        10: punctuation.separator.time.colon.odin-ehr
+        11: constant.numeric.minute.odin-ehr
+        2: constant.numeric.year.odin-ehr
+        3: punctuation.separator.date.dash.odin-ehr
+        4: constant.numeric.month.odin-ehr
+        5: punctuation.separator.date.dash.odin-ehr
+        6: constant.numeric.day.odin-ehr
+        7: constant.language.datetime-separator.odin-ehr
+        8: meta.time.partial.odin-ehr
+        9: constant.numeric.hour.odin-ehr
+    - match: '(\d{4})(-)(\d{2})(-)(\d{2})(T(?=\d{2}))?'
+      scope: meta.date.odin-ehr
+      captures:
+        1: constant.numeric.year.odin-ehr
+        2: punctuation.separator.date.dash.odin-ehr
+        3: constant.numeric.month.odin-ehr
+        4: punctuation.separator.date.dash.odin-ehr
+        5: constant.numeric.day.odin-ehr
+        6: constant.language.datetime-separator.odin-ehr
+    - match: '(\d{4})(-)(\d{2})'
+      scope: meta.date.partial.odin-ehr
+      captures:
+        1: constant.numeric.year.odin-ehr
+        2: punctuation.separator.date.dash.odin-ehr
+        3: constant.numeric.month.odin-ehr
+    - match: '(\d{2})(:)(\d{2})'
+      scope: meta.time.partial.odin-ehr
+      captures:
+        1: constant.numeric.hour.odin-ehr
+        2: punctuation.separator.time.colon.odin-ehr
+        3: constant.numeric.minute.odin-ehr
+    - match: 'P(?:T?\d+T?[YMWDHMS])+'
+      scope: constant.other.duration.odin-ehr
+  escape:
+    - match: '(\\)[rnt\\"'']'
+      scope: constant.character.escape.odin-ehr
+      captures:
+        1: punctuation.definition.escape.backslash.odin-ehr
+    - match: '(\\)u(?:[0-9A-Fa-f]{4}){1,2}'
+      scope: constant.character.escape.codepoint.odin-ehr
+      captures:
+        1: punctuation.definition.escape.backslash.odin-ehr
+    - match: (&)\w+(;)
+      scope: constant.character.entity.odin-ehr
+      captures:
+        1: punctuation.definition.entity.begin.odin-ehr
+        2: punctuation.definition.entity.end.odin-ehr
+    - match: \\.
+      scope: invalid.illegal.bad-escape.odin-ehr
+  infinity:
+    - match: (?i)(?:-|\b)infinity\b|\*
+      scope: constant.language.numeric.infinity.odin-ehr
+  interval:
+    - match: \|
+      captures:
+        0: punctuation.definition.interval.begin.odin─ehr
+      push:
+        - meta_scope: meta.interval.odin-ehr
+        - match: \|
+          captures:
+            0: punctuation.definition.interval.end.odin─ehr
+          pop: true
+        - match: '([-+]?(?:[\de]|\.(?=[-+\de]))+)(\.\.)'
+          captures:
+        - match: ">=|<=|>|<"
+          scope: keyword.operator.comparison.odin-ehr
+        - match: \+/-
+          scope: keyword.operator.variance.odin-ehr
+        - match: ","
+          scope: invalid.illegal.unexpected-comma.odin-ehr
+        - include: infinity
+        - include: date
+        - include: scope:etc#dotPair
+        - include: scope:etc#num
+  key:
+    - match: '\['
+      push:
+        - meta_scope: meta.key.member.item-access.odin-ehr
+        - match: '\]'
+          pop: true
+        - include: main
+  path:
+    - match: |-
+        (?x)
+        (?:(//?)([A-Za-z0-9_]+)|(//?))
+        ((\[))
+      captures:
+        4: meta.object-id.odin-ehr
+        5: punctuation.definition.object-id.begin.odin-ehr
+      push:
+        - meta_scope: meta.path-segment.odin-ehr
+        - meta_content_scope: meta.object-id.odin-ehr
+        - match: '(\])'
+          captures:
+            0: meta.object-id.odin-ehr
+            1: punctuation.definition.object-id.end.odin-ehr
+          pop: true
+        - include: main
+    - match: "(//?)([A-Za-z0-9_]+)"
+      scope: meta.path-segment.odin-ehr
+      captures:
+    - include: pathSep
+  pathSep:
+    - match: //
+      scope: punctuation.separator.path.double-slash.odin-ehr
+    - match: /
+      scope: punctuation.separator.path.slash.odin-ehr
+  plugin:
+    - match: ((\()\s*(\w+)\s*(\)))\s*((<#))
+      captures:
+        1: meta.type.odin-ehr
+        3: storage.type.class.syntax.odin-ehr
+        5: meta.block.plugin.odin-ehr
+        6: punctuation.definition.plugin.block.begin.odin-ehr
+      push:
+        - meta_scope: markup.code.other.odin-ehr
+        - meta_content_scope: "source.embedded.${3:/downcase}.odin-ehr"
+        - match: (#>)
+          captures:
+            0: meta.block.plugin.odin-ehr
+            1: punctuation.definition.plugin.block.end.odin-ehr
+          pop: true
+        - include: pluginInnards
+    - match: "<#"
+      captures:
+        0: punctuation.definition.block.begin.odin-ehr
+      push:
+        - meta_scope: meta.block.plugin.odin-ehr
+        - meta_content_scope: markup.raw.code.other.odin-ehr
+        - match: "#>"
+          captures:
+            0: punctuation.definition.block.end.odin-ehr
+          pop: true
+        - include: pluginInnards
+  pluginInnards:
+    - include: comment
+    - match: "{|}"
+      captures:
+  schema:
+    - match: "(@)[A-Za-z0-9_]+"
+      scope: variable.other.schema.odin-ehr
+      captures:
+        1: punctuation.definition.variable.schema.odin-ehr
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.odin-ehr
+      push:
+        - meta_scope: string.quoted.double.odin-ehr
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.odin-ehr
+          pop: true
+        - include: escape
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.odin-ehr
+      push:
+        - meta_scope: string.quoted.single.odin-ehr
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.odin-ehr
+          pop: true
+        - include: escape
+  term:
+    - match: '\[(?=[^\]:]+::)'
+      captures:
+        0: punctuation.definition.coded-term.begin.odin-ehr
+      push:
+        - meta_scope: meta.coded-term.odin-ehr
+        - match: '\]'
+          captures:
+            0: punctuation.definition.coded-term.end.odin-ehr
+          pop: true
+        - match: '\G\s*([-\w]+)'
+          scope: constant.other.coded-term.name.odin-ehr
+        - match: "::"
+          scope: punctuation.separator.key-value.odin-ehr
+        - match: '[-.\w]+'
+          scope: constant.other.coded-term.code.odin-ehr
+        - include: termVersion
+        - include: main
+  termVersion:
+    - match: \(
+      push:
+        - meta_scope: meta.term-version.odin-ehr
+        - match: \)
+          pop: true
+        - include: scope:etc#num
+        - include: termVersion
+  type:
+    - match: '\b(?=[A-Z])[A-Za-z0-9_]+'
+      scope: storage.type.name.odin-ehr
+  typedef:
+    - match: \(
+      push:
+        - meta_scope: meta.type.odin-ehr
+        - match: \)
+          pop: true
+        - include: main

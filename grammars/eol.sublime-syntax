@@ -1,0 +1,16 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Show EOL characters
+file_extensions:
+  - txt
+  - tmp
+scope: text.plain
+contexts:
+  main:
+    - match: (?:\r\n)
+      scope: crlf
+    - match: (?:\n)
+      scope: lf
+    - match: \r
+      scope: cr

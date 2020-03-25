@@ -1,0 +1,38 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: REXX
+file_extensions:
+  - rex
+first_line_match: /\*.*(?i:REXX)\b
+scope: source.rexx
+contexts:
+  main:
+    - match: /\*
+      push:
+        - meta_scope: comment.rexx
+        - match: \*/
+          pop: true
+    - match: '([''"])[01 ]+\1(?i:b)'
+      scope: constant.rexx
+    - match: '([''"])[0-9a-fA-F ]+\1(?i:x)'
+      scope: constant.rexx
+    - match: '([''"])'
+      push:
+        - meta_scope: string.rexx
+        - match: \1
+          pop: true
+    - match: '\b[A-Za-z@#$!?_][A-Za-z@#$!?_0-9]*:'
+      scope: entity.name.function.rexx
+    - match: '([0-9]+(\.)?[0-9]*(?i:e[-+]?[0-9]+)?|[0-9]*(\.)?[0-9]+)(?i:e[-+]?[0-9]+)?\b'
+      scope: constant.numeric.rexx
+    - match: '[0-9\.][A-Za-z0-9@#$¢.!?_]*'
+      scope: constant.other.rexx
+    - match: '([\+-/*%&|()¬\\=<>])'
+      scope: keyword.operator.rexx
+    - match: \b(?i:do|forever|while|until|to|by|for|end|exit|if|then|else|iterate|leave|nop|return|select|when|otherwise|call(\s+(off|on)\s+(error|failure(\s+name)?|halt))?|signal(\s+(off|on)\s+(error|failure(\s+name)?|halt|novalue|syntax))|address\s+\w+|arg|drop|interpret|numeric\s+(digits|form(\s+(scientific|engineering|value))?|fuzz)|options|parse(\s+upper)?\s+(external|numeric|source|value|var|version)?|with|procedure(\s+expose)?|pull|push|queue|say|trace\s+\w+|upper)\b(?!\.)
+      scope: keyword.rexx
+    - match: '\b[A-Za-z@#$!?_0-9]+(?=\()'
+      scope: support.function.rexx
+    - match: '\b[A-Za-z@#$¢!?_][A-Za-z0-9@#$¢.!?_]*'
+      scope: variable.rexx

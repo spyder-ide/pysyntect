@@ -1,0 +1,51 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CLIPS
+file_extensions:
+  - clp
+scope: source.clips
+contexts:
+  main:
+    - match: ;
+      comment: Comments line
+      captures:
+        0: punctuation.definition.comment.clips
+      push:
+        - meta_scope: comment.line.double-slash.clips
+        - match: |-
+            $
+            ?
+          captures:
+            0: punctuation.definition.comment.clips
+          pop: true
+    - match: \b(type|default|allowed-values|slot|not|or|and|assert|retract|gensym|printout|declare|salience|modify|export)\b
+      comment: Keywords
+      scope: keyword.control.clips
+    - match: "=>"
+      comment: RHD
+      scope: constant.language.clips
+    - match: '(\?)([a-zA-Z0-9_\-]*)'
+      comment: Functions
+      scope: meta.function.clips
+      captures:
+        1: keyword.clips
+        2: variable.parameter
+    - match: '(^.*(defrule|deffacts|defmodule|deftemplate)[ \t]+)([a-zA-Z0-9_\-]+)'
+      comment: Definitions
+      captures:
+        2: entity.name.function.clips
+        3: variable.clips
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b'
+      comment: Constant A
+      scope: constant.other.color.rgb-value.css
+    - match: (<-|~|%)
+      comment: Constant B
+      scope: constant.language.clips
+    - match: (|=|>|\+|\*|\/|~|%|neq|eq)
+      comment: Operators
+      scope: entity.name.function.clips
+    - match: (\()(\-)
+      comment: Operators
+      captures:
+        2: entity.name.function.clips

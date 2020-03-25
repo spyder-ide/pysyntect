@@ -1,0 +1,36 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML (Erlang)
+file_extensions:
+  - yaws
+scope: text.html.erlang.yaws
+contexts:
+  main:
+    - match: (^\s*)?(?=<erl>)
+      captures:
+        1: punctuation.whitespace.embedded.leading.html
+      push:
+        - meta_content_scope: meta.embedded.block.erlang
+        - match: (?!\G)(\s*\n)?
+          captures:
+            1: punctuation.whitespace.embedded.trailing.html
+          pop: true
+        - match: (<)(erl)(>)
+          captures:
+            0: meta.tag.template.html
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.html
+            3: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.erlang
+            - match: ((</))(erl)(>)
+              captures:
+                0: meta.tag.template.html
+                1: punctuation.definition.tag.begin.html
+                2: source.erlang
+                3: entity.name.tag.html
+                4: punctuation.definition.tag.end.html
+              pop: true
+            - include: scope:source.erlang
+    - include: scope:text.html.basic

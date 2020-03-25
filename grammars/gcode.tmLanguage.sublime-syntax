@@ -1,0 +1,80 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: VSCode GCode Syntax
+scope: source.gcode
+contexts:
+  main:
+    - include: comments
+    - include: speedsfeeds
+    - include: prognumbers
+    - include: coords
+    - include: tools
+    - include: modifiers
+    - include: macrovars
+    - include: keywords
+    - include: operators
+  comments:
+    - match: (\(.+\))
+      scope: comment.gcode
+    - match: ;
+      push:
+        - meta_scope: comment.gcode
+        - match: \n
+          pop: true
+  coords:
+    - match: '([xX])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: string.gcode
+    - match: '([yY])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: string.gcode
+    - match: '([zZ])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: invalid.gcode
+    - match: '([aAbBcC])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.character.escape.gcode
+  keywords:
+    - match: "[gG][0-9]{1,3}"
+      scope: markup.bold.gcode
+    - match: "[mM][0-9]{1,3}"
+      scope: keyword.operator.quantifier.regexp.gcode
+    - match: '([\%])'
+      scope: string.gcode
+    - match: (GOTO)|(IF)|(EQ)|(NE)|(LT)|(GT)|(LE)|(GE)|(DO)|(WHILE)|(END)|(AND)|(OR)|(XOR)
+      scope: keyword.control.gcode
+  macrovars:
+    - match: "[#][0-9]+"
+      scope: variable.other.gcode
+    - match: '[#][\[].+[\]]'
+      scope: variable.other.gcode
+  modifiers:
+    - match: '([iIjJkK])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.character.escape.gcode
+    - match: '([qQrR])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: support.constant.math.gcode
+  operators:
+    - match: (SIN)|(COS)|(TAN)|(ASIN)|(ACOS)|(ATAN)|(FIX)|(FUP)|(LN)|(ROUND)|(SQRT)
+      scope: support.constant.math.gcode
+    - match: (FIX)|(FUP)|(ROUND)|(ABS)
+      scope: support.constant.math.gcode
+    - match: (\+)|(\*)|(\/)|(\*\*)
+      scope: support.constant.math.gcode
+    - match: (\-)
+      scope: invalid.gcode
+  prognumbers:
+    - match: "[nN][0-9]+"
+      scope: constant.numeric.gcode
+    - match: "[oO][0-9]{1,5}"
+      scope: string.regexp.gcode
+    - match: "[pP][0-9]{1,5}"
+      scope: string.regexp.gcode
+  speedsfeeds:
+    - match: '([sS])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.language.gcode
+    - match: '([fF])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.language.gcode
+  tools:
+    - match: '([dD])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.character.gcode
+    - match: '([hH])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.character.gcode
+    - match: '([tT])(?=-|\d|\[|#)-?(?:\d+(?:\.\d*)?)?'
+      scope: constant.character.gcode

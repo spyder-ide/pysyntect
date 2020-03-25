@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Makegen
+file_extensions:
+  - Makegen
+scope: source.makegen
+contexts:
+  main:
+    - include: scope:source.perl

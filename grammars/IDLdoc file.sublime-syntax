@@ -1,0 +1,11 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: IDLdoc file
+file_extensions:
+  - idldoc
+scope: text.idl-idldoc
+contexts:
+  main:
+    - match: .*
+      scope: comment.idl.idldoc

@@ -1,0 +1,100 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: LaTeX Memoir
+file_extensions: []
+first_line_match: '^\\documentclass(\[.*\])?\{memoir\}'
+scope: text.tex.latex.memoir
+contexts:
+  main:
+    - match: '(?:\s*)((\\)begin)(\{)(framed|shaded|leftbar)(\})'
+      captures:
+        1: support.function.be.latex
+        2: punctuation.definition.function.latex
+        3: punctuation.definition.arguments.begin.latex
+        4: variable.parameter.function.latex
+        5: punctuation.definition.arguments.end.latex
+      push:
+        - meta_scope: meta.function.memoir-fbox.latex
+        - match: '((\\)end)(\{)(\4)(\})'
+          captures:
+            1: support.function.be.latex
+            2: punctuation.definition.function.latex
+            3: punctuation.definition.arguments.begin.latex
+            4: variable.parameter.function.latex
+            5: punctuation.definition.arguments.end.latex
+          pop: true
+        - include: main
+    - match: '(?:\s*)((\\)begin)(\{)((?:fboxv|boxedv|V)erbatim)(\})'
+      captures:
+        1: support.function.be.latex
+        2: punctuation.definition.function.latex
+        3: punctuation.definition.arguments.begin.latex
+        4: variable.parameter.function.latex
+        5: punctuation.definition.arguments.end.latex
+      push:
+        - meta_scope: meta.function.memoir-verbatim.latex
+        - meta_content_scope: markup.raw.verbatim.latex
+        - match: '((\\)end)(\{)(\4)(\})'
+          captures:
+            1: support.function.be.latex
+            2: punctuation.definition.function.latex
+            3: punctuation.definition.arguments.begin.latex
+            4: variable.parameter.function.latex
+            5: punctuation.definition.arguments.end.latex
+          pop: true
+    - match: '(?:\s*)((\\)begin)(\{)(alltt)(\})'
+      captures:
+        1: support.function.be.latex
+        2: punctuation.definition.function.latex
+        3: punctuation.definition.arguments.begin.latex
+        4: variable.parameter.function.latex
+        5: punctuation.definition.arguments.end.latex
+      push:
+        - meta_scope: meta.function.memoir-alltt.latex
+        - meta_content_scope: markup.raw.verbatim.latex
+        - match: '((\\)end)(\{)(alltt)(\})'
+          captures:
+            1: support.function.be.latex
+            2: punctuation.definition.function.latex
+            3: punctuation.definition.arguments.begin.latex
+            4: variable.parameter.function.latex
+            5: punctuation.definition.arguments.end.latex
+          pop: true
+        - match: '(\\)[A-Za-z]+'
+          scope: support.function.general.tex
+          captures:
+            1: punctuation.definition.function.tex
+    - match: |-
+        (?x)
+        (													    # Capture 1
+        	(\\)											  # Marker
+        	(
+        		(?:sub){0,2}section			  # Functions
+        	  | (?:sub)?paragraph
+        	  | chapter|part|addpart
+        	  | addchap|addsec|minisec
+        	)
+        	(?:\*)?											# Optional Unnumbered
+        )
+        (?:
+        	(\[)([^\[]*?)(\])						# Options for TOC- and Header-Name
+        ){0,2}?
+        (\{)												  # Opening Bracket
+      comment: This definition is a copy of the one for the main LaTeX grammar. The only difference is that the Memoir document class supports *two optional arguments* instead of only one.
+      captures:
+        1: support.function.section.latex
+        2: punctuation.definition.function.latex
+        4: punctuation.definition.arguments.optional.begin.latex
+        5: entity.name.section.latex
+        6: punctuation.definition.arguments.optional.end.latex
+        7: punctuation.definition.arguments.begin.latex
+      push:
+        - meta_scope: meta.function.section.$3.latex
+        - meta_content_scope: entity.name.section.latex
+        - match: '\}'
+          captures:
+            0: punctuation.definition.arguments.end.latex
+          pop: true
+        - include: main
+    - include: scope:text.tex.latex

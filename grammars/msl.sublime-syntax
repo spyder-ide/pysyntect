@@ -1,0 +1,316 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.mrc
+contexts:
+  main:
+    - include: comments
+    - include: group
+    - include: alias
+    - include: menu
+    - include: events
+    - include: dialog
+  alias:
+    - match: '(?i)^(alias)\x20+(?:(-l)\x20+)?(?!-l)([^\s]+)\s*'
+      comment: Matches alias declaration.
+      captures:
+        1: storage.type.alias.mrc
+        2: storage.modifier.alias.mrc
+        3: entity.name.function.mrc
+      push:
+        - meta_scope: meta.alias.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+  calc_content: []
+  code_block:
+    - match: "{"
+      push:
+        - meta_scope: meta.code.block.mrc
+        - match: "}"
+          pop: true
+        - include: code_content
+  code_content:
+    - include: comments
+    - include: variables
+    - include: identifiers
+    - include: conditionals
+    - include: commands
+    - include: code_block
+  commands:
+    - match: '(?i)(?:\x20+\|\x20+|(?<=else\x20)|^\x20*|\)|\G)\x20*(\/+)?([!|.]{1,2})?((?:win)?help|server|disconnect|join|hop|part|part(?:all)?|quit|list|links|quote|raw|(?:a|q)?me|(?:a|q|o|v|priv)?msg|action|(?:o|v)?notice|describe|query|sound|ctcp|dcc|wall(?:chops|voices)|uwho|sock(?:accept|close|list|listen|mark|open|pause|read|rename|udp|write)|b(?:read|replace|copy|set|trunc|unset|write)|com(?:close|list|open|reg)|dialog|did(?:tok)?|draw(?:copy|dot|fill|line|pic|rect|replace|rot|save|scroll|size|text)|f(?:open|list|seek|write|close)|(?:a|c|d|i|r|s)line|clear(?:all|ial)?|window|g(?:hide|(?:un)?load|move|opts|play|point|qreq|show|size|stop|talk)|h(?:add|dec|del|free|inc|load|make|save)|break|continue|goto|halt(?:def)?|return(?:ex)?|dec|inc|set|var|unset(?:all)|dec|inc|set|var|unset(?:all)?|(?:a|g|i|r)user|(?:d|r)level|ulist|flush|ial(?:clear|mark|fill)?|copy|flushini|(?:mk|rm)dir|rem(?:ini|ove)|rename|write(?:ini)?|aop|avoice|ban|channel|ignore|leave|mode|parseline|pop|protect|pvoice|say|updatenl|abook|ajinvite|alias|(?:a|c|m|t)nick|auto(?:join)?|background|beep|bindip|clipboard|colou?r|creq|ctcp(?:reply|s)|dccserver|dde(?:server)?|debug|disable|dll|dns|dqwindow|ebeeps|exit|echo|editbox|emailaddr|enable|events|filter|findtext|finger|firewall|flash|flood|fnord|font|fsend|fserve|fullname|fupdate|groups|hotlink|identd|linesep|load(?:buf)?|localinfo|log(?:view)?|mdi|menubar|noop|notify|pdcc|perform|play(?:ctrl)?|proxy|queryrn|registration|reload|remote|renwin|reset(?:error|idle)|run|save(?:buf|ini)?|scid|scon|setlayer|showmirc|signal|speak|splay|sreq|strip|switchbar|time(?:stamp|rs|r([^\s]+)?)|tips?|titlebar|tokenize|toolbar|tray|treebar|unload|url|vc(?:add|md|rem)|vol|xyzzy|away|close(?:msg)?|username|aclear|advertise|allnick|autoconnect|aquit|back|banlist|betaup|bin2txt|bw|channels|charset|config|cycleall|de(?:halfop|s?op|voice)|dock(?:panels)?|download|echo(?:monitor|x)|edit|encoding|fakeraw|fget|fullscreen|gcmem|globalkeys|p?google|halfop|highlight|icon|inick|inlineimage|kblayout|lag|linemarker|lock|logs|msgbox|mute|nextunread|nick(?:column|list)|nmsg|np|oline|options|paths|pause|plugins|priv|quick(?:connect|save)|raw(?:log|x)|re(?:alname|connect|freshsong|join|solve|start)|scripts|scrolltext|search|sendkeys|serverlist|set(?:config|option)|show(?:adiirc|menu)|slap|sleep|sop|statusbar|tab|themes|topicbox|usernick|txt2bin|un(?:ban|ignore|notify)|update|vars|viewlog|voice|w(?:down|jump|next|pause|play))(?=\b)'
+      comment: "Matches commands: /help /winhelp /server /disconnect /join /hop /part /partall /quit /list /links /quote /raw /me /msg /action /privmsg /notice /describe /amsg /ame /query /qme /qmsg /onotice /omsg /vnotice /vmsg /sound /ctcp /dcc /wallchops /wallvoices /uwho /sockaccept /sockclose /socklist /socklisten /sockmark /sockopen /sockpause /sockread /sockrename /sockudp /sockwrite /bread /breplace /bcopy /bset /btrunc /bunset /bwrite /comclose /comlist /comopen /comreg /dialog /did /didtok  /drawcopy /drawdot /drawfill /drawline /drawpic /drawrect /drawreplace /drawrot /drawsave /drawscroll /drawsize /drawtext /fopen /flist /fseek /fwrite /fclose  /aline /cline /dline /iline /rline /sline /clear /clearall /window /ghide /gload /gmove /gopts /gplay /gpoint /gqreq /gshow /gsize /gstop /gtalk /gunload /hadd /hdec /hdel /hfree /hinc /hload /hmake /hsave  /break /continue /else /elseif /goto /halt /haltdef /if /return /returnex /while /dec /inc /set /var /unset /unsetall /auser /dlevel /guser /iuser /rlevel /ulist /flush /ruser /ial /ialclear /ialmark /ialfill /copy /flushini /mkdir /remini /remove /rename /write /writeini /rmdir /aop /avoice /ban /channel /ignore /leave /mode /parseline /pop /protect /pvoice /say /updatenl /abook /ajinvite /alias /anick /autojoin /background /beep /bindip /clipboard /cnick /color /colour /creq /ctcpreply /ctcps /dccserver /dde /ddeserver /debug /disable /dll /dns /dqwindow /ebeeps /exit /echo /editbox /emailaddr /enable /events /filter /findtext /finger /firewall /flash /flood /fnord /font /fsend /fserve /fullname /fupdate /groups /hotlink /identd /linesep /load /loadbuf /localinfo /log /logview /mdi /menubar /mnick /noop /notify /pdcc /perform /play /playctrl /proxy /queryrn /registration /reload /remote /renwin /reseterror /resetidle /run /save /savebuf /saveini /scid /scon /setlayer /showmirc /signal /speak /splay /sreq /strip /switchbar /timer /timestamp /tip /tips /titlebar /tnick /tokenize /toolbar /tray /treebar /unload /url /vcadd /vcmd /vcrem /vol /xyzzy /auto /away /clearial /close /closemsg /timers /username 𝛼/aclear 𝛼/advertise 𝛼/allnick 𝛼/autoconnect 𝛼/aquit 𝛼/back 𝛼/banlist 𝛼/betaup 𝛼/bin2txt 𝛼/bw 𝛼/channels 𝛼/charset 𝛼/config 𝛼/cycleall 𝛼/dehalfop 𝛼/deop 𝛼/desop 𝛼/devoice 𝛼/dock 𝛼/dockpanels 𝛼/download 𝛼/echomonitor 𝛼/echox 𝛼/edit 𝛼/encoding 𝛼/fakeraw 𝛼/fget 𝛼/fullscreen 𝛼/gcmem 𝛼/globalkeys 𝛼/google 𝛼/halfop 𝛼/highlight 𝛼/icon 𝛼/inick 𝛼/inlineimage 𝛼/kblayout 𝛼/lag 𝛼/linemarker 𝛼/lock 𝛼/logs 𝛼/msgbox 𝛼/mute 𝛼/nextunread 𝛼/nickcolumn 𝛼/nicklist 𝛼/nmsg 𝛼/np 𝛼/oline 𝛼/options 𝛼/paths 𝛼/pause 𝛼/pgoogle 𝛼/plugins 𝛼/priv 𝛼/quickconnect 𝛼/quicksave 𝛼/rawx 𝛼/rawlog 𝛼/realname 𝛼/reconnect 𝛼/refreshsong 𝛼/rejoin 𝛼/resolve 𝛼/restart 𝛼/scripts 𝛼/scrolltext 𝛼/search 𝛼/sendkeys 𝛼/serverlist 𝛼/setconfig 𝛼/setoption 𝛼/showadiirc 𝛼/showmenu 𝛼/slap 𝛼/sleep 𝛼/sop 𝛼/statusbar 𝛼/tab 𝛼/themes 𝛼/topicbox 𝛼/usernick 𝛼/txt2bin 𝛼/unban 𝛼/unignore 𝛼/unnotify 𝛼/update 𝛼/vars 𝛼/viewlog 𝛼/voice 𝛼/wdown 𝛼/wjump 𝛼/wnext 𝛼/wpause 𝛼/wplay"
+      captures:
+        1: keyword.other.command.symbol.mrc
+        2: keyword.other.command.symbol.mrc
+        3: keyword.control.command.mrc
+        4: support.variable.name.mrc
+      push:
+        - match: '(?=\z|\x20+\|\x20+[^\x20]|\x20}|$)'
+          pop: true
+        - include: switches
+        - include: parameters
+    - match: '(?i)(?:\x20+\|\x20+|(?<=else\x20)|^\x20*|\)|\G)\x20*(?!\|\|\x20)(\/+)?([!|.]{1,2})?(?:(?![{};%&$]|if|else(?:if)?|while)([^\s]+))'
+      comment: Matches possible custom commands.
+      captures:
+        1: keyword.other.command.symbol.mrc
+        2: keyword.other.command.symbol.mrc
+        3: support.function.name.mrc
+      push:
+        - meta_scope: meta.cmd.mrc
+        - match: '(?=\z|\x20\|\x20[^\x20]|\x20}|$)'
+          pop: true
+        - include: switches
+        - include: parameters
+  comment_block:
+    - match: ^(?:\x20*)\/\*
+      comment: Matches a regular multi-line comment block.
+      push:
+        - meta_scope: comment.block.mrc
+        - match: ^(?:\x20*)\*\/$
+          pop: true
+  comment_documentation:
+    - match: ^(?:\x20*)(\/\*\*)$
+      comment: Matches a documentation multi-line comment block.
+      push:
+        - meta_scope: comment.block.documentation.mrc
+        - match: ^(?:\x20*)\*\/$
+          pop: true
+        - include: documentation_block
+  comment_line:
+    - match: (?<=\G|\x20\|\x20|^)(?:\x20*);
+      comment: Matches a single line comment.
+      push:
+        - meta_scope: comment.line.semicolon.mrc
+        - match: '(?=\z|\x20+\|\x20+[^\s]|\x20}|$)'
+          pop: true
+  comments:
+    - include: comment_documentation
+    - include: comment_block
+    - include: comment_line
+  conditionals:
+    - match: (?i)(?:(?<=\x20\|\x20|^|\G)\x20*(if|elseif|while)|(?:(?<=\))\x20+(&&|\|\|)))\x20+(?=\()
+      comment: "Matches conditionals: if elseif while"
+      captures:
+        1: keyword.control.conditional.mrc
+        2: keyword.control.conditional.mrc
+      push:
+        - meta_scope: meta.conditional.mrc
+        - match: (?=\)(?:\x20|$))
+          pop: true
+        - include: conditionals_content
+        - include: parameters
+    - match: (?i)(?<=\x20\|\x20|^)\x20*(else)\b
+      comment: "Matches conditional: else"
+      scope: keyword.control.conditional.mrc
+  conditionals_content:
+    - match: (?i)((?<=\x20)!?(?:==?=?|(?:<|>)=?|\/\/|\\|&|is(?:in(?:cs)?|wm(?:cs)?|(?:al)?num|letter|alpha|(?:low|upp)er|on|(?:a|h)?op|a?voice|reg|chan|ban|quiet|ignore|protected|notify|admin|owner|quiet|url))(?=\x20|\))|(?<=\()!(?=\$|%|&))
+      comment: 'Matches: == < > <= >= // \ & isin isincs iswm iswmcs isnum isletter isalnum isalpha islower isupper === ison isop ishop isvoice isreg ischan isban isquiet isaop isavoice isignore isprotected isnotify isadmin isowner isquiet isurl'
+      scope: keyword.operator.mrc
+    - include: constants
+  constants:
+    - match: (?<=\x20|^|\(|,)-?\d+(\.\d+)?(?=\x20|$|\)|,)
+      scope: constant.numeric.mrc
+  dialog:
+    - match: '(?i)^(dialog)\x20+(?:(-l)\x20+)?(?!-l)([^\s]+)\s*(?={)'
+      comment: Matches dialog declaration.
+      captures:
+        1: storage.type.dialog.mrc
+        2: storage.modifier.dialog.mrc
+        3: entity.name.section.mrc
+      push:
+        - meta_scope: meta.dialog.code.mrc
+        - match: "(?<=}$)"
+          pop: true
+        - include: dialog_content
+  dialog_content:
+    - include: comments
+    - match: (?i)^\x20*(title|icon|size|option|text|edit|button|check|radio|box|scroll|list|combo|icon|link|tab|menu|item)\x20+
+      comment: Matches dialog title icon size option text edit button check radio box scroll list combo icon link tab menu item
+      captures:
+        1: keyword.control.dialog.control.mrc
+      push:
+        - meta_content_scope: string.quoted.double.control.mrc
+        - match: (?<=$)
+          pop: true
+        - include: parameters
+  documentation_block:
+    - match: (?i)\x20*\*\x20+(@(?:author|command|const(?:ant)?|copyright|deprecated|event|example|experimental|global|identifier|ignore|license|nobadges|param(?:eter)?|arg(?:ument)?|prop|returns?|see|switch|todo|version))\b
+      comment: Matches tags for SimpleDocumentation v1.0.0.
+      captures:
+        1: storage.type.class.mrc
+  events:
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:(?:action|notice|(?:client)?text):[^:]+:[^:]+:)\s*'
+      comment: "Matches events: action notice text clienttext"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:(?:active|input|tabcomp|mscroll):(?:\*|#[^:]*|\?|=|!|@[^:]*):)\s*'
+      comment: "Matches events: active input tabcomp mscroll"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:(?:agent|appactive|connect(?:fail)?|disconnect|dns|exit|(?:un)?load|(?:midi|mp3|play|song|wave)end|nick|nosound|u?notify|ping|pong|quit|start|usermode|options|resume|song|suspend):)\s*'
+      comment: "Matches events: agent appactive connect connectfail disconnect dns exit load unload midiend mp3end playend songend waveend nick nosound notify unotify ping pong quit start usermode options resume song suspend"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:(?:(?:un)?ban|(?:de)?help|(?:de|server)?op|(?:de)?owner|(?:de)?voice|invite|join|kick|(?:server|raw)?mode|part|topic|(?:de)?admin):(?:\*|#[^:]*):)\s*'
+      comment: "Matches events: ban unban help dehelp deop serverop op deowner owner devoice voice invite join kick servermode mode part rawmode topic admin deadmin"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:(?:chat|ctcpreply|error|file(?:rcvd|sent)|(?:get|send)fail|logon|serv|signal|snotice|sock(?:close|listen|open|read|write)|udp(?:read|write)|vcmd|wallops|download|(?:un)?zip):[^:]+:)\s*'
+      comment: "Matches events: chat ctcpreply error filercvd filesent getfail sendfail logon serv signal snotice sockclose socklisten sockopen sockread sockwrite udpread udpwrite vcmd wallops download unzip zip"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:(?:close|open):(?:\*|\?|=|!|@[^:]*):)\s*'
+      comment: "Matches events: close open"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:dccserver:(?:chat|send|fserve):)\s*'
+      comment: "Matches events: dccserver"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:dialog:[^:]+:(?:init|close|edit|sclick|dclick|menu|scroll|mouse|rclick|drop|\*):[\d\-,\*]+:)\s*'
+      comment: "Matches events: dialog"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:hotlink:[^:]+:(?:\*|#[^:]*|\?|=|!|@[^:]*):)\s*'
+      comment: "Matches events: hotlink"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:key(?:down|up):(?:\*|@[^:]*):(?:\*|\d+(?:,\d+)*):)\s*'
+      comment: "Matches events: keydown keyup"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(on\x20+(?:me:)?[^:\s]+:parseline:(?:\*|in|out):[^:]+:)\s*'
+      comment: "Matches events: parseline"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(raw\x20+[^:\s]+:[^:]+:)\s*'
+      comment: "Matches events: raw"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+    - match: '^(?i)(ctcp\x20+[^:\s]+:[^:]+:(?:\*|#.*|\?):)\s*'
+      comment: "Matches events: raw"
+      captures:
+        1: entity.name.type.event.mrc
+      push:
+        - meta_scope: meta.event.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|(?<=}$)'
+          pop: true
+        - include: code_content
+  group:
+    - match: '(?i)^#[^\s]+ (on|off|end)(?:\b)'
+      comment: Matches a group.
+      scope: keyword.other.groupname.mrc
+  identifiers:
+    - include: identifiers_params
+    - include: identifiers_no_params
+  identifiers_no_params: []
+  identifiers_params: []
+  menu:
+    - match: '(?i)^(menu)\x20+((?:status|channel|query|nicklist|menubar|(?:channel)?link|@[^\x20,]+|\*)(?:,(?:status|channel|query|nicklist|menubar|(?:channel)?link|@[^\x20,]+))*|\*)\x20+{'
+      comment: Matches menu declaration.
+      captures:
+        1: storage.type.menu.mrc
+        2: storage.modifier.function.mrc
+      push:
+        - meta_scope: meta.menu.code.mrc
+        - match: '(?i)(?=\z|(?:^(?:on|raw|ctcp|dialog|\#[^\s]+|alias|menu)\b))|}$'
+          pop: true
+        - include: menu_content
+  menu_content:
+    - include: comments
+    - include: parameters
+    - match: (?:^\x20*|\G)\x20*(?:\.+)?((?:mouse|(?:s|d(?:r|m)?|u|r|lb|m)click)|leave|drop)(?:\x20*:\x20*)?
+      comment: Matches mouse sclick dclick uclick rclick lbclick leave and drop menu items
+      captures:
+        1: keyword.other.menu.item.mrc
+      push:
+        - match: '(?=\z|\x20}|$)'
+          pop: true
+        - include: code_content
+    - match: ^\x20*
+      comment: Matches menu items
+      push:
+        - match: '(?=\z|\x20}|$)'
+          pop: true
+        - include: parameters
+        - match: "(?<=:|{)"
+          push:
+            - match: '(?=\z|\x20}|$)'
+              pop: true
+            - include: code_content
+  parameters:
+    - include: variables
+    - include: identifiers
+    - include: constants
+  switches:
+    - match: '(?<=\x20)[-+][[:alnum:]]+(?=\s)'
+      comment: Matches - or + switches
+      scope: keyword.other.switch.mrc
+  variables:
+    - match: '(?<![^(,\x20!])(%)[^\x20),]+'
+      comment: Matches regular variables, %variable
+      scope: variable.other.normal.mrc
+    - match: '(?<![^(,\x20!])(&)[^\x20),]+'
+      comment: Matches binary variables, &variable
+      scope: variable.other.binary.mrc

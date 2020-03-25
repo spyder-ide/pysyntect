@@ -1,0 +1,59 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Dream Maker Interface
+file_extensions:
+  - dmf
+scope: source.dmf
+contexts:
+  main:
+    - match: '((#?\b[0-9a-fA-F]*)|\b(([0-9]+(,|x)?[0-9]*)|(\.[0-9]+)))\b'
+      scope: constant.numeric.dm
+    - match: (^(macro|menu)|(\b(window|elem)))\b
+      scope: storage.type.dm
+    - match: \b(true|false|none)\b
+      scope: variable.language.dm
+    - match: '\b([A-Z_]+)\b'
+      scope: constant.language.dm
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.dm
+      push:
+        - meta_scope: string.quoted.double.dm
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.dm
+          pop: true
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.dm
+      push:
+        - meta_scope: string.quoted.single.dm
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.dm
+          pop: true
+    - match: |-
+        (?x)
+        (?:  ^                                 # begin-of-line
+          |
+             (?: (?= \s )           (?<!else|new|return) (?<=\w)      #  or word + space before name
+               | (?= \s*[A-Za-z_] ) (?<!&&)       (?<=[*&>])   #  or type modifier before name
+             )
+        )
+        (\s*) (?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()
+        (
+        	(?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++ |                  # actual name
+        	(?: (?<=operator) (?: [-*&<>=+!]+ | \(\) | \[\] ) )  # if it is a C++ operator
+        )
+         \s*(?=\()
+      captures:
+        1: punctuation.whitespace.function.leading.dm
+        3: entity.name.function.dm
+        4: punctuation.definition.parameters.dm
+      push:
+        - meta_scope: meta.function.dm
+        - match: '(?<=\})|(?=#)|(;)?'
+          pop: true
+        - match: \bconst\b
+          scope: storage.modifier.dm

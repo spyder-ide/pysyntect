@@ -1,0 +1,80 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Modelica
+file_extensions:
+  - mo
+scope: source.modelica
+contexts:
+  main:
+    - match: /\*
+      push:
+        - meta_scope: comment.block
+        - match: \*/
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line
+    - match: \b(true|false)\b
+      scope: constant.language
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b'
+      scope: constant.numeric
+    - match: \b(Real|Integer|Boolean|String)\b
+      scope: storage.type
+    - match: \b(constant|final|parameter|expandable|replaceable|redeclare|constrainedby|import|flow|stream|input|output|discrete|connector)\b
+      scope: storage.modifier
+    - match: '\b\s*([A-Z])(?:([^ ;$]+)(;)?)([.]([A-Z])(?:([^ ;$]+)(;)?)?)++\b'
+      scope: keyword
+    - match: \b(for|if|when|while|then|loop|end if|end when|end for|end while|else|elsewhen|and|break|each|elseif)\b
+      scope: keyword.control
+    - match: \b(and|or|not)\b
+      scope: keyword.operator.logical
+    - match: <|<\=|>|>\=|\=\=|<>
+      scope: keyword.operator.comparison
+    - match: \+|\-|\.\+|\.\-|\*|\.\*|/|\./|\^
+      scope: keyword.operator.arithmetic
+    - match: \=|\:\=
+      scope: keyword.operator.assignment
+    - match: \b(algorithm|equation|initial equation|protected|public|register|end)\b
+      scope: keyword
+    - match: \b(inner|outer)\b
+      scope: keyword.other
+    - match: \b(acos|asin|atan|atan2|cos|cosh|exp|log|log10|sin|sinh|tan|tanh|abs|sign|sqrt|max|min|product|sum)\b
+      scope: support.function.mathematical
+    - match: \b(scalar|vector|matrix|identity|diagonal|zeros|ones|fill|linspace|transpose|outerProduct|symmetric|cross|skew)\b
+      scope: support.function.array
+    - match: \b(ceil|div|fill|floor|integer|max|min|mod|rem|pre|noEvent|change|edge|initial|terminal|reinit|sample|smooth|terminate)\b
+      scope: support.function.event
+    - match: \b(connect|der|inStream|actualStream|semiLinear|spatialDistribution|getInstanceName|homotopy|delay|assert|ndims|size|cardinality|isPresent)\b
+      scope: support.function.special
+    - match: \b(extends|partial|within)\b
+      scope: support.type
+    - match: \b((model|class|record|block|package)\s+\w+\s*(".*")*)
+      captures:
+        1: entity.name.type
+        2: keyword
+        3: comment.line
+    - match: ((function)\s+\w+\s*(".*")*)
+      captures:
+        1: entity.name.function
+        2: keyword
+        3: comment.line
+    - match: annotation
+      push:
+        - meta_scope: comment.block
+        - match: ;\s*\n
+          pop: true
+        - match: '"'
+          push:
+            - meta_scope: comment.block
+            - match: '"'
+              pop: true
+    - match: '["\w\)](\s+".*"\s*);'
+      captures:
+        1: constant.string
+    - match: '"'
+      push:
+        - meta_scope: constant.string
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escaped

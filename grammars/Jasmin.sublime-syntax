@@ -1,0 +1,147 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: jasmin
+file_extensions:
+  - j
+scope: source.jasmin
+contexts:
+  main:
+    - include: class-def
+    - include: interface-def
+    - include: super-def
+    - include: implements-def
+    - include: method-def
+    - include: field-def
+    - include: var-def
+    - include: comment
+    - include: directive
+    - include: modifier
+    - include: type-descriptor
+    - include: double-string
+    - include: number
+    - include: label
+    - include: true-false-null
+    - include: control
+  comment:
+    - match: "(?<=^|[ 	]);.*"
+      scope: comment.line.jasmin
+  class-def:
+    - match: (?=\.class)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - include: modifier
+        - include: directive
+        - match: '([\w/]+)(?=$|\s+(?:;.*)?$)'
+          captures:
+            1: entity.name.type.jasmin
+  control:
+    - match: (?<=^|\s)return(?=$|\s)
+      scope: keyword.control.jasmin
+  directive:
+    - match: (?<=^|\s)\.(?:catch|class|end method|field|implements|interface|limit|line|method|source|super|throws|var)(?=$|\s)
+      scope: keyword.meta.directive.jasmin
+  double-string:
+    - match: '"'
+      captures:
+        0: string.begin.jasmin
+      push:
+        - match: '"'
+          captures:
+            0: string.end.jasmin
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.jasmin
+        - match: .
+          scope: string.double.jasmin
+  field-def:
+    - match: (?=\.field)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - include: modifier
+        - include: directive
+        - include: number
+        - include: double-string
+        - include: type-descriptor
+        - match: '([\w/]+)\s+((?:\[+)?(?:L[/\w_]+;|[BCDFIJSZV]))(?=(\s+)?[=]|(\s+)?$|\s+;)'
+          captures:
+            1: variable.parameter.jasmin
+            2: storage.type.type-descriptor.jasmin
+  implements-def:
+    - match: (?=\.implements)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - match: '(\.implements)\s+([\w/]+)'
+          captures:
+            1: keyword.meta.directive.jasmin
+            2: entity.other.inherited-class.jasmin
+  interface-def:
+    - match: (?=\.interface)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - include: modifier
+        - include: directive
+        - match: '([\w/]+)(?=$|\s+(?:;.*)?$)'
+          captures:
+            1: entity.name.type.jasmin
+  label:
+    - match: '^[^0-9][^=^:."-]*:'
+      scope: keyword.meta.label.jasmin
+  method-def:
+    - match: (?=\.method)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - include: modifier
+        - include: directive
+        - include: type-descriptor
+        - match: '([\w/<>]+)(?=\()'
+          captures:
+            1: entity.name.function.jasmin
+  modifier:
+    - match: (?<=^|\s)(?:final|static|abstract|public|friend|protected|private)(?=$|\s)
+      scope: storage.modifier.jasmin
+  number:
+    - match: '(?<=^|[\s(,=])[-+]?(?:[1-9][0-9]*|[-+]?(?:0?\.|[1-9]\.)[0-9]+|0x[0-9A-F]+|0)(?=$|[\s,)=])'
+      scope: constant.numeric.jasmin
+  super-def:
+    - match: (?=\.super)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - match: '(\.super)\s+([\w/]+)'
+          captures:
+            1: keyword.meta.directive.jasmin
+            2: entity.other.inherited-class.jasmin
+  true-false-null:
+    - match: '(?<=^|[\s(,])(?:null|false|true)(?=$|[\s,)])'
+      scope: constant.language.jasmin
+  type-descriptor:
+    - match: '(?<=^|[\s()=,])(?:(?:\[+)?(?:L[/\w_]+;|[BCDFIJSZV]))(?=$|[\s,)=])'
+      scope: storage.type.type-descriptor.jasmin
+  var-def:
+    - match: (?=\.var)
+      push:
+        - match: $
+          pop: true
+        - include: comment
+        - match: '(\.var)\s+([1-9][0-9]*|[0])\s+(is)\s+([\w_]+)\s+((?:\[+)?(?:L[/\w_]+;|[BCDFIJSZV]))\s+(from)\s+(?:[\w_]+)\s+(to)\s+(?:[\w_]+)'
+          comment: .var <var-number> is <name> <descriptor> from <label1> to <label2>
+          captures:
+            1: keyword.meta.directive.jasmin
+            2: constant.numeric.jasmin
+            3: keyword.meta.is.jasmin
+            4: variable.parameter.jasmin
+            5: storage.type.type-descriptor.jasmin
+            6: keyword.meta.from.jasmin
+            7: keyword.meta.to.jasmin

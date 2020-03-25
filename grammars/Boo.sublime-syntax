@@ -1,0 +1,248 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Boo
+file_extensions:
+  - boo
+scope: source.boo
+contexts:
+  main:
+    - match: (#|//)
+      push:
+        - meta_scope: comment.line.source.boo
+        - match: \n
+          pop: true
+    - match: /\*
+      push:
+        - meta_scope: comment.block.source.boo
+        - match: \*/
+          pop: true
+    - match: \b(import|from|if|else|elif|unless|for|in|while|continue|break|pass|return|namespace|try|raise|except|ensure|assert|yield|goto|get|set|of|ref|unsafe|new|match|case|otherwise|debug|using|lock|block|macro|self|event|property)\b
+      scope: keyword.control.source.boo
+    - match: \b(isa|is|as|cast)\b
+      scope: keyword.operator.types.source.boo
+    - match: \b(and|or|not)\b
+      scope: keyword.operator.logical.source.boo
+    - match: (\*=|/=|%=|\+=|-=|\*\*=|>>=|<<=|&=|\|=|\^=|\+\+|--)
+      scope: keyword.operator.assignment.augmented.source.boo
+    - match: (\*|/|%|\+|-|\*\*|>>|<<|&|\||\^)
+      scope: keyword.operator.arithmetic.source.boo
+    - match: (<|>|<=|>=|==|!=)
+      scope: keyword.operator.comparison.source.boo
+    - match: (=)
+      scope: keyword.operator.assignment.source.boo
+    - match: '(\(|\)|\[|\]|{|}|:|,)'
+      scope: keyword.operator.source.boo
+    - match: \b\d+(\.\d+)?(f|F|L)?\b
+      scope: constant.numeric.source.boo
+    - match: \b(true|false|null|value)\b
+      scope: constant.language.source.boo
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.source.boo
+        - match: "'"
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.source.boo
+        - match: '"'
+          pop: true
+    - match: '"""'
+      push:
+        - meta_scope: string.quoted.double.source.boo
+        - match: '"""'
+          pop: true
+    - match: \b(sbyte|short|int|long|byte|ushort|uint|ulong|single|double|decimal|char|string|bool|object|duck|date|enum)\b
+      scope: storage.type.source.boo
+    - match: \b(public|protected|internal|private|abstract|final|static|partial|virtual|override)\b
+      scope: storage.modifier.source.boo
+    - match: \b(print|enumerate|gets|prompt|join|map|array|matrix|iterator|shellp|shell|shellm|super|enemurate|range|reversed|zip|cat|typeof|sizeof|len)\b
+      scope: support.function.source.boo
+    - match: '(?<=\[)\s*([Gg]etter|Setter|Property)\s*(?=\()'
+      captures:
+        1: storage.type.property.source.boo
+      push:
+        - meta_scope: meta.property.source.boo
+        - match: '(\))\s*(\])'
+          captures:
+            1: keyword.operator.source.boo
+            2: keyword.operator.source.boo
+          pop: true
+        - match: (?<=\()
+          push:
+            - meta_content_scope: meta.name.property.source.boo
+            - match: (?=,|\))
+              pop: true
+            - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+              push:
+                - meta_content_scope: entity.name.function.source.boo
+                - match: "(?![A-Za-z0-9_])"
+                  pop: true
+            - include: main
+        - include: main
+    - match: '\b([Gg]etter|Setter|Property)\b'
+      scope: storage.type.property.source.boo
+    - match: '\b(def)\s+(?=[A-Za-z_][A-Za-z0-9_]*\s*\([^\n]*\))'
+      captures:
+        1: storage.type.function.source.boo
+      push:
+        - meta_scope: meta.function.source.boo
+        - match: (\))\s*(?:(\:?)|(.*$\n?))
+          captures:
+            1: keyword.operator.source.boo
+            2: keyword.operator.source.boo
+            3: invalid.illegal.missing-section-begin.source.boo
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.source.boo
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+        - match: (\()\s*(ref\b)?
+          captures:
+            1: keyword.operator.source.boo
+            2: keyword.control.source.boo
+          push:
+            - meta_content_scope: meta.function.parameters.source.boo
+            - match: (?=\)\s*\:?)
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: \b(def|do)(?=\s*\()
+      captures:
+        1: storage.type.closure.source.boo
+      push:
+        - meta_scope: meta.function.source.boo
+        - match: (\))\s*(\:)
+          captures:
+            1: keyword.operator.source.boo
+            2: keyword.operator.source.boo
+          pop: true
+        - match: (\()
+          captures:
+            1: keyword.operator.source.boo
+          push:
+            - meta_content_scope: meta.function.parameters.source.boo
+            - match: (?=\)\s*\:?)
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: '\b(def)\s+(?=[A-Za-z_][A-Za-z0-9_]*)'
+      captures:
+        1: storage.type.function.source.boo
+      push:
+        - meta_scope: meta.function.source.boo
+        - match: (\()|\s*($\n?|#.*$\n?)
+          captures:
+            1: keyword.operator.source.boo
+            2: invalid.illegal.missing-parameters.source.boo
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.source.boo
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+    - match: \b(def)\b
+      scope: storage.type.function.source.boo
+    - match: \b(do)\b
+      scope: storage.type.closure.source.boo
+    - match: \b(constructor|destructor)\b
+      scope: keyword.control.source.boo
+    - match: '\b(callable)\s+(?=[A-Za-z_][A-Za-z0-9_]*\s*\()'
+      captures:
+        1: storage.type.callable.source.boo
+      push:
+        - meta_scope: meta.callable.source.boo
+        - match: (\))
+          captures:
+            1: keyword.operator.source.boo
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.callable.source.boo
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+        - match: (\()
+          captures:
+            1: keyword.operator.source.boo
+          push:
+            - meta_content_scope: meta.callable.parameters.source.boo
+            - match: (?=\)\s*\:?)
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: \b(callable)\b
+      scope: storage.type.callable.source.boo
+    - match: '\b(class|interface|struct)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*(?:(\:)|($\n?)))'
+      captures:
+        1: storage.type.class.source.boo
+      push:
+        - meta_scope: meta.class.old-style.source.boo
+        - meta_content_scope: entity.name.class.source.boo
+        - match: \s*(?:(:)|($\n?))
+          captures:
+            1: keyword.operator.source.boo
+            2: invalid.illegal.missing-section-begin.source.boo
+          pop: true
+    - match: '\b(class|interface|struct)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\([^\n]*\))'
+      captures:
+        1: storage.type.class.source.boo
+      push:
+        - meta_scope: meta.class.source.boo
+        - match: (\))\s*(?:(\:)|(.*$\n?))
+          captures:
+            1: keyword.operator.source.boo
+            2: keyword.operator.source.boo
+            3: invalid.illegal.missing-section-begin.source.boo
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.class.source.boo
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+        - match: (\()
+          captures:
+            1: keyword.operator.source.boo
+          push:
+            - meta_content_scope: meta.class.inheritance.source.boo
+            - match: (?=\)|:)
+              pop: true
+            - match: (?<=\(|,)\s*
+              push:
+                - meta_content_scope: entity.other.inherited-class.source.boo
+                - match: \s*(?:(,)|(?=\)))
+                  captures:
+                    1: punctuation.separator.inheritance.source.boo
+                  pop: true
+                - include: main
+    - match: '\b(class|interface|struct)\s+(?=[a-zA-Z_][a-zA-Z_0-9])'
+      captures:
+        1: storage.type.class.source.boo
+      push:
+        - meta_scope: meta.class.source.boo
+        - match: (\()|\s*($\n?|#.*$\n?)
+          captures:
+            1: keyword.operator.source.boo
+            2: invalid.illegal.missing-inheritance.source.boo
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.class.source.boo
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+    - match: \b(class|interface|struct)\b
+      scope: storage.type.class.source.boo
+    - match: '\b([a-z_]+[A-Za-z_0-9]*\s+(as))\b'
+      captures:
+        1: variable.source.boo
+        2: keyword.operator.source.boo
+  keyword_arguments:
+    - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*'
+      captures:
+        1: variable.parameter.function.json
+      push:
+        - match: '\s*(?:(,)|(?=\n|\)[:\s]))'
+          captures:
+            1: punctuation.separator.parameters.json
+          pop: true
+        - include: main

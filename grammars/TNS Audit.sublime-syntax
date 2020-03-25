@@ -1,0 +1,135 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TNS Audit
+file_extensions:
+  - audit
+scope: source.tnsaudit
+contexts:
+  main:
+    - include: comment
+    - include: check
+  comment:
+    - match: ^\s*#.*
+      scope: comment.line.number-sign.source.tnsaudit
+  check:
+    - match: (<)(\w+?)( type)?(\s*\:.*?)?(>)
+      captures:
+        1: support.function.tnsaudit
+        2: keyword.control.tnsaudit
+        3: keyword.control.tnsaudit
+        5: support.function.tnsaudit
+      push:
+        - meta_scope: meta.function.tnsaudit
+        - match: (</)(\2)(>)
+          captures:
+            1: support.function.tnsaudit
+            2: keyword.control.tnsaudit
+            3: support.function.tnsaudit
+          pop: true
+        - include: main
+        - include: description
+        - include: type
+        - include: reference
+        - include: regex
+        - include: sql
+        - include: xsl_stmt
+        - include: multiple_value_tag
+        - include: other_tags
+        - include: other_keywords
+        - include: string
+        - include: illegal
+  description:
+    - match: '^\s*(description)\s*:\s*(\")((\\.|[^\"])*)'
+      captures:
+        1: variable.parameter.tnsaudit
+        2: string.tnsaudit
+        3: entity.name.function.tnsaudit
+      push:
+        - meta_scope: meta.name.tag.tnsaudit
+        - match: (\")(?!\w)
+          captures:
+            1: string.tnsaudit
+          pop: true
+  illegal:
+    - match: '[^\s}]'
+      scope: invalid.illegal.unrecognized.tnsaudit
+  multiple_value_tag:
+    - match: ^\s*(sql_types|sql_expect|value_data)\s*:\s*
+      captures:
+        1: variable.parameter.tnsaudit
+      push:
+        - match: $
+          pop: true
+        - include: string
+  other_keywords:
+    - match: '(?<=\s)(NO|YES|NULL)(?=[\s\,])'
+      scope: meta.keyword.tnsaudit
+  other_tags:
+    - match: ^\s*(audit_policy_subcategory|reg_key|reg_item|reg_ignore_hku_users|wmi_key|wmi_attribute|wmi_request|wmi_namespace|required|aws_action|systemvalue|system|file_extension|file|info|cmd|solution|type|see_also|item|value_type|regex_replace|max_size|only_show|known_good|request)\s*:\s*
+      scope: meta.tag.tnsaudit
+      captures:
+        1: variable.parameter.tnsaudit
+  reference:
+    - match: ^\s*(reference)\s*:\s*(\"|\')
+      captures:
+        1: variable.parameter.tnsaudit
+        2: string.tnsaudit
+      push:
+        - meta_scope: meta.reference.tnsaudit
+        - match: (\"|\')(?!\w)
+          captures:
+            1: string.tnsaudit
+          pop: true
+        - include: xref
+  regex:
+    - match: ^\s*(regex|expect|not_expect|context)\s*:\s*(\"|\')
+      captures:
+        1: variable.parameter.tnsaudit
+        2: string.tnsaudit
+      push:
+        - match: (\"|\')(?!\w)
+          captures:
+            1: string.tnsaudit
+          pop: true
+        - include: scope:source.regexp
+  sql:
+    - match: ^\s*(sql_request)\s*:\s*(\"|\')
+      captures:
+        1: variable.parameter.tnsaudit
+        2: string.tnsaudit
+      push:
+        - match: (\"|\')(?!\w)
+          captures:
+            1: string.tnsaudit
+          pop: true
+        - include: scope:source.sql
+  string:
+    - match: (\"|\')
+      push:
+        - meta_scope: string.quoted.tnsaudit
+        - match: (\"|\')$
+          pop: true
+  type:
+    - match: ^\s*(kerberos_policy|password_policy|audit_policy|lockout_policy|dont_echo_cmd|check_type|value_type|right_type|reg_option|check_option|type)\s*:\s*(\w+)
+      scope: meta.type.tag.tnsaudit
+      captures:
+        1: variable.parameter.tnsaudit
+  xref:
+    - match: '([^\|]+)(\|)([^,\"]+)(,)?'
+      scope: keyword.operator.tnsaudit
+      captures:
+        1: constant.language.tnsaudit
+        2: support.function.tnsaudit
+        4: support.function.tnsaudit
+  xsl_stmt:
+    - match: ^\s*(xsl_stmt)\s*:\s*(\"|\')
+      captures:
+        1: variable.parameter.tnsaudit
+        2: string.tnsaudit
+      push:
+        - match: (\"|\')(?!\w)
+          captures:
+            1: string.tnsaudit
+          pop: true
+        - include: scope:text.xml.xsl

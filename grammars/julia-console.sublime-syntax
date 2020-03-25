@@ -1,0 +1,17 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Julia Console
+comment: Not sure what this will be used for... Maybe if we have a REPL someday
+scope: source.julia.console
+contexts:
+  main:
+    - match: '^(julia>|\.{3}|In \[\d+\]:) (.+)$'
+      captures:
+        1: punctuation.separator.prompt.julia.console
+    - match: ^(shell>) (.+)$
+      captures:
+        1: punctuation.separator.prompt.shell.julia.console
+    - match: ^(help\?>) (.+)$
+      captures:
+        1: punctuation.separator.prompt.help.julia.console

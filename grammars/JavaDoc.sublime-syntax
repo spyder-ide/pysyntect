@@ -1,0 +1,206 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JavaDoc
+file_extensions: []
+scope: text.html.javadoc
+contexts:
+  main:
+    - match: (/\*\*)\s*$
+      captures:
+        1: punctuation.definition.comment.begin.javadoc
+      push:
+        - meta_scope: comment.block.documentation.javadoc
+        - meta_content_scope: text.html
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.javadoc
+          pop: true
+        - include: inline
+        - match: ((\@)param)
+          captures:
+            1: keyword.other.documentation.param.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.param.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)return)
+          captures:
+            1: keyword.other.documentation.return.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.return.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)throws)
+          captures:
+            1: keyword.other.documentation.throws.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.throws.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)exception)
+          captures:
+            1: keyword.other.documentation.exception.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.exception.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)author)
+          captures:
+            1: keyword.other.documentation.author.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.author.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)version)
+          captures:
+            1: keyword.other.documentation.version.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.version.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)see)
+          captures:
+            1: keyword.other.documentation.see.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.see.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)since)
+          captures:
+            1: keyword.other.documentation.since.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.since.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)serial)
+          captures:
+            1: keyword.other.documentation.serial.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.serial.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)serialField)
+          captures:
+            1: keyword.other.documentation.serialField.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.serialField.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)serialData)
+          captures:
+            1: keyword.other.documentation.serialData.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.serialData.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)deprecated)
+          captures:
+            1: keyword.other.documentation.deprecated.javadoc
+            2: punctuation.definition.keyword.javadoc
+          push:
+            - meta_scope: meta.documentation.tag.deprecated.javadoc
+            - match: (?=^\s*\*?\s*@|\*/)
+              pop: true
+            - include: inline
+        - match: ((\@)\S+)\s
+          captures:
+            1: keyword.other.documentation.custom.javadoc
+            2: punctuation.definition.keyword.javadoc
+  inline:
+    - include: inline-formatting
+    - match: '<(?!(a|abbr|acronym|address|area|b|bdo|big|blockquote|br|caption|cite|code|colgroup|dd|del|div|dfn|dl|dt|em|fieldset|font|h1toh6|hr|i|img|ins|kbd|li|ol|p|pre|q|samp|small|span|strong|sub|sup|table|tbody|td|tfoot|th|thread|tr|tt|u|ul)\b[^>]*>)'
+      comment: |
+        This prevents < characters in commented source from starting
+                                        a tag that will not end. List of allowed tags taken from
+                                        java checkstyle.
+    - include: scope:text.html.basic
+    - match: "((https?|s?ftp|ftps|file|smb|afp|nfs|(x-)?man|gopher|txmt)://|mailto:)[-:@a-zA-Z0-9_.,~%+/?=&#;]+(?<![-.,?:#;])"
+      scope: markup.underline.link
+  inline-formatting:
+    - match: '(\{)((\@)code)'
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.code.javadoc
+        3: punctuation.definition.keyword.javadoc
+      push:
+        - meta_scope: meta.tag.template.code.javadoc
+        - meta_content_scope: markup.raw.code.javadoc
+        - match: '\}'
+          captures:
+            0: punctuation.definition.tag.end.javadoc
+          pop: true
+    - match: '(\{)((\@)literal)'
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.literal.javadoc
+        3: punctuation.definition.keyword.javadoc
+      push:
+        - meta_scope: meta.tag.template.literal.javadoc
+        - meta_content_scope: markup.raw.literal.javadoc
+        - match: '\}'
+          captures:
+            0: punctuation.definition.tag.end.javadoc
+          pop: true
+    - match: '(\{)((\@)docRoot)(\})'
+      scope: meta.tag.template.docRoot.javadoc
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.docRoot.javadoc
+        3: punctuation.definition.keyword.javadoc
+        4: punctuation.definition.tag.end.javadoc
+    - match: '(\{)((\@)inheritDoc)(\})'
+      scope: meta.tag.template.inheritDoc.javadoc
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.inheritDoc.javadoc
+        3: punctuation.definition.keyword.javadoc
+        4: punctuation.definition.tag.end.javadoc
+    - match: '(\{)((\@)link)(?:\s+(\S+?))?(?:\s+(.+?))?\s*(\})'
+      scope: meta.tag.template.link.javadoc
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.link.javadoc
+        3: punctuation.definition.keyword.javadoc
+        4: markup.underline.link.javadoc
+        5: string.other.link.title.javadoc
+        6: punctuation.definition.tag.end.javadoc
+    - match: '(\{)((\@)linkplain)(?:\s+(\S+?))?(?:\s+(.+?))?\s*(\})'
+      scope: meta.tag.template.linkplain.javadoc
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.linkplain.javadoc
+        3: punctuation.definition.keyword.javadoc
+        4: markup.underline.linkplain.javadoc
+        5: string.other.link.title.javadoc
+        6: punctuation.definition.tag.end.javadoc
+    - match: '(\{)((\@)value)\s*(\S+?)?\s*(\})'
+      scope: meta.tag.template.value.javadoc
+      captures:
+        1: punctuation.definition.tag.begin.javadoc
+        2: keyword.other.documentation.directive.value.javadoc
+        3: punctuation.definition.keyword.javadoc
+        4: variable.other.javadoc
+        5: punctuation.definition.tag.end.javadoc

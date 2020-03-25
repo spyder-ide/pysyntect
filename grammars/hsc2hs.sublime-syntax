@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Hsc2Hs
+file_extensions:
+  - hsc
+scope: source.hsc2hs
+contexts:
+  main:
+    - include: scope:source.haskell

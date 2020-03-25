@@ -1,0 +1,20 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JavaScript Template
+file_extensions:
+  - ejs
+scope: text.html.js
+contexts:
+  main:
+    - match: <%=?
+      captures:
+        0: punctuation.section.embedded.js
+      push:
+        - meta_scope: source.js.embedded.html
+        - match: "%>"
+          captures:
+            0: punctuation.section.embedded.js
+          pop: true
+        - include: scope:source.js
+    - include: scope:text.html.basic

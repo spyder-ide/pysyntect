@@ -1,0 +1,39 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Standard ML - CM
+comment: CM is the SML Compilation Manager, a sophisticated make that determines dependencies for you.
+file_extensions:
+  - cm
+scope: source.cm
+contexts:
+  main:
+    - match: \(\*
+      captures:
+        0: punctuation.definition.comment.begin.ml
+      push:
+        - meta_scope: comment.block.cm
+        - match: \*\)
+          captures:
+            0: punctuation.definition.comment.end.ml
+          pop: true
+    - match: \b(Library|is|Group|structure|signature|functor)\b
+      scope: keyword.other.cm
+    - match: ^\s*(#(if).*)
+      captures:
+        1: meta.preprocessor.cm
+        2: keyword.control.import.if.cm
+      push:
+        - meta_scope: meta.directive.cm
+        - match: ^\s*(#(endif))
+          captures:
+            1: meta.preprocessor.cm
+            2: keyword.control.import.if.cm
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.cm
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.cm

@@ -1,0 +1,44 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Isabelle ROOT
+file_extensions:
+  - ROOT
+scope: source.isabelle.root
+contexts:
+  main:
+    - match: \b(chapter|session|in|description|options|global_theories|theories|files|document_files|sessions)\b
+      scope: keyword.control
+    - match: \b(browser_info|condition|document|document_graph|document_output|document_variants|eta_contract|goals_limit|names_long|names_short|names_unique|pretty_margin|print_mode|show_brackets|show_consts|show_main_goal|show_question_marks|show_sorts|show_types|thy_output_break|thy_output_display|thy_output_indent|thy_output_modes|thy_output_quotes|thy_output_source|timeout|global)\b
+      scope: keyword.other.option
+    - match: \b(true|false)\b
+      scope: support.constant
+    - match: '\b(quick_and_dirty|skip_proofs)[ ]*(\=)[ ]*(false)\b'
+      scope: meta.abandon-proof.false
+      captures:
+        1: keyword.other.option
+        2: keyword.operator
+        3: support.constant
+    - match: \b(quick_and_dirty|skip_proofs)\b
+      scope: invalid.illegal.abandon-proof
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double
+        - match: '"'
+          pop: true
+    - match: '\{\*'
+      push:
+        - meta_scope: comment.block.documentation
+        - match: '\*\}'
+          pop: true
+    - match: \(\*
+      push:
+        - meta_scope: comment.block
+        - match: \*\)
+          pop: true
+    - match: '\(|\)|\[|\]|\=|\+|\,'
+      scope: keyword.operator
+    - match: '\??''?([^\W\d]|\\<\w+\>)([.\w\'']|\\<\w+\>)*'
+      scope: variable.other
+    - match: "[0-9]+"
+      scope: constant.numeric

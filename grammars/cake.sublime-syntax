@@ -1,0 +1,12 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: "C# Cake File"
+file_extensions:
+  - cake
+scope: source.cake
+contexts:
+  main:
+    - include: scope:source.cs
+    - match: ^#(load|l)
+      scope: preprocessor.source.cake

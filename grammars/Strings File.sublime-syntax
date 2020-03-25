@@ -1,0 +1,43 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Strings File
+file_extensions:
+  - strings
+scope: source.strings
+contexts:
+  main:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.strings
+      push:
+        - meta_scope: comment.block.strings
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.strings
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.strings
+      push:
+        - meta_scope: string.quoted.double.strings
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.strings
+          pop: true
+        - match: '\\(\\|[abefnrtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-zA-Z0-9]+)'
+          scope: constant.character.escape.strings
+        - match: \\.
+          scope: invalid.illegal.unknown-escape.strings
+        - match: |-
+            (?x)%
+            	(\d+\$)?                             # field (argument #)
+            	[#0\- +']*                           # flags
+            	[,;:_]?                              # separator character (AltiVec)
+            	((-?\d+)|\*(-?\d+\$)?)?              # minimum field width
+            	(\.((-?\d+)|\*(-?\d+\$)?)?)?         # precision
+            	(hh|h|ll|l|j|t|z|q|L|vh|vl|v|hv|hl)? # length modifier
+            	[@diouxXDOUeEfFgGaACcSspn%]          # conversion type
+          scope: constant.other.placeholder.strings
+        - match: "%"
+          scope: invalid.illegal.placeholder.c

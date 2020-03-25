@@ -1,0 +1,269 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: .gitconfig
+file_extensions:
+  - .git/config
+  - .config/git/config
+  - gitconfig
+  - gitmodules
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		git-?(?:config|modules)
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		git-?(?:config|modules)
+  	(?=\s|:|$)
+scope: source.gitconfig
+contexts:
+  main:
+    - include: comments
+    - include: aliasSection
+    - include: urlSection
+    - include: section
+  alias:
+    - match: '^\s*([A-Za-z][-A-Za-z]*)\s*(=)'
+      captures:
+        1: variable.parameter.assignment.gitconfig
+        2: keyword.operator.assignment.key-value.gitconfig
+      push:
+        - meta_scope: meta.alias.gitconfig
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - include: aliasInnards
+  aliasInnards:
+    - match: \G\s*(?:(")(!)|(!)("))\s*+
+      captures:
+        1: punctuation.definition.string.begin.gitconfig
+        2: keyword.operator.shell-script.gitconfig
+        3: keyword.operator.shell-script.gitconfig
+        4: punctuation.definition.string.begin.gitconfig
+      push:
+        - meta_scope: meta.quoted.shell.command.gitconfig
+        - match: (?<!\\)(?:(")|(?=$))
+          captures:
+            1: punctuation.definition.string.end.gitconfig
+          pop: true
+        - include: scope:source.shell
+    - match: \G\s*(!)
+      captures:
+        1: keyword.operator.shell-script.gitconfig
+      push:
+        - meta_scope: meta.unquoted.shell.command.gitconfig
+        - match: (?<!\\)(?=$)
+          pop: true
+        - include: scope:source.shell
+    - match: '\G\s*([^\s"#;!]+)'
+      captures:
+        0: string.unquoted.source.gitconfig
+      push:
+        - meta_scope: meta.git.subcommands.gitconfig
+        - meta_content_scope: string.unquoted.source.gitconfig
+        - match: '(?<!\\)(?=$|[#;])'
+          pop: true
+        - include: escapedNewline
+  aliasSection:
+    - match: '(?i)^(\[)\s*(alias)\s*(\])'
+      captures:
+        0: meta.section.header.gitconfig
+        1: punctuation.definition.bracket.square.begin.gitconfig
+        2: entity.section.name.gitconfig
+        6: punctuation.definition.bracket.square.end.gitconfig
+      push:
+        - meta_scope: meta.aliases.section.gitconfig
+        - match: '^(?=\[)'
+          pop: true
+        - include: alias
+        - include: comments
+        - include: variables
+  comments:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.gitconfig
+      push:
+        - meta_scope: comment.line.number-sign.gitconfig
+        - match: $
+          pop: true
+    - match: ;
+      captures:
+        0: punctuation.definition.comment.gitconfig
+      push:
+        - meta_scope: comment.line.semicolon.gitconfig
+        - match: $
+          pop: true
+  escapedNewline:
+    - match: (\\)$\s*
+      scope: constant.character.escape.newline.gitconfig
+      captures:
+        1: punctuation.definition.escape.backslash.gitconfig
+  escapes:
+    - include: stringEscapes
+    - match: (\\)n
+      scope: constant.character.escape.newline.gitconfig
+      captures:
+        1: punctuation.definition.escape.backslash.gitconfig
+    - match: (\\)t
+      scope: constant.character.escape.tab.gitconfig
+      captures:
+        1: punctuation.definition.escape.backslash.gitconfig
+    - match: (\\)b
+      scope: constant.character.escape.backspace.gitconfig
+      captures:
+        1: punctuation.definition.escape.backslash.gitconfig
+    - match: \\.
+      scope: invalid.illegal.syntax.escape.gitconfig
+  section:
+    - match: |-
+        (?x)
+        ^ (\[)\s*(\]) #1, #2
+        |
+        ^ (\[) #3
+        \s*
+        (?:
+        	([-.A-Za-z0-9]+?) #4
+        	(?:
+        		(\.)           #5
+        		([-A-Za-z0-9]+) #6
+        	)?
+        )
+        (?:
+        	\s*
+        	(") #7
+        	(   #8
+        		(?: \\[\\"]
+        		|   \\[^\\"]
+        		|       [^\\"]+
+        		)*
+        	)
+        	(") #9
+        )?+
+        \s* (\]) #10
+      captures:
+        0: meta.section.header.gitconfig
+        1: punctuation.definition.bracket.square.begin.gitconfig
+        10: punctuation.definition.bracket.square.end.gitconfig
+        2: punctuation.definition.bracket.square.end.gitconfig
+        3: punctuation.definition.bracket.square.begin.gitconfig
+        4: entity.section.name.gitconfig
+        5: punctuation.delimiter.separator.meta.dot.period.gitconfig
+        6: entity.subsection.name.deprecated-syntax.gitconfig
+        7: punctuation.definition.subsection.begin.gitconfig
+        8: entity.subsection.name.gitconfig
+        9: punctuation.definition.subsection.end.gitconfig
+      push:
+        - meta_scope: meta.section.gitconfig
+        - match: '^(?=\[)'
+          pop: true
+        - include: comments
+        - include: variables
+  stringEscapes:
+    - match: '(\\)[\\"]'
+      scope: constant.character.escape.backslash.gitconfig
+      captures:
+        1: punctuation.definition.escape.backslash.gitconfig
+    - match: '\\(?=[^\\"])'
+      scope: punctuation.definition.escape.backslash.ignored.gitconfig
+  urlSection:
+    - match: |-
+        (?ix)
+        ^ (\[) #1
+        \s*
+        (url) #2
+        (?:
+        	\s*
+        	(") #3
+        	(   #4
+        		(?: \\[\\"]
+        		|   \\[^\\"]
+        		|       [^\\"]+
+        		)*
+        	)
+        	(") #5
+        )?+
+        \s* (\]) #6
+      captures:
+        0: meta.section.header.gitconfig
+        1: punctuation.definition.bracket.square.begin.gitconfig
+        2: entity.section.name.gitconfig
+        3: punctuation.definition.subsection.begin.gitconfig
+        4: string.other.link.gitconfig
+        5: punctuation.definition.subsection.end.gitconfig
+        6: punctuation.definition.bracket.square.end.gitconfig
+      push:
+        - meta_scope: meta.url.section.gitconfig
+        - match: '^(?=\[)'
+          pop: true
+        - include: comments
+        - include: variables
+  variableInnards:
+    - match: \G\s*(=)
+      captures:
+        1: keyword.operator.assignment.key-value.gitconfig
+    - match: (?i)\b(true|false|on|off|1|0|yes|no)\b
+      scope: constant.logical.boolean.$1.gitconfig
+    - match: '[-+]?[0-9]+(?=$|[\s#;])'
+      scope: constant.numeric.decimal.integer.int.gitconfig
+    - match: '[-+]?(?:[0-9]+\.[0-9]*|\.[0-9]+)(?=$|\s#;)'
+      scope: constant.numeric.decimal.float.gitconfig
+    - match: '(?:[^\\\s]|\\(?!$))+'
+      scope: string.unquoted.argument.gitconfig
+    - include: escapedNewline
+  variables:
+    - match: (?i)\b(signingkey)(?=\s|$)
+      captures:
+        1: variable.parameter.assignment.gitconfig
+        2: keyword.operator.assignment.key-value.gitconfig
+      push:
+        - meta_scope: meta.variable-field.gitconfig
+        - match: $|(?=#|;)
+          captures:
+            1: variable.parameter.assignment.gitconfig
+            2: keyword.operator.assignment.key-value.gitconfig
+          pop: true
+        - match: \w+
+          scope: constant.other.signing-key.hex.gitconfig
+        - include: variableInnards
+    - match: (?i)\b(email|url)\s*(=)
+      captures:
+        1: variable.parameter.assignment.gitconfig
+        2: keyword.operator.assignment.key-value.gitconfig
+      push:
+        - meta_scope: meta.variable-field.gitconfig
+        - match: $|(?=#|;)
+          pop: true
+        - match: '"'
+          captures:
+            0: string.quoted.string.begin.gitconfig
+          push:
+            - meta_scope: string.other.link.gitconfig
+            - match: '"|(?=$)'
+              captures:
+                0: string.quoted.string.end.gitconfig
+              pop: true
+            - include: stringEscapes
+        - match: '[^\s"]+'
+          scope: string.other.link.gitconfig
+    - match: (?i)\b(textconv)\s*(=)
+      captures:
+        1: variable.parameter.assignment.gitconfig
+        2: keyword.operator.assignment.key-value.gitconfig
+      push:
+        - meta_scope: meta.variable-field.gitconfig
+        - match: $|(?=#|;)
+          pop: true
+        - include: aliasInnards
+    - match: "[A-Za-z][-A-Za-z]*"
+      captures:
+        0: variable.parameter.assignment.gitconfig
+      push:
+        - meta_scope: meta.variable-field.gitconfig
+        - match: $|(?=#|;)
+          pop: true
+        - include: variableInnards

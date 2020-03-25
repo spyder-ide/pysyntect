@@ -1,0 +1,169 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Slash
+file_extensions:
+  - sl
+scope: text.html.slash
+contexts:
+  main:
+    - match: "<%+#"
+      captures:
+        0: punctuation.definition.comment.slash
+      push:
+        - meta_scope: comment.block.slash
+        - match: "%>"
+          captures:
+            0: punctuation.definition.comment.slash
+          pop: true
+    - match: <%!!
+      captures:
+        0: invalid
+      push:
+        - meta_scope: source.slash.raw-echo.html
+        - match: "%>"
+          captures:
+            0: invalid
+          pop: true
+        - include: slash-language
+    - match: <%(?!>!)=?
+      captures:
+        0: punctuation.section.embedded.slash
+      push:
+        - meta_scope: source.slash.embedded.html
+        - match: "%>"
+          captures:
+            0: punctuation.section.embedded.slash
+          pop: true
+        - include: slash-language
+    - include: scope:text.html.basic
+  escaped-char:
+    - match: '\\(?:x[\da-fA-F]{2}|.)'
+      scope: constant.character.escape.slash
+  interpolated-slash:
+    - match: '#\{'
+      captures:
+        0: punctuation.section.embedded.slash
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.slash
+          pop: true
+        - include: slash-language
+  nest_curly_r:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.slash
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.slash
+          pop: true
+        - include: nest_curly_r
+  slash-language:
+    - match: "#"
+      push:
+        - meta_scope: comment.line.hash.slash
+        - match: $
+          pop: true
+    - match: //
+      push:
+        - meta_scope: comment.line.c-style.slash
+        - match: $
+          pop: true
+    - match: /\*
+      push:
+        - meta_scope: comment.block.slash
+        - match: \*/
+          pop: true
+    - match: '^\s*(class)\s+([A-Z][A-Za-z0-9_'']*)'
+      scope: meta.class.slash
+      captures:
+        1: keyword.class.slash
+        2: entity.name.type.class.slash
+    - match: '^\s*(class)\s+([A-Z][A-Za-z0-9_'']*)\s+(extends)\s+([A-Z][A-Za-z0-9_'']*)'
+      scope: meta.class.extends.slash
+      captures:
+        1: keyword.class.slash
+        2: entity.name.type.class.slash
+        3: keyword.extends.slash
+        4: entity.other.inherited-class.slash
+    - match: '^\s*(def)\s+(self)(\.)([A-Za-z_][A-Za-z0-9_]*|\[\]=?|<<|>>|\+|-|\*\*|\*|/|%|==|!=|<=>|<=|<|>=|>|\^|&|\||~)'
+      scope: meta.def.sing-self.slash
+      captures:
+        1: keyword.def.slash
+        2: variable.language.slash
+        3: keyword.punctuation.slash
+        4: entity.name.method-name.slash
+    - match: '^\s*(def)\s+(@@?[A-Za-z0-9_'']+)(\.)([A-Za-z_][A-Za-z0-9_'']*|\[\]=?|<<|>>|\+|-|\*\*|\*|/|%|==|!=|<=>|<=|<|>=|>|\^|&|\||~)'
+      scope: meta.def.sing-icvar.slash
+      captures:
+        1: keyword.def.slash
+        2: storage.ivar.slash
+        3: keyword.punctuation.slash
+        4: entity.name.method-name.slash
+    - match: '^\s*(def)\s+([A-Z][a-zA-Z0-9_'']*)(\.)([A-Za-z_][A-Za-z0-9_'']*|\[\]=?|<<|>>|\+|-|\*\*|\*|/|%|==|!=|<=>|<=|<|>=|>|\^|&|\||~)'
+      scope: meta.def.sing-constant.slash
+      captures:
+        1: keyword.def.slash
+        2: support.class.slash
+        3: keyword.punctuation.slash
+        4: entity.name.method-name.slash
+    - match: '^\s*(def)\s+([A-Za-z_][A-Za-z0-9_'']*|\[\]=?|<<|>>|\+|-|\*\*|\*|/|%|==|!=|<=>|<=|<|>=|>|\^|&|\||~)'
+      scope: meta.def.slash
+      captures:
+        1: keyword.def.slash
+        2: entity.name.method-name.slash
+    - match: \b(class|extends|def|if|elsif|else|unless|for|in|while|until|and|or|not|lambda|try|catch|return|next|last|throw|use)\b
+      scope: keyword.language.slash
+    - match: \bself\b
+      scope: variable.language.slash
+    - match: \b(nil|true|false)\b
+      scope: constant.language.slash
+    - match: "-?[0-9]+e[+-]?[0-9]+"
+      scope: constant.integer-with-exponent.slash
+    - match: '-?[0-9]+(\.[0-9]+)(e[+-]?[0-9]+)?'
+      scope: constant.float.slash
+    - match: "-?[0-9]+"
+      scope: constant.integer.slash
+    - match: '\b([A-Z][a-zA-Z0-9_'']*)\b'
+      scope: support.class.slash
+    - match: '([a-z_][a-zA-Z0-9_'']*)\s*(?:\()'
+      scope: method-call.implicit-self.slash
+      captures:
+        1: meta.function-call
+    - match: "(?<=[.:])([a-z_][a-zA-Z0-9_']*)"
+      scope: method-call.explicit-self.slash
+      captures:
+        1: meta.function-call
+    - match: "[a-z_][a-zA-Z_0-9']*"
+      scope: variable.slash
+    - match: "@[a-zA-Z_0-9']+"
+      scope: variable.ivar.slash
+      captures:
+        0: storage.ivar.slash
+    - match: "@@[a-zA-Z_0-9']+"
+      scope: variable.cvar.slash
+      captures:
+        0: storage.cvar.slash
+    - match: '"'
+      push:
+        - meta_scope: string.double-quoted.slash
+        - match: '"'
+          pop: true
+        - include: escaped-char
+        - include: interpolated-slash
+    - match: "'[A-Za-z0-9_]+"
+      scope: string.single-quoted.slash
+    - match: '%r\{'
+      captures:
+        0: punctuation.definition.string.begin.slash
+      push:
+        - meta_scope: string.regexp.slash
+        - match: '\}[a-z]*'
+          captures:
+            0: punctuation.definition.string.end.slash
+          pop: true
+        - include: nest_curly_r
+    - match: '<<=|>>=|<<|>>|==|!=|=>|=|<=>|<=|<|>=|>|\+\+|--|\+=|-=|\*\*=|\*=|/=|%=|\+|-|\*\*|\*|/|%|\^=|&=|&&=|\|=|\|\|=|\^|~|&|&&|\||\|\||!|\.\.\.|\.\.|\.|::|:|λ|\\'
+      scope: keyword.punctuation.language.slash

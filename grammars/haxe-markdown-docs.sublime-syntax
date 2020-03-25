@@ -1,0 +1,16 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: documentation.markdown.injection.haxe
+contexts:
+  main:
+    - include: markdown-comment
+  markdown-comment:
+    - match: '(?<=/\*\*)([^*]|\*(?!/))*$'
+      push:
+        - match: ""
+          pop: true
+        - include: scope:text.html.markdown#fenced_code_block
+        - include: scope:text.html.markdown#lists
+        - include: scope:source.hx#javadoc-tags
+        - include: scope:text.html.markdown#inline

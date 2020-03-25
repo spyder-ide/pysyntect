@@ -1,0 +1,88 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: OpenSCAD
+file_extensions:
+  - scad
+scope: source.scad
+contexts:
+  main:
+    - match: ^(module)\s.*$
+      scope: meta.function.scad
+      captures:
+        1: keyword.control.scad
+    - match: \b(if|else|for|intersection_for|assign|render|function|include|use)\b
+      scope: keyword.control.scad
+    - match: /\*\*(?!/)
+      captures:
+        0: punctuation.definition.comment.scad
+      push:
+        - meta_scope: comment.block.documentation.scad
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.scad
+          pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.scad
+      push:
+        - meta_scope: comment.block.scad
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.scad
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.scad
+      captures:
+        1: punctuation.definition.comment.scad
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.scad
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.scad
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.scad
+      push:
+        - meta_scope: string.quoted.single.scad
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.scad
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.scad
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.scad
+      push:
+        - meta_scope: string.quoted.double.scad
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.scad
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.scad
+    - match: \b(abs|acos|asun|atan|atan2|ceil|cos|exp|floor|ln|log|lookup|max|min|pow|rands|round|sign|sin|sqrt|tan|str|cube|sphere|cylinder|polyhedron|scale|rotate|translate|mirror|multimatrix|color|minkowski|hull|union|difference|intersection|echo)\b
+      scope: support.function.scad
+    - match: \;
+      scope: punctuation.terminator.statement.scad
+    - match: ',[ |\t]*'
+      scope: meta.delimiter.object.comma.scad
+    - match: \.
+      scope: meta.delimiter.method.period.scad
+    - match: '\{|\}'
+      scope: meta.brace.curly.scad
+    - match: \(|\)
+      scope: meta.brace.round.scad
+    - match: '\[|\]'
+      scope: meta.brace.square.scad
+    - match: '!|\$|%|&|\*|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\|\||\?\:|\*=|(?<!\()/=|%=|\+=|\-=|&=|\^=|\b(in|instanceof|new|delete|typeof|void)\b'
+      scope: keyword.operator.scad
+    - match: '\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?))\b'
+      scope: constant.numeric.scad
+    - match: \btrue\b
+      scope: constant.language.boolean.true.scad
+    - match: \bfalse\b
+      scope: constant.language.boolean.false.scad

@@ -1,0 +1,142 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Lex
+file_extensions:
+  - l
+  - lex
+  - flex
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		f?lex
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		f?lex
+  	(?=\s|:|$)
+scope: source.lex
+contexts:
+  main:
+    - include: jflex
+    - include: comments
+    - include: definitions
+    - include: rules
+    - include: scope:source.cpp
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.begin.comment.lex
+      push:
+        - meta_scope: comment.block.lex
+        - match: \*/
+          captures:
+            0: punctuation.definition.end.comment.lex
+          pop: true
+    - match: //
+      captures:
+        0: punctuation.definition.comment.lex
+      push:
+        - meta_scope: comment.line.double-slash.lex
+        - match: (?=$)
+          pop: true
+  definition:
+    - match: '^\s*([A-Za-z_][A-Za-z0-9_-]*)'
+      captures:
+        1: entity.name.definition.lex
+      push:
+        - meta_scope: meta.definition.lex
+        - match: $
+          pop: true
+        - match: (?<=\s)\S.*
+          scope: meta.pattern.lex
+          captures:
+  definitions:
+    - match: \A(?!\s*%%)
+      push:
+        - meta_scope: meta.definitions.lex
+        - match: ^(?=\s*(?:%%|(?:package|import)\s+\w))
+          pop: true
+        - include: comments
+        - include: directives
+        - include: passthrough
+        - include: definition
+  directives:
+    - match: ^\s*((%)\w+)(?=\s|$)
+      captures:
+        1: keyword.control.directive.lex
+        2: punctuation.definition.directive.lex
+      push:
+        - meta_scope: meta.directive.lex
+        - match: (?=$)
+          captures:
+            1: keyword.control.directive.lex
+            2: punctuation.definition.directive.lex
+          pop: true
+        - include: comments
+        - match: \S+
+          scope: constant.language.other.lex
+  jflex:
+    - match: ^(?=\s*(?:package|import)\s+\w)
+      push:
+        - meta_scope: meta.jflex.lex
+        - match: (?=A)B
+          pop: true
+        - include: scope:source.jflex
+  passthrough:
+    - match: "^%{"
+      captures:
+        0: punctuation.section.embedded.begin.lex
+      push:
+        - meta_scope: meta.code-chunk.lex
+        - match: "^%}"
+          captures:
+            0: punctuation.section.embedded.end.lex
+          pop: true
+        - include: scope:source.cpp
+  rule.action:
+    - match: (?<!^)(?=\S)
+      push:
+        - meta_scope: meta.action.lex
+        - match: (?=\s*$|^)
+          pop: true
+        - include: comments
+        - match: "(?={)"
+          push:
+            - match: "(?<=})"
+              pop: true
+            - include: scope:source.cpp
+        - match: '([^{\s][^{]*?)\s*$'
+          captures:
+  rule.pattern:
+    - match: (?<=^|\n)(?=\S)
+      push:
+        - meta_scope: meta.pattern.lex
+        - match: (?=\s|$)
+          pop: true
+        - include: scope:source.lex.regexp
+  rules:
+    - match: ^\s*(%%)\s*(?:$\s*|(?=/\*))
+      captures:
+        1: keyword.control.section.begin.lex
+      push:
+        - match: ^\s*(%%)\s*(?:$\s*|(?=/\*))
+          captures:
+            1: keyword.control.section.end.lex
+          pop: true
+        - include: passthrough
+        - include: rule.pattern
+        - include: rule.action
+  user-code:
+    - match: (?<=^%%|\s%%)
+      push:
+        - meta_scope: meta.user-code.lex
+        - meta_content_scope: source.embedded.cpp
+        - match: (?=A)B
+          pop: true
+        - include: scope:source.cpp

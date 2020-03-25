@@ -1,0 +1,65 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: xojo
+file_extensions:
+  - xojo_code
+  - xojo_window
+  - xojo_menu
+  - xojo_report
+  - xojo_script
+  - xojo_toolbar
+  - xojo_image
+  - rbbas
+  - rbfrm
+  - rbmnu
+  - rbres
+  - rbtbar
+scope: source.xojo
+contexts:
+  main:
+    - include: comment
+    - include: comment-rem
+    - include: tags
+    - include: string-literal
+    - include: keywords
+    - include: directives
+    - include: keywords-numeric
+    - include: keywords-functions
+    - include: numbers
+    - include: numbers-literal
+    - include: numbers-binary
+  comment:
+    - match: (//|').*$
+      scope: punctuation.definition.comment.xojo
+  comment-rem:
+    - match: (?i)(rem .++)$
+      scope: punctuation.definition.comment.xojo
+  directives:
+    - match: (?i)#(if|else|elseif|endif|pragma)\b
+      scope: keyword.xojo
+  keywords:
+    - match: \b(?i)(me|self|super|return|dim|const|static|as|if|then|else|elseif|for|next|do|loop|until|while|wend|end if|select case|case|end select|private|public|protected|inherits|try|catch|finally|nil|and|or|not|mod|to|downto|new|get|set|end)\b
+      scope: keyword.xojo
+  keywords-functions:
+    - match: \b(?i)(sub|function|class|return|begin)\s\w++\b
+      scope: keyword.xojo
+  keywords-numeric:
+    - match: \b(?i)(boolean|integer|double|cgfloat|long|string|color|true|false|(u)*int(8|16|32|64))\b
+      scope: keyword.xojo
+  numbers:
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.xojo
+  numbers-binary:
+    - match: "(?i)&b[01]+"
+      scope: constant.numeric.integer
+  numbers-literal:
+    - match: "(?i)(&h|&c)[0-9a-f]+"
+      scope: constant.numeric.integer
+  string-literal:
+    - match: (\".*?\")
+      comment: string literals
+      scope: string.quoted.double.xojo
+  tags:
+    - match: ^\s*#tag.*$
+      scope: markup.bold.xojo

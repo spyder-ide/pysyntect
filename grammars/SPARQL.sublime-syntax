@@ -1,0 +1,13 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SPARQL
+file_extensions:
+  - sparql
+scope: source.sparql
+contexts:
+  main:
+    - include: scope:source.turtle#sparqlKeywords
+    - include: scope:source.turtle#sparqlFilterFns
+    - include: scope:source.turtle#sparqlLangConsts
+    - include: scope:source.turtle

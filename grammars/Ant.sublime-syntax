@@ -1,0 +1,118 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ant
+file_extensions:
+  - ant.xml
+  - build.xml
+first_line_match: <\!--\s*ant\s*-->
+scope: text.xml.ant
+contexts:
+  main:
+    - match: "<[!%]--"
+      captures:
+        0: punctuation.definition.comment.xml.ant
+      push:
+        - meta_scope: comment.block.xml.ant
+        - match: "--%?>"
+          captures:
+            0: punctuation.definition.comment.xml.ant
+          pop: true
+    - match: (<target)\b
+      captures:
+        1: entity.name.tag.target.xml.ant
+      push:
+        - meta_scope: meta.tag.target.xml.ant
+        - match: (/?>)
+          captures:
+            1: entity.name.tag.target.xml.ant
+          pop: true
+        - include: tagStuff
+    - match: (<macrodef)\b
+      captures:
+        1: entity.name.tag.macrodef.xml.ant
+      push:
+        - meta_scope: meta.tag.macrodef.xml.ant
+        - match: (/?>)
+          captures:
+            1: entity.name.tag.macrodef.xml.ant
+          pop: true
+        - include: tagStuff
+    - match: "(</?)(?:([-_a-zA-Z0-9]+)((:)))?([-_a-zA-Z0-9:]+)"
+      captures:
+        1: punctuation.definition.tag.xml.ant
+        2: entity.name.tag.namespace.xml.ant
+        3: entity.name.tag.xml.ant
+        4: punctuation.separator.namespace.xml.ant
+        5: entity.name.tag.localname.xml.ant
+      push:
+        - meta_scope: meta.tag.xml.ant
+        - match: (/?>)
+          captures:
+            1: punctuation.definition.tag.xml.ant
+            2: entity.name.tag.namespace.xml.ant
+            3: entity.name.tag.xml.ant
+            4: punctuation.separator.namespace.xml.ant
+            5: entity.name.tag.localname.xml.ant
+          pop: true
+        - include: tagStuff
+    - include: scope:text.xml
+    - include: javaProperties
+    - include: javaAttributes
+  doublequotedString:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.xml.ant
+      push:
+        - meta_scope: string.quoted.double.xml.ant
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.xml.ant
+          pop: true
+        - include: javaAttributes
+        - include: javaProperties
+  javaAttributes:
+    - match: '@\{'
+      captures:
+        0: punctuation.section.embedded.begin.ant
+      push:
+        - meta_scope: meta.embedded.line.java
+        - meta_content_scope: source.java
+        - match: '(\})'
+          captures:
+            0: punctuation.section.embedded.end.ant
+            1: source.java
+          pop: true
+  javaProperties:
+    - match: '\$\{'
+      captures:
+        0: punctuation.section.embedded.begin.ant
+      push:
+        - meta_scope: meta.embedded.line.java-props
+        - meta_content_scope: source.java-props
+        - match: '(\})'
+          captures:
+            0: punctuation.section.embedded.end.ant
+            1: source.java-props
+          pop: true
+  singlequotedString:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.xml.ant
+      push:
+        - meta_scope: string.quoted.single.xml.ant
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.xml.ant
+          pop: true
+        - include: javaAttributes
+        - include: javaProperties
+  tagStuff:
+    - match: " (?:([-_a-zA-Z0-9]+)((:)))?([_a-zA-Z-]+)="
+      captures:
+        1: entity.other.attribute-name.namespace.xml.ant
+        2: entity.other.attribute-name.xml.ant
+        3: punctuation.separator.namespace.xml.ant
+        4: entity.other.attribute-name.localname.xml.ant
+    - include: doublequotedString
+    - include: singlequotedString

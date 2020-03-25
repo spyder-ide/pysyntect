@@ -1,0 +1,20 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: BrightAuthor Project File
+comment: BrightAuthor Project File
+file_extensions:
+  - bpf
+scope: source.brightauthorproject
+contexts:
+  main:
+    - include: scope:text.xml
+    - match: \b(if|while|for|return)\b
+      scope: keyword.control.untitled
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.untitled
+        - match: '"'
+          pop: true
+        - match: \.
+          scope: constant.character.escape.untitled

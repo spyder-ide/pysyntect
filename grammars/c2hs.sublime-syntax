@@ -1,0 +1,19 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: C2Hs
+file_extensions:
+  - chs
+scope: source.c2hs
+contexts:
+  main:
+    - match: '\{#'
+      captures:
+        0: punctuation.definition.preprocessor.begin.c2hs
+      push:
+        - meta_scope: meta.preprocessor.c2hs
+        - match: '#\}'
+          captures:
+            0: punctuation.definition.preprocessor.end.c2hs
+          pop: true
+    - include: scope:source.haskell

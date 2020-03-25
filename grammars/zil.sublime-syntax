@@ -1,0 +1,541 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ZIL
+file_extensions:
+  - zil
+  - mud
+first_line_match: ^(?:\<VERSION|;"|"EXTENDED\b)
+scope: source.zil
+contexts:
+  main:
+    - include: expressions
+  comment:
+    - match: ;
+      captures:
+        0: punctuation.definition.comment.prefix.zil
+      push:
+        - meta_scope: comment.block.zil
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  argspec:
+    - match: \(
+      captures:
+        0: punctuation.definition.list.parameters.begin.zil
+      push:
+        - meta_scope: meta.parameters.zil
+        - match: \)
+          captures:
+            0: punctuation.definition.list.parameters.end.zil
+          pop: true
+        - match: |-
+            (?x)
+            # optional quote
+            (?:'\s*)?
+            # atom
+            (?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+            (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+
+          scope: variable.parameter.local.symbol.atom.zil
+        - match: |-
+            (?x)
+            (\()
+            \s*
+            # optional quote
+            (?:'\s*)?
+            # atom
+            ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+             (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+          captures:
+            1: punctuation.definition.list.parameter.begin.zil
+            2: variable.parameter.local.symbol.atom.zil
+          push:
+            - meta_scope: meta.binding.zil
+            - match: \)
+              captures:
+                0: punctuation.definition.list.parameter.end.zil
+              pop: true
+            - include: expressions
+        - match: '"(?:AUX|EXTRA)"'
+          scope: punctuation.separator.arguments.aux.zil keyword.separator.arguments.aux.zil
+        - match: '"(?:OPT|OPTIONAL)"'
+          scope: punctuation.separator.arguments.opt.zil keyword.separator.arguments.opt.zil
+        - match: '"(?:ARGS|TUPLE)"'
+          scope: punctuation.separator.arguments.varargs.zil keyword.separator.arguments.varargs.zil
+        - match: '"(?:NAME|BIND)"'
+          scope: punctuation.separator.arguments.misc.zil keyword.separator.arguments.misc.zil
+        - include: expressions
+  atom:
+    - match: |-
+        (?x)
+        # atom can start with anything escaped, or any non-delimiter
+        (?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+        # and continue with any of the above as well as '!' and '.'
+        (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+
+      scope: meta.symbol.atom.zil
+  binary_num:
+    - match: '(#)\s*0*2\s+[01]+(?![^ \t-\r,#'':;%()\[\]<>\{\}"])'
+      scope: constant.numeric.binary.zil
+      captures:
+        1: punctuation.definition.constant.numeric.binary.zil
+  char:
+    - match: '!\\.'
+      scope: constant.character.zil
+  constants:
+    - include: decimal_num
+    - include: octal_num
+    - include: binary_num
+    - include: string
+    - include: char
+    - include: else
+    - include: "false"
+    - include: "true"
+    - include: atom
+  decimal_num:
+    - match: '-?([0-9]+)(?![^ \t-\r,#'':;%()\[\]<>\{\}"])'
+      scope: constant.numeric.decimal.zil
+  else:
+    - match: (?<=\()(?:ELSE|T)\b
+      scope: keyword.control.else.zil
+  expressions:
+    - include: constants
+    - include: structures
+    - include: prefixes
+    - include: invalid
+  "false":
+    - match: <\s*>
+      scope: constant.language.boolean.false.zil
+  form:
+    - match: <
+      captures:
+        0: punctuation.definition.form.begin.zil
+      push:
+        - meta_scope: meta.structure.form.zil
+        - match: "!?>"
+          captures:
+            0: punctuation.definition.form.end.zil
+          pop: true
+        - include: special_form_body
+        - include: expressions
+  gval:
+    - match: (,)\s*
+      captures:
+        1: punctuation.definition.variable.global.prefix.zil
+      push:
+        - meta_scope: variable.other.global.zil
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  invalid:
+    - match: "!."
+      scope: invalid.illegal.zil
+  list:
+    - match: '!?\('
+      captures:
+        0: punctuation.definition.list.begin.zil
+      push:
+        - meta_scope: meta.structure.list.zil
+        - match: '!?\)'
+          captures:
+            0: punctuation.definition.list.end.zil
+          pop: true
+        - include: expressions
+  lval:
+    - match: (\.)\s*
+      captures:
+        1: punctuation.definition.variable.local.prefix.zil
+      push:
+        - meta_scope: variable.other.local.zil
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  macro:
+    - match: (%)|(%%)
+      captures:
+        1: punctuation.definition.macro.single.prefix.zil
+        2: punctuation.definition.macro.double.prefix.zil
+      push:
+        - meta_scope: meta.macro.zil
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  octal_num:
+    - match: '(\*)([0-7]+)(\*)(?![^ \t-\r,#'':;%()\[\]<>\{\}"])'
+      scope: constant.numeric.octal.zil
+      captures:
+        1: punctuation.definition.constant.numeric.octal.zil
+        3: punctuation.definition.constant.numeric.octal.zil
+  prefixes:
+    - include: comment
+    - include: macro
+    - include: lval
+    - include: gval
+    - include: quote
+    - include: segment
+  property:
+    - match: |-
+        (?xi)
+        \( \s*
+        (?: (IN|LOC|DESC|SYNONYM|ADJECTIVE|FLAGS|
+             GLOBAL|GENERIC|ACTION|DESCFCN|CONTFCN|LDESC|FDESC|
+             NORTH|SOUTH|EAST|WEST|OUT|UP|DOWN|NW|SW|NE|SE)
+        |   ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+             (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+        )
+        \b
+      captures:
+        1: "storage.property.${1:/downcase}.zil"
+        2: meta.object-literal.key.zil
+      push:
+        - meta_scope: meta.property.zil
+        - match: \)
+          pop: true
+        - include: main
+  quote:
+    - match: "'"
+      captures:
+        0: punctuation.definition.quote.prefix.zil
+      push:
+        - meta_scope: meta.quoted-expression.zil
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  segment:
+    - match: "!(?=[.,<])"
+      captures:
+        0: punctuation.definition.segment.prefix.zil
+      push:
+        - meta_scope: meta.structure.segment.zil
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  skip_ws:
+    - match: \s+
+  special_form_body:
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        (\+|-|\*|/|MOD|MIN|MAX|OR\?|AND\?)
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.operator.arithmetic.${1:/downcase}.zil"
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        (BAND|BOR|ANDB|ORB|LSH|XORB|EQVB)
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.operator.bitwise.${1:/downcase}.zil"
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        (==?|N==?|L=?|G=?|[01TF])\?
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.operator.comparison.${1:/downcase}.zil"
+    - match: |-
+        (?xi) \s*
+        (?<=<) \s* (?:FORM\s+)?
+        (COND|BIND|PROG|REPEAT|DO|MAP[FR]|MAP-(?:CONTENTS|DIRECTIONS)|
+         AGAIN|RETURN|RTRUE|RFALSE|CATCH|THROW|EVAL|AND|OR|NOT)
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.control.${1:/downcase}.zil"
+    - match: |-
+        (?xi) \s*
+        (?<=<) \s* (?:FORM\s+)?
+        (TELL(?:-TOKENS)?|ADD-TELL-TOKENS|CRLF|PRINT[INR]?|PRIN[C1])
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.output.${1:/downcase}.zil"
+    - match: |-
+        (?xi) \s*
+        (?<=<) \s* (?:FORM\s+)?
+        (FSET\??|FCLEAR|MOVE|REMOVE|IN\?|FIRST\?|NEXT\?|
+         PUTP|GETP|PROPDEF|GETPT|PTSIZE|INTBL\?|
+         P?L?TABLE|ITABLE|GETB?|GET/B|PUTB?|PUT/B|ZGET|ZPUT|
+         VOC|SYNONYM|(?:VERB|PREP|ADJ|DIR|BIT)-SYNONYM|DIRECTIONS|BUZZ)
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.zmodel.${1:/downcase}.zil"
+    - match: |-
+        (?xi) \s*
+        (?<=<) \s* (?:FORM\s+)?
+        (INSERT-FILE|PACKAGE|ENDPACKAGE|USE|ENTRY|RENTRY|VERSION|
+         COMPILATION-FLAG(?:-DEFAULT)?|REPLACE-DEFINITION|DELAY-DEFINITION|DEFAULT-DEFINITION|
+         IF-(?:[A-Z0-9][-A-Z0-9]+))
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      scope: "keyword.meta.${1:/downcase}.zil"
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        # function type (1)
+        (DEFINE|DEFINE20|DEFMAC|ROUTINE)
+        \s+
+        # function name atom (2)
+        ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+         (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+        \s*
+        # optional activation atom (3)
+        (?:
+            (?<=\s)
+            ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+             (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+             \s*
+        )?
+        # followed by paren starting arg spec
+        (?=\()
+      captures:
+        1: "keyword.definition.function.${1:/downcase}.zil"
+        2: entity.name.function.zil
+        3: entity.name.variable.local.activation-atom.zil
+      push:
+        - meta_scope: meta.function.zil
+        - match: (?<=\))|(?=\>)
+          pop: true
+        - include: argspec
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        # object type (1)
+        (OBJECT|ROOM)
+        \s+
+        # object name (2)
+        ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+         (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+        \s*
+      captures:
+        1: "keyword.definition.object.${1:/downcase}.zil"
+        2: entity.name.object.zil
+      push:
+        - meta_scope: meta.object.zil
+        - match: (?=\>)
+          pop: true
+        - include: property
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        # global type (1)
+        (SETG|CONSTANT|GLOBAL|GASSIGNED\?|GUNASSIGN)
+        \s+
+        # global name atom (2)
+        ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+         (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)?
+      captures:
+        1: "keyword.definition.global.${1:/downcase}.zil"
+        2: entity.name.variable.global.zil variable.global.zil
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        # local type?
+        (SET|ASSIGNED\?|UNASSIGN)
+        \s+
+        # local name atom (2)
+        ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+         (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)?
+      captures:
+        1: "keyword.definition.local.${1:/downcase}.zil"
+        2: entity.name.variable.local.zil variable.local.zil
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        (CHTYPE|TYPE\??|PRIMTYPE)
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      captures:
+        1: "keyword.type.${1:/downcase}.zil"
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        # keyword (1)
+        (NEWTYPE|DEFSTRUCT|APPLYTYPE|EVALTYPE|PRINTTYPE|TYPEPRIM)
+        \s+
+        # type name atom (2)
+        ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+         (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)?
+        (?!\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])
+      captures:
+        1: "keyword.definition.type.${1:/downcase}.zil"
+        2: entity.name.type.zil
+    - match: |-
+        (?xi)
+        (?<=<) \s* (?:FORM\s+)?
+        (SYNTAX)
+        \s+
+        # verb word
+        ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+         (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+        # first object
+        (?:
+            (?!\s*=\b)
+            # prep 1
+            (?:\s+ (?!OBJECT\b)(\S+))?
+            # obj 1
+            \s+ (OBJECT)
+            # flags/search options 1
+            (\s* \( [^)]* \) )*
+        )?+
+        # second object
+        (?:
+            (?!\s*=\b)
+            # prep 2
+            (?:\s+ (?!OBJECT\b)(\S+))?
+            # obj 2
+            \s+ (OBJECT)
+            # flags/search options 2
+            (\s* \( [^)]* \) )*
+        )?+
+        # handlers
+        (?:
+            \s+ =
+            # action
+            \s+
+            ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+             (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+            # preaction
+            (?:
+                \s+
+                ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+                 (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+            )?+
+            # name
+            (?:
+                \s+
+                ((?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+                 (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+)
+            )?+
+        )?+
+      captures:
+        1: keyword.definition.vocab.syntax.zil
+        10: entity.name.function.preaction.zil
+        11: entity.name.verb.zil
+        2: entity.name.verb.zil
+        3: entity.name.preposition.zil
+        4: keyword.definition.vocab.object.zil
+        6: entity.name.preposition.zil
+        7: keyword.definition.vocab.object.zil
+        9: entity.name.function.action.zil
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.zil
+      push:
+        - meta_scope: string.quoted.double.zil
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.zil
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.zil
+  structures:
+    - include: list
+    - include: form
+    - include: vector
+    - include: uvector
+    - include: segment
+  "true":
+    - match: \bT\b
+      scope: constant.language.boolean.true.zil
+  unstyled_atom:
+    - match: |-
+        (?x)
+        # atom can start with anything escaped, or any non-delimiter
+        (?:\\.|[^!. \t-\r,#':;%()\[\]<>\{\}"])
+        # and continue with any of the above as well as '!' and '.'
+        (?:\\.|[^ \t-\r,#':;%()\[\]<>\{\}"])*+
+  unstyled_char:
+    - match: '!\\.'
+  unstyled_constants:
+    - include: unstyled_numeric
+    - include: unstyled_string
+    - include: unstyled_char
+    - include: unstyled_atom
+  unstyled_expressions:
+    - include: unstyled_constants
+    - include: unstyled_structures
+    - include: unstyled_prefixes
+    - include: invalid
+  unstyled_form:
+    - match: <
+      push:
+        - match: "!?>"
+          pop: true
+        - include: unstyled_expressions
+  unstyled_gval:
+    - match: (,)\s*
+      push:
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  unstyled_list:
+    - match: '!?\('
+      push:
+        - match: '!?\)'
+          pop: true
+        - include: unstyled_expressions
+  unstyled_lval:
+    - match: \.
+      push:
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  unstyled_numeric:
+    - match: '(?:\b-?[0-9]+\b|\*[0-7]+\*|#\s*0*2\s+[01]+)(?![^ \t-\r,#'':;%()\[\]<>\{\}"])'
+  unstyled_prefixes:
+    - include: comment
+    - include: macro
+    - include: unstyled_lval
+    - include: unstyled_gval
+    - include: unstyled_quote
+    - include: unstyled_segment
+  unstyled_quote:
+    - match: "'"
+      push:
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  unstyled_segment:
+    - match: "!(?=[.,<])"
+      push:
+        - include: unstyled_expressions
+        - match: (?<!\G)
+          pop: true
+  unstyled_string:
+    - match: '"'
+      push:
+        - match: '"'
+          pop: true
+        - match: \\.
+  unstyled_structures:
+    - include: unstyled_list
+    - include: unstyled_form
+    - include: unstyled_vector
+    - include: unstyled_uvector
+    - include: unstyled_segment
+  unstyled_uvector:
+    - match: '!\['
+      push:
+        - match: '!?\]'
+          pop: true
+        - include: unstyled_expressions
+  unstyled_vector:
+    - match: '\['
+      push:
+        - match: '!?\]'
+          pop: true
+        - include: unstyled_expressions
+  uvector:
+    - match: '!\['
+      captures:
+        0: punctuation.definition.array.uvector.begin.zil
+      push:
+        - meta_scope: meta.structure.array.uvector.zil
+        - match: '!?\]'
+          captures:
+            0: punctuation.definition.array.uvector.end.zil
+          pop: true
+        - include: expressions
+  vector:
+    - match: '\['
+      captures:
+        0: punctuation.definition.array.vector.begin.zil
+      push:
+        - meta_scope: meta.structure.array.vector.zil
+        - match: '!?\]'
+          captures:
+            0: punctuation.definition.array.vector.end.zil
+          pop: true
+        - include: expressions

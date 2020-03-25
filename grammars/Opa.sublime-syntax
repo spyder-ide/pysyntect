@@ -1,0 +1,91 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Opa
+file_extensions:
+  - opa
+scope: source.opa
+contexts:
+  main:
+    - include: code
+  code:
+    - include: xml-literal
+    - include: strings
+    - include: comments
+    - include: declarations
+    - include: keywords
+    - include: constants
+    - include: directive
+  comments:
+    - match: /\*(\*)?
+      push:
+        - meta_scope: comment.block.opa
+        - match: \*/
+          pop: true
+        - match: '@\w*'
+          scope: keyword.annotation.opa
+        - include: comments
+    - match: \/\/.*$
+      scope: comment.single.opa
+  constants:
+    - match: \b(void|false|true)\b
+      scope: constant.language
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDd]|UL|ul)?\b'
+      scope: constant.numeric.opa
+  declarations:
+    - match: '([\w_]*)\s*=\s*{{'
+      captures:
+        1: entity.name.module
+    - match: '\b(type)\b\s*([a-zA-Z_][a-zA-Z0-9_]*|`[^`\n\r]`)'
+      captures:
+        1: keyword.opa
+        2: entity.name.type
+    - match: '^\s*(@[\w_]*)?\s*([\w_]*)\((?=.*\)\s*(:\s(\w*))?\s*=)'
+      captures:
+        1: keyword.directive.opa
+        2: entity.name.function
+      push:
+        - match: \)\s*(:\s(\w*))?\s*=
+          pop: true
+    - match: '(\w*)(:.*)?\s*=[^=]'
+      captures:
+        1: variable.other.opa
+  directive:
+    - match: '@[\w_]*'
+      scope: keyword.directive.opa
+  embedded-source:
+    - match: "{"
+      push:
+        - meta_scope: source.opa.embeded.block
+        - match: "}"
+          pop: true
+        - include: code
+        - include: embedded-source
+  keywords:
+    - match: \b(_|as|do|else|if|match|then|type|with|and|begin|css|db|end|external|forall|import|package|parser|rec|server|val|xml_parser)\b
+      scope: keyword.opa
+  strings:
+    - match: (?<!\\)"
+      push:
+        - meta_scope: string.quoted.double.scala
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.scala
+  xml-attribute:
+    - match: '(\w+)=(("[^"]*")|(#\w*))'
+      captures:
+        1: entity.other.attribute-name
+        3: string.quoted.double
+        4: variable.other.opa
+  xml-literal:
+    - match: "</?([a-zA-Z0-9]+)"
+      captures:
+        1: entity.name.tag
+      push:
+        - meta_scope: text.xml
+        - match: /?>
+          pop: true
+        - include: xml-literal
+        - include: xml-attribute
+        - include: embedded-source

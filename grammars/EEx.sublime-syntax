@@ -1,0 +1,35 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: EEx
+file_extensions:
+  - eex
+scope: text.elixir
+contexts:
+  main:
+    - match: "<%+#"
+      captures:
+        0: punctuation.definition.comment.eex
+      push:
+        - meta_scope: comment.block.elixir
+        - match: "%>"
+          captures:
+            0: punctuation.definition.comment.eex
+          pop: true
+    - match: "<%+(?!>)[-=]*"
+      captures:
+        0: punctuation.section.embedded.begin.elixir
+      push:
+        - meta_scope: meta.embedded.line.elixir
+        - meta_content_scope: source.elixir
+        - match: (-)%>|(%)>
+          captures:
+            0: punctuation.section.embedded.end.elixir
+            1: source.elixir
+            2: source.elixir
+          pop: true
+        - match: (#).*?(?=-?%>)
+          scope: comment.line.number-sign.elixir
+          captures:
+            1: punctuation.definition.comment.elixir
+        - include: scope:source.elixir

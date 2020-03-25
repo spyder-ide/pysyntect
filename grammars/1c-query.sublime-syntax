@@ -1,0 +1,62 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: "1C (Query)"
+file_extensions:
+  - sdbl
+  - query
+first_line_match: (?i)Выбрать|Select(\s+Разрешенные|\s+Allowed)?(\s+Различные|\s+Distinct)?(\s+Первые|\s+Top)?.*
+scope: source.sdbl
+contexts:
+  main:
+    - match: (^\s*//.*$)
+      scope: comment.line.double-slash.sdbl
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.sdbl
+        - match: $
+          pop: true
+    - match: \"
+      push:
+        - meta_scope: string.quoted.double.sdbl
+        - match: '\"(?![\"])'
+          pop: true
+        - match: \"\"
+          scope: constant.character.escape.sdbl
+        - match: (^\s*//.*$)
+          scope: comment.line.double-slash.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Неопределено|Undefined|Истина|True|Ложь|False|NULL)(?=[^\wа-яё\.]|$)'
+      scope: constant.language.sdbl
+    - match: '(?<=[^\wа-яё\.]|^)(\d+\.?\d*)(?=[^\wа-яё\.]|$)'
+      scope: constant.numeric.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Выбор|Case|Когда|When|Тогда|Then|Иначе|Else|Конец|End)(?=[^\wа-яё\.]|$)'
+      scope: keyword.control.conditional.sdbl
+    - match: '(?i)(?<!КАК\s|AS\s)(?<=[^\wа-яё\.]|^)(НЕ|NOT|И|AND|ИЛИ|OR|В\s+ИЕРАРХИИ|IN\s+HIERARCHY|В|In|Между|Between|Есть(\s+НЕ)?\s+NULL|Is(\s+NOT)?\s+NULL|Ссылка|Refs|Подобно|Like)(?=[^\wа-яё\.]|$)'
+      scope: keyword.operator.logical.sdbl
+    - match: <=|>=|=|<|>
+      scope: keyword.operator.comparison.sdbl
+    - match: (\+|-|\*|/|%)
+      scope: keyword.operator.arithmetic.sdbl
+    - match: (,|;)
+      scope: keyword.operator.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Выбрать|Select|Разрешенные|Allowed|Различные|Distinct|Первые|Top|Как|As|ПустаяТаблица|EpmtyTable|Поместить|Into|Уничтожить|Drop|Из|From|((Левое|Left|Правое|Right|Полное|Full)\s+(Внешнее\s+|Outer\s+)?Соединение|Join)|((Внутреннее|Inner)\s+Соединение|Join)|Где|Where|(Сгруппировать\s+По)|(Group\s+By)|Имеющие|Having|Объединить(\s+Все)?|Union(\s+All)?|(Упорядочить\s+По)|(Order\s+By)|Автоупорядочивание|Autoorder|Итоги|Totals|По(\s+Общие)?|By(\s+Overall)?|(Только\s+)?Иерархия|(Only\s+)?Hierarchy|Периодами|Periods|Индексировать|Index|Выразить|Cast|Возр|Asc|Убыв|Desc|Для\s+Изменения|(For\s+Update(\s+Of)?)|Спецсимвол|Escape)(?=[^\wа-яё\.]|$)'
+      scope: keyword.control.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Значение|Value|ДатаВремя|DateTime|Тип|Type)(?=\()'
+      comment: Функции языка запросов
+      scope: support.function.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Подстрока|Substring)(?=\()'
+      comment: Функции работы со строками
+      scope: support.function.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Год|Year|Квартал|Quarter|Месяц|Month|ДеньГода|DayOfYear|День|Day|Неделя|Week|ДеньНедели|Weekday|Час|Hour|Минута|Minute|Секунда|Second|НачалоПериода|BeginOfPeriod|КонецПериода|EndOfPeriod|ДобавитьКДате|DateAdd|РазностьДат|DateDiff)(?=\()'
+      comment: Функции работы с датами
+      scope: support.function.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(Сумма|Sum|Среднее|Avg|Минимум|Min|Максимум|Max|Количество|Count)(?=\()'
+      comment: Агрегатные функции
+      scope: support.function.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.]|^)(ЕстьNULL|IsNULL|Представление|Presentation|ПредставлениеСсылки|RefPresentation|ТипЗначения|ValueType)(?=\()'
+      comment: Прочие функции
+      scope: support.function.sdbl
+    - match: '(?i)(?<=[^\wа-яё\.])(Число|Number|Строка|String|Дата|Date)(?=[^\wа-яё\.]|$)'
+      scope: support.type.sdbl
+    - match: '(&[\wа-яё]+)'
+      scope: variable.parameter.sdbl

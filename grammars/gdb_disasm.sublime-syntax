@@ -1,0 +1,19 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GDB Disassembly
+scope: source.disasm
+contexts:
+  main:
+    - match: ".+:([0-9]+)$"
+      scope: string.filename
+    - match: '\b0x[0-9a-f]+'
+      scope: constant.other.hex.disasm
+    - match: '\b[0-9]+'
+      scope: constant.other.disasm
+    - match: '[\w]+'
+      scope: keyword.variable
+    - match: ' \b([a-z\.]+) '
+      scope: support.function.disasm
+    - match: '(;|#)[^\d].*$'
+      scope: comment

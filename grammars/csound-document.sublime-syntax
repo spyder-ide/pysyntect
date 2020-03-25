@@ -1,0 +1,84 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Csound Document
+file_extensions:
+  - csd
+first_line_match: "<CsoundSynthesi[sz]er>"
+scope: source.csound-document
+contexts:
+  main:
+    - match: "(<)(CsoundSynthesi[sz]er)(>)"
+      captures:
+        1: punctuation.definition.tag.begin.csound-document
+        2: entity.name.tag.csound-document
+        3: punctuation.definition.tag.end.csound-document
+      push:
+        - match: "(</)(CsoundSynthesi[sz]er)(>)"
+          captures:
+            1: punctuation.definition.tag.begin.csound-document
+            2: entity.name.tag.csound-document
+            3: punctuation.definition.tag.end.csound-document
+          pop: true
+        - match: (<)(CsOptions)(>)
+          captures:
+            1: punctuation.definition.tag.begin.csound-document
+            2: entity.name.tag.csound-document
+            3: punctuation.definition.tag.end.csound-document
+          push:
+            - match: (</)(CsOptions)(>)
+              captures:
+                1: punctuation.definition.tag.begin.csound-document
+                2: entity.name.tag.csound-document
+                3: punctuation.definition.tag.end.csound-document
+              pop: true
+            - include: scope:source.csound#comments
+        - match: (<)(CsInstruments)(>)
+          captures:
+            1: punctuation.definition.tag.begin.csound-document
+            2: entity.name.tag.csound-document
+            3: punctuation.definition.tag.end.csound-document
+          push:
+            - meta_scope: meta.orchestra.csound-document
+            - meta_content_scope: source.csound.embedded.csound-document
+            - match: (</)(CsInstruments)(>)
+              captures:
+                1: punctuation.definition.tag.begin.csound-document
+                2: entity.name.tag.csound-document
+                3: punctuation.definition.tag.end.csound-document
+              pop: true
+            - include: scope:source.csound
+        - match: (<)(CsScore)(>)
+          captures:
+            1: punctuation.definition.tag.begin.csound-document
+            2: entity.name.tag.csound-document
+            3: punctuation.definition.tag.end.csound-document
+          push:
+            - meta_scope: meta.score.csound-document
+            - meta_content_scope: source.csound-score.embedded.csound-document
+            - match: (</)(CsScore)(>)
+              captures:
+                1: punctuation.definition.tag.begin.csound-document
+                2: entity.name.tag.csound-document
+                3: punctuation.definition.tag.end.csound-document
+              pop: true
+            - include: scope:source.csound-score
+        - match: (?i)(?=<html)
+          push:
+            - meta_scope: meta.html.csound-document
+            - match: (?i)(?<=</html>)
+              pop: true
+            - include: scope:text.html.basic
+        - include: tags
+    - include: tags
+  tags:
+    - match: '(</?)([\w:-]+)'
+      captures:
+        1: punctuation.definition.tag.begin.csound-document
+        2: entity.name.tag.csound-document
+      push:
+        - match: ">"
+          captures:
+            0: punctuation.definition.tag.end.csound-document
+          pop: true
+        - include: scope:text.xml#tagStuff

@@ -1,0 +1,168 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: FontForge Script
+file_extensions:
+  - pe
+first_line_match: /#!\bfontforge\b
+scope: source.fontforge
+contexts:
+  main:
+    - include: comments
+    - include: codepoint
+    - include: strings
+    - include: control
+    - include: real
+    - include: integer
+    - include: operators
+    - include: procedureCall
+    - include: punctuation
+    - include: variables
+  codepoint:
+    - match: "o[uU][A-Fa-f0-9]+"
+      scope: constant.numeric.other.codepoint.fontforge
+  comments:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.fontforge
+      push:
+        - meta_scope: comment.line.number-sign.fontforge
+        - match: $
+          pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.fontforge
+      push:
+        - meta_scope: comment.block.fontforge
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.fontforge
+          pop: true
+    - match: //
+      captures:
+        0: punctuation.definition.comment.fontforge
+      push:
+        - meta_scope: comment.line.double-slash
+        - match: $
+          pop: true
+  control:
+    - match: \b(if|elseif|else|endif|while|endloop|foreach|break|return|shift)\b
+      scope: keyword.control.$1.fontforge
+  integer:
+    - match: '(?<!\w)[-+]?0[Xx][A-Fa-f0-9]+'
+      scope: constant.numeric.integer.hexadecimal.fontforge
+    - match: '(?<!\w)[-+]?(?=0)\d+'
+      scope: constant.numeric.integer.octal.fontforge
+    - match: '(?<!\w)[-+]?\d+'
+      scope: constant.numeric.integer.decimal.fontforge
+  operators:
+    - match: "==|!=|>=|<=|>|<"
+      scope: keyword.operator.comparison.fontforge
+    - match: "=|[-+*/%]="
+      scope: keyword.operator.assignment.compound.fontforge
+    - match: "--"
+      scope: keyword.operator.decrement.fontforge
+    - match: '\+{2}'
+      scope: keyword.operator.increment.fontforge
+    - match: "[-+/*~!]"
+      scope: keyword.operator.arithmetic.fontforge
+    - match: '&&|\|\|'
+      scope: keyword.operator.logical.fontforge
+    - match: '&|\||\\\^'
+      scope: keyword.operator.bitwise.fontforge
+    - match: ":[htre]"
+      scope: keyword.operator.pathspec.fontforge
+      captures:
+  procedureCall:
+    - match: (\w+)\s*(\()
+      captures:
+        1: entity.name.function.fontforge
+        2: punctuation.definition.arguments.begin.bracket.round.fontforge
+      push:
+        - meta_scope: meta.function-call.fontforge
+        - meta_content_scope: meta.function-call.arguments.fontforge
+        - match: \)
+          captures:
+            0: punctuation.definition.arguments.end.bracket.round.fontforge
+          pop: true
+        - include: $top_level_main
+  punctuation:
+    - match: ","
+      scope: punctuation.separator.comma.fontforge
+    - match: ;
+      scope: punctuation.terminator.statement.fontforge
+    - match: ":"
+      scope: punctuation.delimiter.colon.fontforge
+    - match: '\['
+      captures:
+        0: punctuation.bracket.begin.square.fontforge
+      push:
+        - meta_scope: meta.expression.chained.fontforge
+        - match: '\]'
+          captures:
+            0: punctuation.bracket.end.square.fontforge
+          pop: true
+        - include: $top_level_main
+    - match: \(
+      captures:
+        0: punctuation.bracket.begin.round.fontforge
+      push:
+        - meta_scope: meta.expression.fontforge
+        - match: \)
+          captures:
+            0: punctuation.bracket.end.round.fontforge
+          pop: true
+        - include: $top_level_main
+  real:
+    - match: '(?<!\w)[-+]?\d*\.\d+'
+      scope: constant.numeric.float.fontforge
+  shared:
+    - include: codepoint
+    - include: strings
+    - include: real
+    - include: integer
+    - include: punctuation
+    - include: operators
+  stringEscapes:
+    - match: \\n
+      scope: constant.character.escape.newline.fontforge
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.fontforge
+      push:
+        - meta_scope: string.double.quoted.fontforge
+        - match: '"|$'
+          captures:
+            0: punctuation.definition.string.end.fontforge
+          pop: true
+        - include: stringEscapes
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.fontforge
+      push:
+        - meta_scope: string.single.quoted.fontforge
+        - match: "'|$"
+          captures:
+            0: punctuation.definition.string.end.fontforge
+          pop: true
+        - include: stringEscapes
+  variables:
+    - match: (\$)\d+(?=\W)
+      scope: variable.language.readonly.positional.fontforge
+      captures:
+        1: punctuation.definition.variable.fontforge
+    - match: (\$)\w+
+      scope: variable.language.readonly.fontforge
+      captures:
+        1: punctuation.definition.variable.fontforge
+    - match: (_)\w+
+      scope: variable.other.global.fontforge
+      captures:
+        1: punctuation.definition.variable.fontforge
+    - match: (@)\w+
+      scope: variable.other.font.fontforge
+      captures:
+        1: punctuation.definition.variable.fontforge
+    - match: '(?=[A-Za-z])\w+'
+      scope: variable.other.local.fontforge

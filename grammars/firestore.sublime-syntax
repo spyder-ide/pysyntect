@@ -1,0 +1,153 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Firestore Rules
+file_extensions:
+  - rule
+  - rules
+first_line_match: '^service\s+cloud\.firestore\s+{'
+scope: source.firestore
+contexts:
+  main:
+    - include: comment
+    - include: pathMatchLiteral
+    - include: pathMatchVariable
+    - include: basicTypes
+    - include: number
+    - include: strings
+    - include: functionName
+    - include: functionParameterList
+    - include: globalFunc
+    - include: accessControl
+    - include: keywords
+    - include: booleans
+    - include: comparisons
+    - include: arithmetic
+    - include: typeMember
+    - include: punctuation
+  comment:
+    - match: //
+      captures:
+        0: punctuation.definition.comment.firestore
+      push:
+        - meta_scope: comment.line.double-slash.firestore
+        - match: $
+          pop: true
+  accessControl:
+    - match: '\b(get|list|read|create|update|delete|write)\b(?=[\s,:;]|$)'
+      scope: storage.modifier.access-control.firestore
+  arithmetic:
+    - match: "[-+*/%]"
+      scope: keyword.operator.arithmetic.firestore
+  basicTypes:
+    - match: \b(request|math|user|duration|string|int|cloud)\b
+      scope: storage.type.$1.firestore
+  booleans:
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.$1.firestore
+  comparisons:
+    - match: '!!|&&|\|\||[!=]==?|>=|<=|<<[<=]?|>>[>=]?|[=!><|&]'
+      scope: keyword.operator.comparison.firestore
+  functionName:
+    - match: '[.\s\(][a-zA-Z]+(?=\()'
+      scope: entity.name.function.firestore
+      captures:
+  functionParameter:
+    - match: '\b(?<![''"])[a-zA-Z0-9_]+(?![''"])\b'
+      scope: variable.parameter.function.firestore
+  functionParameterList:
+    - match: \(
+      captures:
+        0: punctuation.definition.parameters.begin.bracket.round.firestore
+      push:
+        - meta_scope: meta.function.parameters.firestore
+        - match: \)
+          captures:
+            0: punctuation.definition.parameters.end.bracket.round.firestore
+          pop: true
+        - include: functionParameter
+        - include: main
+  globalFunc:
+    - match: ^\s*(service|match|allow)(?=\s)
+      scope: support.function.global.$1.firestore
+  keywords:
+    - match: \b(if|in|return|is)\b
+      scope: keyword.control.$1.firestore
+    - match: \b(null)\b
+      scope: constant.language.null.firestore
+    - match: \b(function)\b
+      scope: storage.type.function.firestore
+  number:
+    - match: |-
+        (?x)
+        -?[0-9]+\.[0-9]* | # 1.2, -3.4, -3.
+        -?      \.[0-9]+   # .12, -.34, -.3
+      scope: constant.numeric.decimal.float.firestore
+    - match: "-?[0-9]+"
+      scope: constant.numeric.decimal.integer.firestore
+  pathMatchLiteral:
+    - match: '(/)[-a-zA-Z0-9_]+(?=[\s/])'
+      scope: string.unquoted.path.firestore
+      captures:
+        1: punctuation.definition.string.slash.firestore
+  pathMatchVariable:
+    - match: |-
+        (?x)
+        (/)         #1
+        ({)         #2
+        ([^}]+?)    #3
+        ((=)\*+)?  #4-5
+        (})         #6
+        (?=[\s/])
+      scope: string.unquoted.path.interpolation.firestore
+      captures:
+        1: punctuation.definition.string.slash.firestore
+        2: punctuation.definition.section.begin.firestore
+        3: variable.parameter.path.match.firestore
+        4: keyword.operator.wildcard.firestore
+        5: punctuation.separator.key-value.firestore
+        6: punctuation.definition.section.end.firestore
+  punctuation:
+    - match: ":"
+      scope: keyword.operator.assignment.colon.key-value.firestore
+    - match: ;
+      scope: punctuation.terminator.statement.semicolon.firestore
+    - match: ","
+      scope: punctuation.separator.delimiter.comma.firestore
+    - match: "{"
+      scope: punctuation.definition.bracket.curly.begin.firestore
+    - match: "}"
+      scope: punctuation.definition.bracket.curly.end.firestore
+    - match: '\['
+      scope: punctuation.definition.bracket.square.begin.firestore
+    - match: '\]'
+      scope: punctuation.definition.bracket.square.end.firestore
+    - match: \(
+      scope: punctuation.definition.bracket.round.begin.firestore
+    - match: \)
+      scope: punctuation.definition.bracket.round.end.firestore
+    - match: \.
+      scope: punctuation.definition.full-stop.dot.period.firestore
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.firestore
+      push:
+        - meta_scope: string.quoted.double.firestore
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.firestore
+          pop: true
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.firestore
+      push:
+        - meta_scope: string.quoted.single.firestore
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.firestore
+          pop: true
+  typeMember:
+    - match: '\.[a-zA-Z0-9_]+'
+      scope: variable.parameter.type.member.firestore
+      captures:

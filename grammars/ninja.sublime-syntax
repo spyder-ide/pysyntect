@@ -1,0 +1,125 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ninja
+file_extensions:
+  - ninja
+first_line_match: |-
+  (?xi)
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  	  ninja
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+  	|
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s*set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  	  ninja
+  	(?=\s|:|$)
+scope: source.ninja
+contexts:
+  main:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.ninja
+      push:
+        - meta_scope: comment.line.number-sign.ninja
+        - match: $
+          pop: true
+    - match: ^(rule|pool)\s+(\S+)
+      captures:
+        1: storage.type.$1.ninja
+        2: entity.name.function.$1.ninja
+      push:
+        - meta_scope: meta.$1.ninja
+        - match: ^(?=\S)
+          pop: true
+        - include: main
+    - match: |-
+        (?x)
+        ^ (build) \s+
+        ((?:[^\s:|$]|\$.)+)
+        (?:
+          (\|{1,2})
+          ((?:[^:$]|\$.)*)
+          (?=:)
+        )?
+      captures:
+        1: storage.type.build.ninja
+        2: entity.name.function.build.ninja
+        3: keyword.operator.build.ninja
+      push:
+        - meta_scope: meta.build.ninja
+        - match: (?<!\$)$
+          pop: true
+        - match: '\|{2}'
+          scope: keyword.operator.build.ninja
+        - match: '(?:[^\s:|$]|\$.)+'
+          scope: variable.reference.ninja
+        - include: main
+    - match: (?<=:)\s*(phony)\b
+      captures:
+        1: storage.modifier.phony.build.ninja
+    - match: (?<==)\s*(\.\d+|\d+(?:\.\d+)?)
+      captures:
+        1: constant.numeric.ninja
+    - match: ^(default)(?=\s|$)
+      captures:
+        1: storage.type.build.default.ninja
+      push:
+        - meta_scope: meta.default.ninja
+        - match: (?<!\$)$
+          pop: true
+        - match: \S+
+          scope: entity.name.function.build.ninja
+        - include: main
+    - match: ^\s*(command)\s*(=)
+      captures:
+        1: variable.language.rule.ninja
+        2: keyword.operator.assignment.ninja
+      push:
+        - meta_scope: meta.command.ninja
+        - match: (?<!\$)$
+          pop: true
+        - include: main
+        - match: (?:\G|^)(.+)(?=$)
+          captures:
+            1: embedded.source.shell
+    - match: (?x) ^ \s* (depfile|deps|msvc_deps_prefix|description|generator|in |in_newline|out|restat|rspfile|rspfile_content) \s* (=)
+      scope: meta.property.ninja
+      captures:
+        1: support.variable.language.rule.ninja
+        2: keyword.operator.assignment.ninja
+    - match: ^(subninja|include)\s+
+      captures:
+        1: keyword.operator.$1.ninja
+      push:
+        - meta_scope: meta.$1.ninja
+        - meta_content_scope: string.unquoted.filename.ninja
+        - match: (?<!\$)$
+          pop: true
+        - include: main
+    - match: ":"
+      scope: punctuation.separator.dictionary.key-value.ninja
+    - match: ^\s*(\w+)\s*(=)
+      captures:
+        1: variable.parameter.reference.ninja
+        2: keyword.operator.assignment.ninja
+    - match: (\$)\w+
+      scope: variable.parameter.reference.ninja
+      captures:
+        1: punctuation.definition.variable.ninja
+    - match: \$$\n?
+      scope: constant.character.escape.newline.ninja
+    - match: '(\${)\s*[^{}]+\s*(})'
+      scope: variable.other.bracket.ninja
+      captures:
+        1: punctuation.definition.variable.begin.ninja
+        2: punctuation.definition.variable.end.ninja
+    - include: escapes
+  escapes:
+    - match: '\${2}'
+      scope: constant.character.escape.dollar-sign.ninja
+    - match: '\$[ \t]'
+      scope: constant.character.escape.whitespace.ninja
+    - match: '\$:'
+      scope: constant.character.escape.colon.ninja

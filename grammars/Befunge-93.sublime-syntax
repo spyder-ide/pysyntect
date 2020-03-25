@@ -1,0 +1,23 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Befunge-93
+file_extensions:
+  - bf
+scope: source.befunge
+contexts:
+  main:
+    - match: "[0-9]"
+      scope: constant.numberic.bf
+    - match: '[+\-*/%!`]'
+      scope: storage.type.bf
+    - match: "[#<>^v?|_@]"
+      scope: storage.type.bf
+    - match: '[:$"]'
+      scope: stack.bf
+    - match: "[.,&~]"
+      scope: function.io.bf
+    - match: "[pg]"
+      scope: storage.type.bf
+    - match: '"(.*?)"'
+      scope: comment.block.bf

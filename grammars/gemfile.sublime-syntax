@@ -1,0 +1,20 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Gemfile
+file_extensions:
+  - Gemfile
+scope: source.ruby.gemfile
+contexts:
+  main:
+    - include: scope:source.ruby
+    - match: '\b(?<!\.|::)(gem|git|group|platforms|ruby|source)\b(?![?!])'
+      captures:
+        1: keyword.other.special-method.ruby.gemfile
+      push:
+        - meta_scope: meta.declaration.ruby.gemfile
+        - match: "$|(?=#|})"
+          captures:
+            1: keyword.other.special-method.ruby.gemfile
+          pop: true
+        - include: main

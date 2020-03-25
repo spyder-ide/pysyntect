@@ -1,0 +1,188 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Roff (Device Description)
+file_extensions:
+  - DESC
+  - DESC.in
+  - DESC.proto
+  - DESC.8400
+  - R.proto
+  - tab.37
+  - tab.450
+  - tab.450-12
+  - tab.lp
+  - tab.think
+  - text.enc
+  - devps/download
+  - devpdf/download
+  - devpdf/Foundry
+first_line_match: "# This file has been generated with GNU afmtodit"
+scope: source.ditroff.desc
+contexts:
+  main:
+    - include: foundry
+    - include: comment
+    - include: charset
+    - include: fields
+    - include: kernpairs
+    - include: fontPath
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.ditroff.desc
+      push:
+        - meta_scope: comment.line.number-sign.ditroff.desc
+        - match: $
+          pop: true
+  charset:
+    - match: ^(charset)\s*$
+      captures:
+        1: keyword.control.section.ditroff.desc
+      push:
+        - meta_scope: meta.charset.ditroff.desc
+        - match: ^(?=kernpairs|\s*$)
+          pop: true
+        - match: |-
+            (?x) ^
+            \s* ((---)|\S+)                # Name
+            \s+ ([-\d]+(?:,[-\d]+){0,5})  # Metrics
+            \s+ (\d)                       # Glyph type
+            \s+ (0[Xx][0-9A-Fa-f]+|\d+)    # Code
+            (?:\s+(?!--)(\S+))?            # Entity name
+          scope: meta.glyph.ditroff.desc
+          captures:
+            1: entity.type.var.ditroff.desc
+            2: punctuation.definition.unnamed.glyph.ditroff.desc
+            4: constant.numeric.integer.ditroff.desc
+            5: constant.numeric.integer.ditroff.desc
+            6: variable.other.ditroff.desc
+        - match: ^\s*(\S+)\s+(")(?=\s|$)
+          scope: meta.glyph.alias.ditroff.desc
+          captures:
+            1: entity.type.var.ditroff.desc
+            2: keyword.operator.ditroff.desc
+        - match: (?<=\s)--(?!-)
+          captures:
+            0: punctuation.definition.comment.ditroff.desc
+          push:
+            - meta_scope: comment.line.double-dash.ditroff.desc
+            - match: (?=$)
+              pop: true
+        - include: comment
+  fields:
+    - match: ^\s*(ligatures|sizes)(?=\s)
+      captures:
+        1: entity.type.var.ditroff.desc
+      push:
+        - meta_scope: meta.$1-list.ditroff.desc
+        - match: (?=$|#)
+          pop: true
+        - match: \d+(-)\d+
+          scope: constant.numeric.range.ditroff.desc
+          captures:
+            1: punctuation.separator.range.dash.ditroff.desc
+        - match: '\S{2,}'
+          scope: variable.parameter.ditroff.desc
+        - match: (?<=\s)0(?=\s*$)
+          scope: punctuation.terminator.statement.ditroff.desc
+    - match: ^\s*(papersize)(?=\s)
+      captures:
+        1: entity.type.var.ditroff.desc
+      push:
+        - meta_scope: meta.papersize.ditroff.desc
+        - match: (?=$|#)
+          pop: true
+        - match: '(?i)(?:[A-D][0-7]|DL|letter|legal|tabloid|ledger|statement|executive|com10|monarch)(?=$|[\s#])'
+          scope: support.constant.papersize.ditroff.desc
+        - match: '(?<=\s)([\d.]+)([icpP])(,)([\d.]+)([icpP])(?=\s|$)'
+          scope: meta.custom-papersize.ditroff.desc
+          captures:
+            1: constant.numeric.ditroff.desc
+            2: keyword.other.unit.ditroff.desc
+            3: punctuation.delimiter.comma.ditroff.desc
+            4: constant.numeric.ditroff.desc
+            5: keyword.other.unit.ditroff.desc
+    - match: |-
+        (?x)^\s*
+        (biggestfont|broken|checksum|designsize|encoding|family|fonts|hor|image_generator
+        |internalname|name|orientation|paper(?:length|width)|pass_filenames|postpro|prepro
+        |print|res|sizescale|slant|spacewidth|spare\d|special|styles|tcommand|unicode
+        |unitwidth|unscaled_charwidths|use_charnames_in_special|vert|X11|(?:lbp|pcl)[a-z]+)
+        (?=\s)
+      captures:
+        1: entity.type.var.ditroff.desc
+      push:
+        - match: (?=$|#)
+          pop: true
+        - match: '-?[\d.]+(?=\s|$)'
+          scope: constant.numeric.ditroff.desc
+        - match: \S+
+          scope: variable.parameter.ditroff.desc
+  fontPath:
+    - match: '^(?:(\w+)?\t+)?(\S+)\t+(\*)?(\S+(?:\.pf[ab]|[\/]Resource[\/]Font[\/]\S+))\s*$'
+      captures:
+        1: variable.other.foundry.ditroff.desc
+        2: entity.name.var.ditroff.desc
+        3: keyword.operator.globstar.ditroff.desc
+        4: string.quoted.double.filename.ditroff.desc
+  foundry:
+    - match: ^(#)Foundry\|Name\|Searchpath\s*$
+      captures:
+        0: comment.line.number-sign.ditroff.desc
+        1: punctuation.definition.comment.ditroff.desc
+      push:
+        - meta_scope: meta.foundry-data.ditroff.desc
+        - match: (?=A)B
+          pop: true
+        - include: comment
+        - match: '^([^\s|]+)(\|)([YN])(\|)([rins]+)?(\|)(?:([.\w]*)(\|)([.\w]*)(?=\|))?'
+          captures:
+            1: entity.name.var.ditroff.desc
+            2: punctuation.delimiter.pipe.ditroff.desc
+            3: constant.boolean.is-base64.ditroff.desc
+            4: punctuation.delimiter.pipe.ditroff.desc
+            5: constant.language.flags.ditroff.desc
+            6: punctuation.delimiter.pipe.ditroff.desc
+            7: variable.parameter.ditroff.desc
+            8: punctuation.delimiter.pipe.ditroff.desc
+            9: variable.parameter.ditroff.desc
+        - match: '^(foundry)(\|)(\w*)(\|)((\()\w+(\)))?([^|#]+)'
+          captures:
+            1: storage.type.foundry.ditroff.desc
+            2: punctuation.delimiter.pipe.ditroff.desc
+            3: variable.other.foundry.ditroff.desc
+            4: punctuation.delimiter.pipe.ditroff.desc
+            5: string.interpolated.ditroff.desc
+            6: punctuation.definition.arguments.begin.ditroff.desc
+            7: punctuation.definition.arguments.end.ditroff.desc
+            8: string.quoted.double.filename.ditroff.desc
+        - match: '(?<=\|)(?:([^|!]+\.pf[ab])|([^|!]+)(!)([^|!]+\.pf[ab]))$'
+          scope: meta.foundry-font.ditroff.desc
+          captures:
+            1: string.quoted.double.filename.ditroff.desc
+            2: variable.parameter.ditroff.desc
+            3: punctuation.separator.fontname.ditroff.desc
+            4: string.quoted.double.filename.ditroff.desc
+        - match: "^([a-z])(=)(?=-)([^#]+)(?=$|#)"
+          scope: meta.afmtodit-flag.ditroff.desc
+          captures:
+            1: variable.other.ditroff.desc
+            2: keyword.operator.assignment.ditroff.desc
+            3: constant.other.ditroff.desc
+        - match: \|
+          scope: punctuation.delimiter.pipe.ditroff.desc
+  kernpairs:
+    - match: ^(kernpairs)\s*$
+      captures:
+        1: keyword.control.section.ditroff.desc
+      push:
+        - meta_scope: meta.kernpairs.ditroff.desc
+        - match: ^(?=charset|\s*$)
+          pop: true
+        - match: ^\s*(\S+)\s+(\S+)\s+(-?\d+)
+          scope: meta.kerning-pair.ditroff.desc
+          captures:
+            1: entity.name.var.ditroff.desc
+            2: entity.name.var.ditroff.desc
+            3: constant.numeric.integer.ditroff.desc

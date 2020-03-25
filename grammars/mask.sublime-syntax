@@ -1,0 +1,414 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Mask
+file_extensions:
+  - mask
+scope: source.mask
+contexts:
+  main:
+    - include: comments
+    - include: punctuation
+    - include: literal-string
+    - include: decorator
+    - include: import
+    - include: xml_markdown
+    - include: xml_style
+    - include: xml_script
+    - include: xml
+    - include: define
+    - include: tag_javascript
+    - include: tag_var
+    - include: tag_style
+    - include: tag_markdown
+    - include: tag
+    - include: statement
+    - include: node_klass_id
+    - include: node_template
+    - include: node
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.js
+      push:
+        - meta_scope: comment.block.js
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.js
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.js
+      captures:
+        1: punctuation.definition.comment.js
+  decorator:
+    - match: '(\[)'
+      captures:
+        1: keyword
+      push:
+        - match: '(\])'
+          captures:
+            1: keyword
+          pop: true
+        - include: scope:source.js
+  define:
+    - match: ((define|let)\b)
+      captures:
+        1: support.constant
+      push:
+        - meta_scope: define.mask
+        - match: '(?<=[>;\{\}])|(?=[>;\{\}])|([>;\{\}])'
+          pop: true
+        - match: (as|extends)\b
+          scope: keyword
+        - match: (,)
+          scope: punctuation
+        - match: '([\w_\-:]+)'
+          scope: entity.other.attribute-name
+        - match: '(\([^\)]*\))'
+          scope: variable.parameter
+  expression:
+    - match: (\()
+      captures:
+        0: variable.parameter
+      push:
+        - meta_scope: markup.italic
+        - match: \)
+          captures:
+            0: variable.parameter
+          pop: true
+        - include: js-expression
+        - include: scope:source.js
+  html:
+    - match: '((\{|>)\s*(''''''|"""))'
+      captures:
+        1: variable.parameter
+      push:
+        - meta_scope: syntax.html.mask
+        - match: (('''|"""))
+          captures:
+            1: variable.parameter
+          pop: true
+        - include: scope:text.html.basic
+  import:
+    - match: (import)\b
+      captures:
+        1: keyword
+      push:
+        - meta_scope: import.mask
+        - match: '(;|(?<=[''|"]))'
+          pop: true
+        - match: \b(sync|async|as|from)\b
+          scope: keyword
+        - match: (,)
+          scope: punctuation
+        - include: literal-string
+  interpolation:
+    - match: '(?<!\\)(~)([\w\.]+)'
+      scope: markup.italic
+      captures:
+        1: variable.parameter
+        2: other.interpolated.mask
+    - match: '(~\[)'
+      captures:
+        0: variable.parameter
+      push:
+        - meta_scope: markup.italic
+        - match: '\]'
+          captures:
+            0: variable.parameter
+          pop: true
+        - match: (\s*\w*\s*:)
+          scope: keyword.util.mask
+        - include: js-interpolation
+        - include: scope:source.js
+  javascript:
+    - match: '\{'
+      captures:
+        0: variable.parameter
+      push:
+        - meta_scope: syntax.js.mask
+        - match: '\}'
+          captures:
+            0: variable.parameter
+          pop: true
+        - include: js-block
+        - include: scope:source.js
+  js-block:
+    - match: '\{'
+      push:
+        - meta_scope: other.interpolated.mask
+        - match: '\}'
+          pop: true
+        - include: js-block
+        - include: scope:source.js
+  js-expression:
+    - match: \(
+      push:
+        - meta_scope: other.interpolated.mask
+        - match: \)
+          pop: true
+        - include: js-expression
+        - include: scope:source.js
+  js-interpolation:
+    - match: '\['
+      push:
+        - meta_scope: other.interpolated.mask
+        - match: '\]'
+          pop: true
+        - include: js-interpolation
+        - include: scope:source.js
+  klass_id:
+    - match: '([\.#][\w_\-$:]*)'
+      captures:
+        1: entity.other.attribute-name.markup.bold.mask
+      push:
+        - meta_scope: node-head.attribute.mask
+        - match: '(?=[\s\.#])'
+          pop: true
+        - include: interpolation
+        - match: '(([\w_\-$]+)(?=[\s.#]))'
+          scope: entity.other.attribute-name.mask
+  literal-string:
+    - match: (''')
+      captures:
+        0: string.quoted.single.js
+      push:
+        - meta_scope: literal-string
+        - match: (''')
+          captures:
+            0: string.quoted.single.js
+          pop: true
+        - include: string-content
+    - match: (""")
+      captures:
+        0: string.quoted.single.js
+      push:
+        - meta_scope: literal-string
+        - match: (""")
+          captures:
+            0: string.quoted.single.js
+          pop: true
+        - include: string-content
+    - match: (')
+      captures:
+        0: string.quoted.single.js
+      push:
+        - meta_scope: literal-string
+        - match: (')
+          captures:
+            0: string.quoted.single.js
+          pop: true
+        - include: string-content
+    - match: (")
+      captures:
+        0: string.quoted.single.js
+      push:
+        - meta_scope: literal-string
+        - match: (")
+          captures:
+            0: string.quoted.single.js
+          pop: true
+        - include: string-content
+  markdown:
+    - match: '((\{|>)\s*(''''''|"""))'
+      captures:
+        1: variable.parameter
+      push:
+        - meta_scope: syntax.markdown.mask
+        - match: ('''|""")
+          captures:
+            1: variable.parameter
+          pop: true
+        - include: scope:text.html.markdown
+  node:
+    - match: '([^\s\.#;>\{\(]+)'
+      captures:
+        0: entity.name.tag.mask
+      push:
+        - meta_scope: node.mask
+        - match: '(?<=[>;\{\}])|(?=[>;\{\}])|([>;\{\}])'
+          pop: true
+        - include: node_attributes
+  node_attribute:
+    - include: comments
+    - include: expression
+    - match: '([\w_\-$]+)(\s*=\s*)'
+      captures:
+        1: entity.other.attribute-name
+        2: keyword.operator.assignment
+      push:
+        - meta_scope: attribute-key-value
+        - match: '([\s;>\{])'
+          pop: true
+        - include: node_attribute_value
+    - match: '([\w_\-$:]+)(?=([\s;>\{])|$)'
+      scope: entity.other.attribute-name
+  node_attribute_expression:
+    - match: (\()
+      push:
+        - meta_scope: meta.group.braces.round
+        - match: (\))
+          pop: true
+        - include: js-expression
+  node_attribute_value:
+    - match: '(true|false)(?=[\s>;\{])'
+      scope: constant.character
+    - match: '([\d\.]+)(?=[\s>;\{])'
+      scope: constant.numeric
+    - include: literal-string
+    - match: '((\s*)[^\s>;\{]+)'
+      scope: string.quoted
+  node_attributes:
+    - match: ""
+      push:
+        - meta_scope: node.attributes.mask
+        - match: '(?<=[>;\{\}])'
+          pop: true
+        - include: klass_id
+        - include: node_attribute
+  node_klass_id:
+    - match: '(?=[\.#])'
+      push:
+        - meta_scope: node.head.mask
+        - match: '(?<=[>;\{\}])|(?=[>;\{\}])|([>;\{\}])'
+          pop: true
+        - include: klass_id
+        - include: node_attribute
+  node_template:
+    - match: '(@[^\s\.#;>\{]+)'
+      captures:
+        0: variable.parameter.mask
+      push:
+        - meta_scope: node.mask
+        - match: '(?<=[>;\{\}])|(?=[>;\{\}])|([>;\{\}])'
+          pop: true
+        - include: klass_id
+        - include: node_attribute
+  punctuation:
+    - match: '([>;\{\}])'
+      scope: meta.group.braces
+  statement:
+    - match: '(if|else|with|each|for|switch|case|\+if|\+with|\+each|\+for|debugger|log|script|\:import|\:template|include)(?=[\s.#;\{\}]|$)'
+      captures:
+        1: support.constant
+      push:
+        - meta_scope: tag.mask
+        - match: '(?<=[>;\{\}])|(?=[>;\{\}])|([>;\{\}])'
+          pop: true
+        - include: node_attributes
+  string-content:
+    - match: '\\(x[\da-fA-F]{2}|u[\da-fA-F]{4}|.)'
+      scope: constant.character.escape.js
+    - include: interpolation
+    - match: (.)
+      scope: string
+  style:
+    - match: '(\{)'
+      captures:
+        1: variable.parameter
+      push:
+        - meta_scope: syntax.style.mask
+        - match: '(\})'
+          captures:
+            1: variable.parameter
+          pop: true
+        - include: scope:source.css
+  tag:
+    - match: '(a|abbr|acronym|address|applet|area|article|aside|audio|b|base|basefont|bdo|big|blockquote|body|br|button|canvas|caption|center|cite|code|col|colgroup|command|datalist|dd|del|details|dfn|dir|div|dl|dt|em|embed|fieldset|figcaption|figure|font|footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hgroup|hr|html|i|iframe|img|input|ins|keygen|kbd|label|legend|li|link|map|mark|menu|meta|meter|nav|noframes|noscript|object|ol|optgroup|option|output|p|param|pre|progress|q|rp|rt|ruby|s|samp|script|section|select|small|source|span|strike|strong|style|sub|summary|sup|table|tbody|td|textarea|tfoot|th|thead|time|title|tr|tt|u|ul|video|wbr|xmp)(?=[\s.#;\{\}]|$)'
+      captures:
+        1: storage.type.mask
+      push:
+        - meta_scope: tag.mask
+        - match: '(?<=[>;\{\}])|(?=[>;\{\}])|([>;\{\}])'
+          pop: true
+        - include: node_attributes
+  tag_javascript:
+    - match: (slot|pipe|event|function|script)\b
+      captures:
+        1: support.constant
+      push:
+        - meta_scope: slot.mask
+        - match: '(\})|(?<=\})'
+          pop: true
+        - match: \b(static|private|public|async|self)\b
+          scope: keyword
+        - include: klass_id
+        - include: node_attribute
+        - include: javascript
+  tag_markdown:
+    - match: (md|markdown)\b
+      captures:
+        1: support.constant
+      push:
+        - meta_scope: syntax.markdown.mask
+        - match: '(?<=\})|(\})'
+          pop: true
+        - include: klass_id
+        - include: node_attribute
+        - include: markdown
+  tag_style:
+    - match: (style)\b
+      captures:
+        1: support.constant
+      push:
+        - meta_scope: syntax.style.mask
+        - match: '(?<=\})|(\})'
+          pop: true
+        - include: klass_id
+        - include: node_attribute
+        - include: style
+  tag_var:
+    - match: (var)\b
+      captures:
+        1: support.constant
+      push:
+        - meta_scope: var.mask
+        - match: '([\};\]])|(?<=[\};\]])'
+          pop: true
+        - include: scope:source.js
+  xml:
+    - match: (?=</?\s*(\w+))
+      push:
+        - meta_scope: syntax.html.mask
+        - match: (?<=</\1>)
+          pop: true
+        - match: (<mask>)
+          push:
+            - match: (</mask>)
+              pop: true
+            - include: scope:source.mask
+        - include: scope:text.html.basic
+        - include: xml
+  xml_markdown:
+    - match: '(?i)<markdown[^\>]*>'
+      captures:
+        0: variable.parameter
+      push:
+        - meta_scope: syntax.markdown.mask
+        - match: '(?i)</markdown[^\>]*>'
+          captures:
+            0: variable.parameter
+          pop: true
+        - include: scope:text.html.markdown
+  xml_script:
+    - match: '(?i)<script[^\>]*>'
+      captures:
+        0: variable.parameter
+      push:
+        - meta_scope: syntax.markdown.mask
+        - match: '(?i)</script[^\>]*>'
+          captures:
+            0: variable.parameter
+          pop: true
+        - include: scope:source.js
+  xml_style:
+    - match: '(?i)<style[^\>]*>'
+      captures:
+        0: variable.parameter
+      push:
+        - meta_scope: syntax.markdown.mask
+        - match: '(?i)</style[^\>]*>'
+          captures:
+            0: variable.parameter
+          pop: true
+        - include: scope:source.css

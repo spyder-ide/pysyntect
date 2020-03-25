@@ -1,0 +1,46 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nim Comment
+file_extensions: []
+scope: source.nim.comment
+contexts:
+  main:
+    - match: '(?i)(\#\[)\s*(todo\b)?'
+      comment: A multiline comment.
+      captures:
+        1: punctuation.definition.multi-comment.nim
+        2: invalid.illegal.TODO.nim
+      push:
+        - meta_scope: comment.line.number-sign.multi-comment.nim
+        - match: '(?i)(\]\#)'
+          captures:
+            1: punctuation.definition.multi-comment.nim
+          pop: true
+        - include: main
+    - match: '(?i)(\#\#\[)\s*(todo\b)?'
+      comment: A multiline documentation comment.
+      captures:
+        1: punctuation.definition.multi-doc-comment.nim
+        2: invalid.illegal.TODO.nim
+      push:
+        - meta_scope: comment.line.number-sign.multi-doc-comment.nim
+        - match: '(?i)(\]\#\#)'
+          captures:
+            1: punctuation.definition.multi-doc-comment.nim
+          pop: true
+        - include: main
+    - match: (?i)(##\s*)(todo\b)?(.*$\n?)
+      comment: A documentation comment.
+      scope: comment.line.number-sign.doc-comment.nim
+      captures:
+        1: punctuation.definition.doc-comment.nim
+        2: invalid.illegal.TODO.nim
+        3: comment.line.number-sign.doc-comment.body.nim
+    - match: (?i)(#\s*)(todo\b)?(.*$\n?)
+      comment: A regular comment
+      scope: comment.line.number-sign.comment.nim
+      captures:
+        1: punctuation.definition.comment.nim
+        2: invalid.illegal.TODO.nim
+        3: comment.line.number-sign.comment.body.nim

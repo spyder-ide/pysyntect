@@ -1,0 +1,218 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Jison Lex
+file_extensions:
+  - jisonlex
+scope: source.jisonlex
+contexts:
+  main:
+    - match: "%%"
+      captures:
+        0: meta.separator.section.jisonlex
+      push:
+        - match: ""
+          pop: true
+        - match: ^%%
+          captures:
+            0: meta.separator.section.jisonlex
+          push:
+            - match: ""
+              pop: true
+            - match: \G
+              push:
+                - meta_scope: meta.section.user-code.jisonlex
+                - meta_content_scope: source.js.embedded.jison
+                - match: ""
+                  pop: true
+                - include: user_code_section
+        - match: \G
+          push:
+            - meta_scope: meta.section.rules.jisonlex
+            - match: (?=^%%)
+              pop: true
+            - include: rules_section
+    - match: ^
+      push:
+        - meta_scope: meta.section.definitions.jisonlex
+        - match: (?=%%)
+          pop: true
+        - include: definitions_section
+  definitions_section:
+    - include: scope:source.jison#comments
+    - include: scope:source.jison#include_declarations
+    - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+      captures:
+        0: entity.name.other.definition.jisonlex
+      push:
+        - meta_scope: meta.definition.jisonlex
+        - match: $
+          pop: true
+        - include: scope:source.jison#comments
+        - match: (?=\S)
+          push:
+            - meta_scope: string.regexp.jisonlex
+            - match: (?=\s)
+              pop: true
+            - include: regexp
+    - match: '%[sx]\b'
+      captures:
+        0: keyword.other.start-condition.jisonlex
+      push:
+        - meta_scope: meta.start-condition.jisonlex
+        - match: $
+          pop: true
+        - include: scope:source.jison#comments
+        - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+          scope: entity.name.function.jisonlex
+        - match: \S
+          scope: invalid.illegal.jisonlex
+    - include: scope:source.jison#options_declarations
+    - match: "%(?:array|pointer)"
+      scope: invalid.unimplemented.jisonlex
+    - include: scope:source.jison#user_code_blocks
+  name_uses:
+    - match: '(\{)[[:alpha:]_](?:[\w-]*\w)?(\})'
+      scope: constant.other.name-use.jisonlex
+      captures:
+        1: punctuation.definition.name-use.begin.jisonlex
+        2: punctuation.definition.name-use.end.jisonlex
+  regexp:
+    - include: scope:source.jison#comments
+    - match: \.
+      scope: keyword.other.character-class.any.regexp.jisonlex
+    - match: \\b
+      scope: keyword.other.anchor.word-boundary.regexp.jisonlex
+    - match: \\B
+      scope: keyword.other.anchor.non-word-boundary.regexp.jisonlex
+    - match: \^
+      scope: keyword.other.anchor.start-of-input.regexp.jisonlex
+    - match: \$
+      scope: keyword.other.anchor.end-of-input.regexp.jisonlex
+    - match: '\\[1-9]\d*'
+      scope: keyword.other.back-reference.regexp.jisonlex
+    - match: '(?:[+*?]|\{(?:\d+(?:,(?:\d+)?)?|,\d+)\})\??'
+      scope: keyword.operator.quantifier.regexp.jisonlex
+    - match: \|
+      scope: keyword.operator.alternation.regexp.jisonlex
+    - match: '\(\?:'
+      captures:
+        0: punctuation.definition.group.begin.regexp.jisonlex
+      push:
+        - meta_scope: meta.non-capturing.group.regexp.jisonlex
+        - match: \)
+          captures:
+            0: punctuation.definition.group.end.regexp.jisonlex
+          pop: true
+        - include: regexp
+    - match: \(\?=
+      captures:
+        0: punctuation.definition.group.begin.regexp.jisonlex
+      push:
+        - meta_scope: meta.lookahead.assertion.regexp.jisonlex
+        - match: \)
+          captures:
+            0: punctuation.definition.group.end.regexp.jisonlex
+          pop: true
+        - include: regexp
+    - match: \(\?!
+      captures:
+        0: punctuation.definition.group.begin.regexp.jisonlex
+      push:
+        - meta_scope: meta.negative.lookahead.assertion.regexp.jisonlex
+        - match: \)
+          captures:
+            0: punctuation.definition.group.end.regexp.jisonlex
+          pop: true
+        - include: regexp
+    - match: \(
+      captures:
+        0: punctuation.definition.group.begin.regexp.jisonlex
+      push:
+        - meta_scope: meta.group.regexp.jisonlex
+        - match: \)
+          captures:
+            0: punctuation.definition.group.end.regexp.jisonlex
+          pop: true
+        - include: regexp
+    - match: '(\[)(\^)?'
+      captures:
+        1: punctuation.definition.character-class.begin.regexp.jisonlex
+        2: keyword.operator.negation.regexp.jisonlex
+      push:
+        - meta_scope: constant.other.character-class.set.regexp.jisonlex
+        - match: '\]'
+          captures:
+            0: punctuation.definition.character-class.end.regexp.jisonlex
+          pop: true
+        - include: name_uses
+        - include: regexp_character_class
+    - include: regexp_character_class
+    - include: name_uses
+    - include: scope:source.jison#quoted_strings
+    - match: "<<EOF>>"
+      scope: keyword.other.eof.regexp.jisonlex
+    - match: /!
+      scope: keyword.operator.negative.lookahead.regexp.jisonlex
+    - match: /
+      scope: keyword.operator.lookahead.regexp.jisonlex
+  regexp_character_class:
+    - match: \\w
+      scope: constant.character.escape.character-class.word.regexp.jisonlex
+    - match: \\W
+      scope: constant.character.escape.character-class.non-word.regexp.jisonlex
+    - match: \\s
+      scope: constant.character.escape.character-class.space.regexp.jisonlex
+    - match: \\S
+      scope: constant.character.escape.character-class.non-space.regexp.jisonlex
+    - match: \\d
+      scope: constant.character.escape.character-class.digit.regexp.jisonlex
+    - match: \\D
+      scope: constant.character.escape.character-class.non-digit.regexp.jisonlex
+    - match: '\\c[A-Z]'
+      scope: constant.character.escape.character-class.control.regexp.jisonlex
+    - include: scope:source.js#string_escapes
+  rules_section:
+    - include: scope:source.jison#comments
+    - match: '(?:^|(?<=%\}))<(?!<EOF>>)'
+      captures:
+        0: punctuation.definition.start-conditions.begin.jisonlex
+      push:
+        - meta_scope: meta.start-conditions.jisonlex
+        - match: ">"
+          captures:
+            0: punctuation.definition.start-conditions.end.jisonlex
+          pop: true
+        - match: \bINITIAL\b
+          scope: keyword.other.jisonlex
+        - match: '\b[[:alpha:]_](?:[\w-]*\w)?\b'
+          scope: entity.name.function.jisonlex
+        - match: ","
+          scope: punctuation.separator.start-condition.jisonlex
+        - match: (?<=<)\*(?=>)
+          scope: keyword.other.any-start-condition.jisonlex
+        - match: .
+          scope: invalid.illegal.jisonlex
+    - match: '(?=%\{)'
+      push:
+        - meta_scope: meta.rule.action.jisonlex
+        - match: '(?<=%\})'
+          pop: true
+        - include: scope:source.jison#user_code_blocks
+    - match: '(?:^|(?<=>|%\}))(?=\S)'
+      push:
+        - meta_scope: string.regexp.jisonlex
+        - match: '(?=\s|%\{)'
+          pop: true
+        - include: regexp
+    - match: (?=\S)
+      push:
+        - meta_scope: meta.rule.action.jisonlex
+        - meta_content_scope: source.js.embedded.jison
+        - match: $
+          pop: true
+        - include: scope:source.jison#include_declarations
+        - include: scope:source.js
+  user_code_section:
+    - include: scope:source.jison#user_code_include_declarations
+    - include: scope:source.js

@@ -1,0 +1,129 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Zephir
+comment: "Zephir Syntax: version 1.0"
+file_extensions:
+  - zep
+scope: source.php.zephir
+contexts:
+  main:
+    - match: '\b(function)\s+([a-zA-Z_$]\w*)?\s*(\()(.*?)(\))'
+      scope: meta.function.zephir
+      captures:
+        1: storage.type.function.zephir
+        2: entity.name.function.zephir
+        3: punctuation.definition.parameters.begin.zephir
+        4: variable.parameter.function.zephir
+        5: punctuation.definition.parameters.end.zephir
+    - match: '\b([a-zA-Z_?.$][\w?.$]*)\s*:\s*\b(function)?\s*(\()(.*?)(\))'
+      scope: meta.function.json.zephir
+      captures:
+        1: entity.name.function.zephir
+        2: storage.type.function.zephir
+        3: punctuation.definition.parameters.begin.zephir
+        4: variable.parameter.function.zephir
+        5: punctuation.definition.parameters.end.zephir
+    - match: '(?:(('')([^'']*)(''))|((")([^"]*)(")))\s*:\s*\b(function)?\s*(\()([^)]*)(\))'
+      comment: 'Attempt to match "foo": function'
+      scope: meta.function.json.zephir
+      captures:
+        1: string.quoted.single.zephir
+        2: punctuation.definition.string.begin.zephir
+        3: entity.name.function.zephir
+        4: punctuation.definition.string.end.zephir
+        5: string.quoted.double.zephir
+        6: punctuation.definition.string.begin.zephir
+        7: entity.name.function.zephir
+        8: punctuation.definition.string.end.zephir
+        9: entity.name.function.zephir
+        10: punctuation.definition.parameters.begin.zephir
+        11: variable.parameter.function.zephir
+        12: punctuation.definition.parameters.end.zephir
+    - match: (new)\s+(\w+(?:\.\w*)?)
+      scope: meta.class.instance.constructor
+      captures:
+        1: keyword.operator.new.zephir
+        2: entity.name.type.instance.zephir
+    - match: '\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?))\b'
+      scope: constant.numeric.zephir
+    - match: '<([a-zA-Z0-9\_\\\!]+)>'
+      scope: string.regexp.zephir
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.zephir
+      push:
+        - meta_scope: string.quoted.single.zephir
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.zephir
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.zephir
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.zephir
+      push:
+        - meta_scope: string.quoted.double.zephir
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.zephir
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.zephir
+    - match: /\*\*(?!/)
+      captures:
+        0: punctuation.definition.comment.zephir
+      push:
+        - meta_scope: comment.block.documentation.zephir
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.zephir
+          pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.zephir
+      push:
+        - meta_scope: comment.block.zephir
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.zephir
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.zephir
+      captures:
+        1: punctuation.definition.comment.zephir
+    - match: \b(boolean|string|char|class|trait|resource|object|array|callable|namespace|use|as|get|__toString|set|abstract|double|float|fn|function|int|interface|long|var|void|ulong|uint|uchar|unsigned|self)\b
+      scope: storage.type.zephir
+    - match: \b(const|fetch|empty|likely|unlikely|isset|unset|extends|final|implements|private|protected|public|static|scoped|internal|inline|deprecated|enum|throws|clone)\b
+      scope: storage.modifier.zephir
+    - match: \b(echo|require|break|case|catch|let|continue|default|do|else|elseif|for|goto|if|return|switch|match|throw|try|while|loop)\b
+      scope: keyword.control.zephir
+    - match: \b(in|reverse|instanceof|new|typeof)\b
+      scope: keyword.operator.zephir
+    - match: \btrue\b
+      scope: constant.language.boolean.true.zephir
+    - match: \bfalse\b
+      scope: constant.language.boolean.false.zephir
+    - match: \bnull\b
+      scope: constant.language.null.zephir
+    - match: \b(parent|self|this)\b
+      scope: variable.language.zephir
+    - match: '\b(PHP_EOL|PHP_VERSION|([A-Z0-9\_]+))\b'
+      scope: string.regexp.zephir
+    - match: "->|::"
+      scope: keyword.operator.zephir
+    - match: '!|\$|%|&|\*|\-\-|\-|\+\+|\+|~|===|==|=|!=|!==|<=|>=|<<=|>>=|>>>=|<>|<|>|!|&&|\|\||\?\:|\*=|(?<!\()/=|%=|\+=|\-=|&=|\.=|\^=|\b(instanceof|new|typeof|void)\b'
+      scope: keyword.operator.zephir
+    - match: \;
+      scope: punctuation.terminator.statement.zephir
+    - match: ',[ |\t]*'
+      scope: meta.delimiter.object.comma.zephir
+    - match: \.
+      scope: meta.delimiter.method.period.zephir
+    - match: '\{|\}'
+      scope: meta.brace.curly.zephir
+    - match: \(|\)
+      scope: meta.brace.round.zephir
+    - match: '\[|\]'
+      scope: meta.brace.square.zephir

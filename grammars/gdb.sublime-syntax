@@ -1,0 +1,94 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GDB
+file_extensions:
+  - gdbinit
+scope: source.gdb
+contexts:
+  main:
+    - match: ^\s*(#).*$\n?
+      comment: Comment line.
+      scope: comment.line.number-sign.gdb
+      captures:
+        1: punctuation.definition.comment.gdb
+    - match: ^\s*(define)\ +(.*)?
+      comment: GDB Function Define
+      captures:
+        0: meta.function
+        1: keyword.other.gdb
+        2: entity.name.function.gdb
+      push:
+        - match: ^(end)$
+          captures:
+            1: keyword.other.gdb
+          pop: true
+        - include: main
+    - match: ^\s*(document)\ +(?:.*)?
+      comment: GDB Document
+      captures:
+        1: keyword.other.gdb
+      push:
+        - match: ^(end)$
+          captures:
+            1: keyword.other.gdb
+          pop: true
+        - match: .
+          scope: comment.block.documentation.gdb
+    - match: \"
+      comment: GDB String
+      captures:
+        0: punctuation.definition.string.begin.gdb
+      push:
+        - meta_scope: string.quoted.double.gdb
+        - match: \"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - include: stringEscapedChar
+    - match: \'
+      comment: GDB Character
+      captures:
+        0: punctuation.definition.string.begin.gdb
+      push:
+        - meta_scope: string.quoted.single.gdb
+        - match: \'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - include: stringEscapedChar
+    - match: ^\s*(echo)
+      comment: Echo statement
+      captures:
+        1: keyword.other.gdb
+      push:
+        - match: (?<!\\)\n
+          pop: true
+        - include: stringEscapedChar
+        - match: \\$
+          scope: constant.character.escape.gdb
+        - match: .
+          scope: string.other.gdb
+    - match: '\b(?:[0-9_]+|0x[0-9a-fA-F_]+)\b'
+      comment: GDB Number
+      scope: constant.numeric.gdb
+    - match: '\$[@_a-zA-Z][@_a-zA-Z0-9]*'
+      comment: GDB Variables
+      scope: variable.other.gdb
+    - match: \b(?:address|architecture|args|breakpoints|catch|common|copying|dcache|display|files|float|frame|functions|handle|line|locals|program|registers|scope|set|sharedlibrary|signals|source|sources|stack|symbol|target|terminal|threads|syn|keyword|tracepoints|types|udot)\b
+      comment: GDB Info
+      scope: storage.type.gdb
+    - match: ^\s*(?:actions|apply|apropos|attach|awatch|backtrace|break|bt|call|catch|cd|clear|collect|commands|complete|condition|continue|delete|detach|directory|disable|disassemble|display|down|dump|else|enable|end|file|finish|frame|handle|hbreak|help|if|ignore|inspect|jump|kill|list|load|maintenance|make|next|n|nexti|ni|output|overlay|passcount|path|po|print|p|printf|ptype|pwd|quit|rbreak|remote|return|run|r|rwatch|search|section|set|sharedlibrary|shell|show|si|signal|source|step|s|stepi|stepping|stop|target|tbreak|tdump|tfind|thbreak|thread|tp|trace|tstart|tstatus|tstop|tty|undisplay|unset|until|up|watch|whatis|where|while|ws|x|add-shared-symbol-files|add-symbol-file|core-file|dont-repeat|down-silently|exec-file|forward-search|reverse-search|save-tracepoints|select-frame|symbol-file|up-silently|while-stepping)\b
+      comment: GDB Statement
+      scope: keyword.other.gdb
+    - match: \b(?:annotate|architecture|args|check|complaints|confirm|editing|endian|environment|gnutarget|height|history|language|listsize|print|prompt|radix|remotebaud|remotebreak|remotecache|remotedebug|remotedevice|remotelogbase|remotelogfile|remotetimeout|remotewritesize|targetdebug|variable|verbose|watchdog|width|write|auto-solib-add|solib-absolute-prefix|solib-search-path|stop-on-solib-events|symbol-reloading|input-radix|demangle-style|output-radix)\b
+      comment: GDB Set
+      scope: support.constant.gdb
+    - match: ^\s*info
+      comment: GDB Info
+      scope: constant.language.gdb
+  stringEscapedChar:
+    - match: '\\(?:\\|[abefnprtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-fA-F0-9]{0,2}|u[a-fA-F0-9]{0,4}|U[a-fA-F0-9]{0,8})'
+      scope: constant.character.escape.gdb
+    - match: \\.
+      scope: invalid.illegal.gdb

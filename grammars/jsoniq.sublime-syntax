@@ -1,0 +1,144 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JSONiq
+file_extensions:
+  - jq
+first_line_match: ^\bjsoniq\s+version\b.*
+scope: source.jq
+contexts:
+  main:
+    - match: ^(?=xquery\s+version\s+)
+      push:
+        - match: \z
+          pop: true
+        - include: scope:source.xq
+    - match: '\(#'
+      push:
+        - meta_scope: constant.jsoniq
+        - match: '#\)'
+          pop: true
+    - match: \(:~
+      push:
+        - meta_scope: comment.doc.jsoniq
+        - match: ':\)'
+          pop: true
+        - match: '@[a-zA-Z0-9_\.\-]+'
+          scope: constant.language.jsoniq
+    - include: XMLComment
+    - include: CDATA
+    - include: PredefinedEntityRef
+    - include: CharRef
+    - match: <\?
+      push:
+        - meta_scope: comment.jsoniq
+        - match: \?>
+          pop: true
+    - match: '\(:'
+      push:
+        - meta_scope: comment.jsoniq
+        - match: ':\)'
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.jsoniq
+        - match: '"'
+          pop: true
+        - match: |-
+            (?x:                # turn on extended mode
+              \\                # a literal backslash
+              (?:               # ...followed by...
+                ["\\/bfnrt]     # one of these characters
+                |               # ...or...
+                u               # a u
+                [0-9a-fA-F]{4}  # and four hex digits
+              )
+            )
+          scope: constant.character.escape.jsoniq
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.jsoniq
+    - match: '%([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*)'
+      scope: meta.declaration.annotation.jsoniq
+    - match: '@(\* | ([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*))'
+      scope: support.type.jsoniq
+    - match: '\$([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-_a-zA-Z0-9]*)'
+      scope: meta.definition.variable.name.jsoniq
+    - match: '\b(\.[0-9]+|[0-9]+(\.[0-9]*)?)[Ee][+#x002D]?[0-9]+\b'
+      scope: constant.numeric.jsoniq
+    - match: '\b(\.[0-9]+|[0-9]+\.[0-9]*)\b'
+      scope: constant.numeric.jsoniq
+    - match: '\b[0-9]+\b'
+      scope: constant.numeric.jsoniq
+    - match: \b(NaN|after|allowing|ancestor|ancestor-or-self|and|append|array|as|ascending|at|attribute|base-uri|before|boundary-space|break|by|case|cast|castable|catch|child|collation|comment|constraint|construction|contains|context|continue|copy|copy-namespaces|count|decimal-format|decimal-separator|declare|default|delete|descendant|descendant-or-self|descending|digit|div|document|document-node|element|else|empty|empty-sequence|encoding|end|eq|every|except|exit|external|false|first|following|following-sibling|for|from|ft-option|function|ge|greatest|group|grouping-separator|gt|idiv|if|import|in|index|infinity|insert|instance|integrity|intersect|into|is|item|json|json-item|jsoniq|last|lax|le|least|let|loop|lt|minus-sign|mod|modify|module|namespace|namespace-node|ne|next|node|nodes|not|null|object|of|only|option|or|order|ordered|ordering|paragraphs|parent|pattern-separator|per-mille|percent|preceding|preceding-sibling|previous|processing-instruction|rename|replace|return|returning|revalidation|satisfies|schema|schema-attribute|schema-element|score|select|self|sentences|sliding|some|stable|start|strict|switch|text|then|times|to|treat|true|try|tumbling|type|typeswitch|union|unordered|updating|validate|value|variable|version|when|where|while|window|with|words|xquery|zero-digit)(?!(:|\-))\b
+      scope: keyword.jsoniq
+    - match: '([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-_a-zA-Z0-9]*)(?=\s*\()'
+      comment: EQName
+      scope: support.function.jsoniq
+    - match: \(
+      scope: lparen.jsoniq
+    - match: \)
+      scope: rparent.jsoniq
+    - include: OpenTag
+    - include: CloseTag
+  CDATA:
+    - match: '<!\[CDATA\['
+      push:
+        - meta_scope: constant.language.jsoniq
+        - match: '\]\]>'
+          pop: true
+  CharRef:
+    - match: "&#([0-9]+|x[0-9A-Fa-f]+);"
+      scope: constant.language.escape.jsoniq
+  CloseTag:
+    - match: '<\/([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-_a-zA-Z0-9]*)\s*>'
+      scope: punctuation.definition.tag.jsoniq
+  EnclosedExpr:
+    - match: "{"
+      push:
+        - meta_scope: source.jq
+        - match: "}"
+          pop: true
+        - include: main
+  OpenTag:
+    - match: '<([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-_a-zA-Z0-9]*)'
+      push:
+        - meta_scope: punctuation.definition.tag.jsoniq
+        - match: (\/>|>)
+          pop: true
+        - match: '([\-_a-zA-Z0-9][\-\._a-zA-Z0-9]*:)?([\-_a-zA-Z0-9][\-_a-zA-Z0-9]*)'
+          scope: entity.other.attribute-name.jsoniq
+        - match: "="
+          scope: source.jq
+        - match: "'"
+          push:
+            - meta_scope: string.jsoniq
+            - match: "'(?!')"
+              pop: true
+            - match: "''"
+              scope: constant.jsoniq
+            - include: PredefinedEntityRef
+            - include: CharRef
+            - match: "({{|}})"
+              scope: constant.jsoniq
+            - include: EnclosedExpr
+        - match: '"'
+          push:
+            - meta_scope: string.jsoniq
+            - match: '"(?!")'
+              pop: true
+            - match: '""'
+              scope: constant.jsoniq
+            - include: PredefinedEntityRef
+            - include: CharRef
+            - match: "({{|}})"
+              scope: string.jsoniq
+            - include: EnclosedExpr
+  PredefinedEntityRef:
+    - match: "&(lt|gt|amp|quot|apos);"
+      scope: constant.language.escape.jsoniq
+  XMLComment:
+    - match: <!--
+      push:
+        - meta_scope: comment.jsoniq
+        - match: "-->"
+          pop: true

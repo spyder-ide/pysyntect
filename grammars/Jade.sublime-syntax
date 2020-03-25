@@ -1,0 +1,532 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Jade
+file_extensions:
+  - jade
+scope: text.jade
+contexts:
+  main:
+    - match: '^(!!!|doctype)(\s*[a-zA-Z0-9-_]+)?'
+      comment: Doctype declaration.
+      scope: meta.tag.sgml.doctype.html
+    - match: ^(\s*)//-
+      comment: Unbuffered (jade-only) comments.
+      push:
+        - meta_scope: comment.unbuffered.block.jade
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+    - match: ^(\s*)//
+      comment: Buffered (html) comments.
+      push:
+        - meta_scope: string.comment.buffered.block.jade
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - match: ^\s*(//)(?!-)
+          comment: Buffered comments inside buffered comments will generate invalid html.
+          scope: string.comment.buffered.block.jade
+          captures:
+            1: invalid.illegal.comment.comment.block.jade
+    - match: <!--
+      push:
+        - meta_scope: comment.unbuffered.block.jade
+        - match: '--\s*>'
+          pop: true
+        - match: "--"
+          scope: invalid.illegal.comment.comment.block.jade
+    - match: ^(\s*)-$
+      comment: Unbuffered code block.
+      push:
+        - meta_scope: source.js
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.js
+    - match: '^(\s*)(script)((\.$)|(?=[^\n]*(text|application)/javascript.*\.$))'
+      comment: Script tag with JavaScript code.
+      captures:
+        2: entity.name.tag.jade
+      push:
+        - meta_scope: meta.tag.other
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - match: \G(?=\()
+          push:
+            - match: $
+              pop: true
+            - include: tag_attributes
+        - match: '\G(?=[.#])'
+          push:
+            - match: $
+              pop: true
+            - include: complete_tag
+        - include: scope:source.js
+    - match: '^(\s*)(style)((\.$)|(?=[.#(].*\.$))'
+      comment: Style tag with CSS code.
+      captures:
+        2: entity.name.tag.jade
+      push:
+        - meta_scope: meta.tag.other
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - match: \G(?=\()
+          push:
+            - match: $
+              pop: true
+            - include: tag_attributes
+        - match: '\G(?=[.#])'
+          push:
+            - match: $
+              pop: true
+            - include: complete_tag
+        - include: scope:source.css
+    - match: ^(\s*):(sass)(?=\(|$)
+      captures:
+        2: constant.language.name.sass.filter.jade
+      push:
+        - meta_scope: source.sass.filter.jade
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: tag_attributes
+        - include: scope:source.sass
+    - match: ^(\s*):(less)(?=\(|$)
+      captures:
+        2: constant.language.name.less.filter.jade
+      push:
+        - meta_scope: source.less.filter.jade
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: tag_attributes
+        - include: scope:source.less
+    - match: ^(\s*):(stylus)(?=\(|$)
+      captures:
+        2: constant.language.name.stylus.filter.jade
+      push:
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: tag_attributes
+        - include: scope:source.stylus
+    - match: ^(\s*):(coffee(-?script)?)(?=\(|$)
+      captures:
+        2: constant.language.name.coffeescript.filter.jade
+      push:
+        - meta_scope: source.coffeescript.filter.jade
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: tag_attributes
+        - include: scope:source.coffee
+    - match: ^(\s*)((:(?=.))|(:$))
+      comment: Generic Jade filter.
+      captures:
+        4: invalid.illegal.empty.generic.filter.jade
+      push:
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - match: \G(?<=:)(?=.)
+          push:
+            - meta_scope: name.generic.filter.jade
+            - match: $
+              pop: true
+            - match: \G\(
+              scope: invalid.illegal.name.generic.filter.jade
+            - match: '[\w-]'
+              scope: constant.language.name.generic.filter.jade
+            - include: tag_attributes
+            - match: \W
+              scope: invalid.illegal.name.generic.filter.jade
+    - match: '^(\s*)(?=[\w.#].*?\.$)(?=(?:(?:(?:(?:(?:#[\w-]+)|(?:\.[\w-]+))|(?:(?:[#!]\{[^}]*\})|(?:\w(?:(?:[\w:-]+[\w-])|(?:[\w-]*)))))(?:(?:#[\w-]+)|(?:\.[\w-]+)|(?:\((?:[^()\''\"]*(?:(?:\''(?:[^\'']|(?:(?<!\\)\\\''))*\'')|(?:\"(?:[^\"]|(?:(?<!\\)\\\"))*\")))*[^()]*\))*)*)(?:(?:(?::\s+)|(?<=\)))(?:(?:(?:(?:#[\w-]+)|(?:\.[\w-]+))|(?:(?:[#!]\{[^}]*\})|(?:\w(?:(?:[\w:-]+[\w-])|(?:[\w-]*)))))(?:(?:#[\w-]+)|(?:\.[\w-]+)|(?:\((?:[^()\''\"]*(?:(?:\''(?:[^\'']|(?:(?<!\\)\\\''))*\'')|(?:\"(?:[^\"]|(?:(?<!\\)\\\"))*\")))*[^()]*\))*)*))*)\.$)(?:(?:(#[\w-]+)|(\.[\w-]+))|((?:[#!]\{[^}]*\})|(?:\w(?:(?:[\w:-]+[\w-])|(?:[\w-]*)))))'
+      comment: Generated from dot_block_tag.py
+      captures:
+        2: entity.other.attribute-name.id.jade
+        3: entity.other.attribute-name.class.jade
+        4: meta.tag.other entity.name.tag.jade
+      push:
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: tag_attributes
+        - include: complete_tag
+        - match: ^(?=.)
+          push:
+            - meta_scope: text.block.jade
+            - match: $
+              pop: true
+            - include: inline_jade
+            - include: embedded_html
+            - include: html_entity
+            - include: interpolated_value
+            - include: interpolated_error
+    - match: ^\s*
+      comment: All constructs that generally span a single line starting with any number of white-spaces.
+      push:
+        - match: $
+          pop: true
+        - include: inline_jade
+        - include: blocks_and_includes
+        - include: unbuffered_code
+        - include: mixin_definition
+        - include: mixin_call
+        - include: flow_control
+        - include: case_conds
+        - match: \|
+          comment: Tag pipe text line.
+          push:
+            - meta_scope: text.block.pipe.jade
+            - match: $
+              pop: true
+            - include: inline_jade
+            - include: embedded_html
+            - include: html_entity
+            - include: interpolated_value
+            - include: interpolated_error
+        - include: printed_expression
+        - match: '\G(?=(#[^\{\w-])|[^\w.#])'
+          comment: Line starting with characters incompatible with tag name/id/class is standalone text.
+          push:
+            - match: $
+              pop: true
+            - match: "</?(?=[!#])"
+              push:
+                - match: ">|$"
+                  pop: true
+                - include: inline_jade
+                - include: interpolated_value
+                - include: interpolated_error
+            - include: inline_jade
+            - include: embedded_html
+            - include: html_entity
+            - include: interpolated_value
+            - include: interpolated_error
+        - include: complete_tag
+  babel_parens:
+    - match: \(
+      push:
+        - match: '\)|(({\s*)?$)'
+          pop: true
+        - include: babel_parens
+        - include: scope:source.js
+  blocks_and_includes:
+    - match: (extends|include|yield|append|prepend|block( (append|prepend))?)\s+(.*)$
+      comment: Template blocks and includes.
+      scope: meta.first-class.jade
+      captures:
+        1: storage.type.import.include.jade
+        4: variable.control.import.include.jade
+  case_conds:
+    - match: (default|when)((\s+|(?=:))|$)
+      comment: Jade case conditionals.
+      captures:
+        1: storage.type.function.jade
+      push:
+        - meta_scope: meta.control.flow.jade
+        - match: $
+          captures:
+            1: storage.type.function.jade
+          pop: true
+        - match: \G(?!:)
+          push:
+            - meta_scope: js.embedded.control.flow.jade
+            - match: (?=:\s+)|$
+              pop: true
+            - include: case_when_paren
+            - include: scope:source.js
+        - match: ':\s+'
+          push:
+            - meta_scope: tag.case.control.flow.jade
+            - match: $
+              pop: true
+            - include: complete_tag
+  case_when_paren:
+    - match: \(
+      push:
+        - meta_scope: js.when.control.flow.jade
+        - match: \)
+          pop: true
+        - include: case_when_paren
+        - match: ":"
+          scope: invalid.illegal.name.tag.jade
+        - include: scope:source.js
+  complete_tag:
+    - match: '(?=[\w.#])|(:\s*)'
+      push:
+        - match: (\.?$)|(?=:.)
+          pop: true
+        - include: blocks_and_includes
+        - include: unbuffered_code
+        - include: mixin_call
+        - include: flow_control
+        - match: (?<=:)\w.*$
+          scope: invalid.illegal.name.tag.jade
+        - include: tag_name
+        - include: tag_id
+        - include: tag_classes
+        - include: tag_attributes
+        - include: tag_mixin_attributes
+        - match: ((\.)\s+$)|((:)\s*$)
+          captures:
+            2: invalid.illegal.end.tag.jade
+            4: invalid.illegal.end.tag.jade
+        - include: printed_expression
+        - include: tag_text
+  embedded_html:
+    - match: "(?=<[^>]*>)"
+      push:
+        - meta_scope: html
+        - match: $|(?=>)
+          pop: true
+        - include: scope:text.html.basic
+        - include: interpolated_value
+        - include: interpolated_error
+  flow_control:
+    - match: (for|if|else if|else|each|until|while|unless|case)(\s+|$)
+      comment: Jade control flow.
+      captures:
+        1: storage.type.function.jade
+      push:
+        - meta_scope: meta.control.flow.jade
+        - match: $
+          captures:
+            1: storage.type.function.jade
+          pop: true
+        - match: ""
+          push:
+            - meta_scope: js.embedded.control.flow.jade
+            - match: $
+              pop: true
+            - include: scope:source.js
+  html_entity:
+    - match: "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.html.text.jade
+    - match: "[<>&]"
+      scope: invalid.illegal.html_entity.text.jade
+  inline_jade:
+    - match: '(?<!\\)(#\[)'
+      captures:
+        1: entity.name.function.jade
+        2: entity.name.function.jade
+      push:
+        - meta_scope: inline.jade
+        - match: '(\])'
+          captures:
+            1: entity.name.function.jade
+            2: entity.name.function.jade
+          pop: true
+        - include: inline_jade
+        - include: mixin_call
+        - match: '(?<!\])(?=[\w.#])|(:\s*)'
+          push:
+            - meta_scope: tag.inline.jade
+            - match: '(?=\]|(:.)|=|\s)'
+              pop: true
+            - include: tag_name
+            - include: tag_id
+            - include: tag_classes
+            - include: tag_attributes
+            - include: tag_mixin_attributes
+            - include: inline_jade
+            - match: '\['
+              scope: invalid.illegal.tag.jade
+        - include: unbuffered_code
+        - include: printed_expression
+        - match: '\['
+          scope: invalid.illegal.tag.jade
+        - include: inline_jade_text
+  inline_jade_text:
+    - match: ""
+      push:
+        - match: '(?=\])'
+          pop: true
+        - match: '\['
+          push:
+            - match: '\]'
+              pop: true
+            - include: inline_jade_text
+        - include: inline_jade
+        - include: embedded_html
+        - include: html_entity
+        - include: interpolated_value
+        - include: interpolated_error
+  interpolated_error:
+    - match: '(?<!\\)[#!]\{(?=[^}]*$)'
+      scope: invalid.illegal.tag.jade
+  interpolated_value:
+    - match: '(?<!\\)[#!]\{(?=.*?\})'
+      push:
+        - meta_scope: string.interpolated.jade
+        - match: '\}'
+          pop: true
+        - match: "{"
+          scope: invalid.illegal.tag.jade
+        - include: scope:source.js
+  js_braces:
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: js_braces
+        - include: scope:source.js
+  js_brackets:
+    - match: '\['
+      push:
+        - match: '\]'
+          pop: true
+        - include: js_brackets
+        - include: scope:source.js
+  js_parens:
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: js_parens
+        - include: scope:source.js
+  mixin_call:
+    - match: '((?:mixin\s+)|\+)([\w-]+)'
+      captures:
+        1: storage.type.function.jade
+        2: meta.tag.other entity.name.function.jade
+      push:
+        - match: (?!\()|$
+          pop: true
+        - match: (?<!\))\(
+          push:
+            - meta_scope: args.mixin.jade
+            - match: \)
+              pop: true
+            - include: js_parens
+            - include: string
+            - match: '([^\s(),=/]+)\s*=\s*'
+              captures:
+                1: meta.tag.other entity.other.attribute-name.tag.jade
+            - include: scope:source.js
+        - include: tag_attributes
+  mixin_definition:
+    - match: '(mixin\s+)([\w-]+)(?:(\()\s*((?:[a-zA-Z_]\w*\s*)(?:,\s*[a-zA-Z_]\w*\s*)*)(\)))?$'
+      captures:
+        1: storage.type.function.jade
+        2: meta.tag.other entity.name.function.jade
+        3: punctuation.definition.parameters.begin.js
+        4: variable.parameter.function.js
+        5: punctuation.definition.parameters.begin.js
+  printed_expression:
+    - match: (!?\=)\s*
+      captures:
+        1: constant
+      push:
+        - meta_scope: source.js
+        - match: '(?=\])|$'
+          captures:
+            1: constant
+          pop: true
+        - include: js_brackets
+        - include: scope:source.js
+  string:
+    - match: '([''"])'
+      push:
+        - meta_scope: string.quoted.jade
+        - match: (?<!\\)\1
+          pop: true
+        - match: '\\((x[0-9a-fA-F]{2})|(u[0-9]{4})|.)'
+          scope: constant.character.quoted.jade
+        - include: interpolated_value
+        - include: interpolated_error
+  tag_attribute_name:
+    - match: '([^\s(),=/!]+)\s*'
+      captures:
+        1: entity.other.attribute-name.tag.jade
+  tag_attribute_name_paren:
+    - match: \(\s*
+      push:
+        - meta_scope: entity.other.attribute-name.tag.jade
+        - match: \)
+          pop: true
+        - include: tag_attribute_name_paren
+        - include: tag_attribute_name
+  tag_attributes:
+    - match: (\(\s*)
+      captures:
+        1: constant.name.attribute.tag.jade
+      push:
+        - meta_scope: meta.tag.other
+        - match: (\))
+          captures:
+            1: constant.name.attribute.tag.jade
+          pop: true
+        - include: tag_attribute_name_paren
+        - include: tag_attribute_name
+        - match: "!(?!=)"
+          scope: invalid.illegal.tag.jade
+        - match: '=\s*'
+          push:
+            - meta_scope: attribute_value
+            - match: '$|(?=,|(?:\s+[^!%&*-+~|<>:?/])|\))'
+              pop: true
+            - include: string
+            - include: js_parens
+            - include: js_brackets
+            - include: js_braces
+            - include: scope:source.js
+        - match: '(?<=[%&*-+~|<>:?/])\s+'
+          push:
+            - meta_scope: attribute_value2
+            - match: '$|(?=,|(?:\s+[^!%&*-+~|<>:?/])|\))'
+              pop: true
+            - include: string
+            - include: js_parens
+            - include: js_brackets
+            - include: js_braces
+            - include: scope:source.js
+  tag_classes:
+    - match: '\.([^\w-])?[\w-]*'
+      scope: entity.other.attribute-name.class.jade
+      captures:
+        1: invalid.illegal.tag.jade
+  tag_id:
+    - match: '#[\w-]+'
+      scope: entity.other.attribute-name.id.jade
+  tag_mixin_attributes:
+    - match: (&attributes\()
+      captures:
+        1: entity.name.function.jade
+      push:
+        - meta_scope: meta.tag.other
+        - match: (\))
+          captures:
+            1: entity.name.function.jade
+          pop: true
+        - match: attributes(?=\))
+          scope: storage.type.keyword.jade
+        - include: scope:source.js
+  tag_name:
+    - match: '([#!]\{(?=.*?\}))|(\w(([\w:-]+[\w-])|([\w-]*)))'
+      push:
+        - meta_scope: meta.tag.other entity.name.tag.jade
+        - match: '(\G(?<!\5[^\w-]))|\}|$'
+          pop: true
+        - match: '\G(?<=\{)'
+          push:
+            - meta_scope: meta.tag.other entity.name.tag.jade
+            - match: '(?=\})'
+              pop: true
+            - match: "{"
+              scope: invalid.illegal.tag.jade
+            - include: scope:source.js
+  tag_text:
+    - match: (?=.)
+      push:
+        - match: $
+          pop: true
+        - include: inline_jade
+        - include: embedded_html
+        - include: html_entity
+        - include: interpolated_value
+        - include: interpolated_error
+  unbuffered_code:
+    - match: '(-|(([a-zA-Z0-9_]+)\s+=))'
+      comment: "name = function() {}"
+      captures:
+        3: variable.parameter.javascript.embedded.jade
+      push:
+        - meta_scope: source.js
+        - match: '(?=\])|(({\s*)?$)'
+          pop: true
+        - include: js_brackets
+        - include: babel_parens
+        - include: scope:source.js

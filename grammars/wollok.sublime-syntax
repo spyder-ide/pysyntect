@@ -1,0 +1,61 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Wollok
+file_extensions:
+  - wlk
+  - wpgm
+  - wtest
+scope: source.wollok
+contexts:
+  main:
+    - include: general
+  commentBlock:
+    - match: (//).*
+      scope: comment.line.double-slash.source.wollok
+    - match: /\*
+      push:
+        - meta_scope: comment.block.source.wollok
+        - match: \*/
+          pop: true
+  general:
+    - include: commentBlock
+    - include: operators
+    - include: keywords
+    - include: numbers
+    - include: stringSingleQuote
+    - include: stringDoubleQuote
+  keywords:
+    - match: \b(object|class|package|program|test|describe|method|override|constructor|native|var|const|property|inherits|new|if|else|self|super|import|null|true|false|return|throw|then always|try|catch|mixed with|with|mixin|fixture)\b
+      comment: Keywords
+      scope: keyword.source.wollok
+  numbers:
+    - match: '(?<![\d.])\s0x[a-fA-F\d]+|\b\d+(\.\d+)?([eE]-?\d+)?|\.\d+([eE]-?\d+)?'
+      scope: constant.numeric.source.wollok
+  operators:
+    - match: '(\b(and|or|not)\b)|(\+|-|%|#|\*|\/|\^|==?|~=|<=?|>=?|(?<!\.)\.{2}(?!\.))'
+      scope: keyword.operator.source.wollok
+  stringDoubleQuote:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.source.wollok
+      push:
+        - meta_scope: string.quoted.double.source.wollok
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.source.wollok
+          pop: true
+        - match: '\\(\d{1,3}|.)'
+          scope: constant.character.escape.source.wollok
+  stringSingleQuote:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.source.wollok
+      push:
+        - meta_scope: string.quoted.single.source.wollok
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.source.wollok
+          pop: true
+        - match: '\\(\d{1,3}|.)'
+          scope: constant.character.escape.source.wollok

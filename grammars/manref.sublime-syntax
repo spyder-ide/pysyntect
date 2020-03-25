@@ -1,0 +1,15 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: hidden.manref
+contexts:
+  main:
+    - match: '([^\s()<>/"''`{}!:&*#?\\]+)((\()([0-9])(?!\.|(?<=0)(?:[Xx][0-9A-Fa-f]+|[OoBb][0-9]+))([^()\s]*)(\)))'
+      scope: manref
+      captures:
+        1: manref.subject
+        2: manref.section
+        3: punctuation.definition.begin.manref
+        4: manref.section-number
+        5: manref.section-group
+        6: punctuation.definition.end.manref

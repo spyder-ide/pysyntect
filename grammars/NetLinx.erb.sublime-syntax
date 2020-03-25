@@ -1,0 +1,25 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: NetLinx ERB
+file_extensions:
+  - axs.erb
+  - axi.erb
+first_line_match: "-[*]-( Mode:)? C -[*]-"
+scope: source.netlinx.erb
+contexts:
+  main:
+    - include: erb
+    - include: scope:source.netlinx
+  erb:
+    - match: <%
+      comment: Ruby ERB blocks nested in NetLinx code
+      captures:
+        0: punctuation.section.scope.netlinx.erb
+      push:
+        - meta_scope: meta.block.netlinx.erb
+        - match: "%>"
+          captures:
+            0: punctuation.section.scope.netlinx.erb
+          pop: true
+        - include: scope:source.ruby

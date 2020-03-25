@@ -1,0 +1,39 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Grammatical Framework
+file_extensions:
+  - gf
+first_line_match: ""
+scope: source.gf
+contexts:
+  main:
+    - match: \b(abstract|concrete|interface|instance|resource|incomplete|of|with|open|in)\b
+      scope: keyword.module.gf
+    - match: \b(cat|fun|def|data|lincat|lin|lindef|linref|printname|printname|param|oper|flags)\b
+      scope: keyword.judgement.gf
+    - match: \b(table|pre|case|variants|let|in|where)\b
+      scope: keyword.other.gf
+    - match: (=>|->|:|=|\.|\+|\*|!|\||\\)
+      scope: constant.gf
+    - match: (;|,)
+      scope: constant.gf
+    - match: '"'
+      captures:
+        0: punctuation.string.begin.gf
+      push:
+        - meta_scope: string.quoted.double.gf
+        - match: '"'
+          captures:
+            0: punctuation.string.end.gf
+          pop: true
+    - match: "--"
+      push:
+        - meta_scope: comment.line.gf
+        - match: $
+          pop: true
+    - match: "{-"
+      push:
+        - meta_scope: comment.block.gf
+        - match: "-}"
+          pop: true

@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: fsharp.fsi
+file_extensions:
+  - fsi
+scope: source.fsharp.fsi
+contexts:
+  main:
+    - include: scope:source.fsharp

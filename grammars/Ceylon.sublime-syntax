@@ -1,0 +1,61 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ceylon
+file_extensions:
+  - ceylon
+scope: source.ceylon
+contexts:
+  main:
+    - include: comments
+    - match: //.*$
+      scope: comment.singleline.ceylon
+    - match: ^#!/.*$
+      scope: comment.shebang.ceylon
+    - match: \b(assembly|module|package|import|alias|class|interface|object|given|value|assign|void|function|new|of|extends|satisfies|adapts|abstracts|in|out|return|break|continue|throw|assert|dynamic|if|else|switch|case|for|while|try|catch|finally|then|let|this|outer|super|is|exists|nonempty)\b
+      scope: keyword.control.ceylon
+    - match: \b(doc|by|license|see|throws|tagged|shared|abstract|formal|default|actual|variable|late|native|deprecated|final|sealed|annotation|suppressWarnings|static)\b
+      scope: keyword.other.ceylon
+    - match: '([A-Z][a-zA-Z0-9_]*|\\I[a-zA-Z0-9_]+)'
+      scope: entity.name.class.ceylon
+    - match: '([a-z][a-zA-Z0-9_]*|\\i[a-zA-Z0-9_]+)'
+      scope: variable.other.ceylon
+    - match: '"""'
+      push:
+        - meta_scope: string.verbatim.ceylon
+        - match: '"""'
+          pop: true
+    - match: "'"
+      push:
+        - meta_scope: string.ceylon
+        - match: "'"
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ceylon
+    - match: '"'
+      push:
+        - meta_scope: string.template.head.ceylon
+        - match: '"|(``)'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ceylon
+    - match: "``"
+      push:
+        - meta_scope: string.template.midOrtail.ceylon
+        - match: '"|``'
+          pop: true
+    - match: '\$(([01]+(_[01]+)+)|[01]+)'
+      scope: constant.numeric.binary.ceylon
+    - match: "#(([0-9ABCDEF]+(_[0-9ABCDEF]+)+)|[0-9ABCDEF]+)"
+      scope: constant.numeric.hexa.ceylon
+    - match: '-?(([0-9]+(_[0-9]+)+)|[0-9]+)\.(([0-9]+(_[0-9]+)+)|[0-9]+)(([eE]-?(([0-9]+(_[0-9]+)+)|[0-9]+))|[kmgtpKMGTP])?'
+      scope: constant.numeric.floating.ceylon
+    - match: "-?(([0-9]+(_[0-9]+)+)|[0-9]+)[kmgtpKMGTP]?"
+      scope: constant.numeric.decimal.ceylon
+  comments:
+    - match: /\*
+      push:
+        - meta_scope: comment.multiline.ceylon
+        - match: \*/
+          pop: true
+        - include: comments

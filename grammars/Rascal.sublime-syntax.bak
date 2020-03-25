@@ -1,0 +1,143 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Rascal
+file_extensions:
+  - rsc
+scope: source.rascal
+contexts:
+  main:
+    - include: top_level
+  comment:
+    - match: //.*$\n?
+      scope: comment.line.double-slash.rascal
+    - match: /\*
+      push:
+        - meta_scope: comment.block.rascal
+        - match: \*/
+          pop: true
+  annotation:
+    - match: "(@[^ {]+)({)"
+      captures:
+        1: storage.type.annotation.block.rascal
+        2: punctuation.annotation-argument.begin.rascal
+      push:
+        - meta_scope: comment.block.annotation.rascal
+        - match: "(})"
+          captures:
+            1: punctuation.annotation-argument.end.rascal
+          pop: true
+    - match: "(@[A-Za-z_0-9]+)"
+      scope: meta.annotation.inline.rascal
+      captures:
+        1: storage.type.annotation.inline.rascal
+  char_set:
+    - match: '\['
+      push:
+        - meta_scope: punctuation.other.lexicalcharset.rascal
+        - match: '\]'
+          pop: true
+        - include: string_escape
+  regex:
+    - match: /(?!/|*)
+      push:
+        - meta_scope: string.regexp.rascal
+        - match: "/([dims]*)"
+          captures:
+            1: storage.modifier.regex.rascal
+          pop: true
+        - include: regex_escape
+        - include: string_interpolation
+  regex_escape:
+    - match: \\(/|<|>|\\)
+      scope: constant.character.escape.regex.rascal
+  string:
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.rascal
+        - match: "'"
+          pop: true
+        - include: string_escape
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.rascal
+        - match: '"'
+          pop: true
+        - include: string_escape
+        - include: string_interpolation
+    - match: "`"
+      push:
+        - meta_scope: string.interpolated.rascal
+        - match: "`"
+          pop: true
+        - include: string_interpolation
+        - include: syntax_escape
+  string_escape:
+    - match: '\\(\"|\''|<|>|\\|[bnfrt])'
+      scope: constant.character.escape.ordinary.rascal
+    - match: '\\(u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f] |U(0[0-9 A-F a-f]|10)[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f] |a[0-7][0-9A-Fa-f] )'
+      scope: constant.character.escape.unicode.rascal
+  string_interpolation:
+    - match: (<)
+      captures:
+        1: punctuation.interpolation.begin.rascal
+      push:
+        - meta_scope: support.interpolated-string.rascal
+        - match: (>)
+          captures:
+            2: punctuation.interpolation.end.rascal
+          pop: true
+        - include: top_level
+  syntax_escape:
+    - match: \\(\\|<|>|`)
+      scope: constant.character.escape.syntax.rascal
+  top_level:
+    - match: '(lexical|syntax)\s+([a-zA-Z][A-Za-z_0-9]*)'
+      captures:
+        1: keyword.control.rascal
+        2: entity.name.type.rascal
+      push:
+        - meta_scope: punctuation.other.syntactic.rascal
+        - match: ;
+          captures:
+            1: keyword.control.rascal
+            2: entity.name.type.rascal
+          pop: true
+        - include: char_set
+        - include: string
+        - include: comment
+        - include: regex
+        - include: annotation
+    - match: "(?<![A-Za-z_])(0(?![0-9a-z_A-Z])|[1-9][0-9]*(?![0-9a-z_A-Z]))"
+      scope: constant.numeric.decimal.rascal
+    - match: "(?<![A-Za-z_])0[Xx][0-9A-Fa-f]+(?![0-9a-z_A-Z])"
+      scope: constant.numeric.hex.rascal
+    - match: "(?<![A-Za-z_])0[0-7]+(?![0-9a-z_A-Z])"
+      scope: constant.numeric.octal.rascal
+    - match: \\$
+      push:
+        - meta_scope: string.other.datetime.rascal
+        - match: \\$
+          pop: true
+    - match: '(?<![A-Za-z_]) ([0-9]+[dDfF] |[0-9]+[eE][+\-]?[0-9]+[dDfF]? |[0-9]+\.(?!\.)[0-9]*[dDfF]? |[0-9]+\.[0-9]*[eE][+\-]?[0-9]+[dDfF]? |\.(?!\.)[0-9]+[dDfF]? |\.(?!\.)[0-9]+[eE][+\-]?[0-9]+[dDfF]? )'
+      scope: constant.numeric.real.rascal
+    - match: \b(true|false)\b
+      scope: constant.language.bool.rascal
+    - match: "(?<![A-Za-z_])([0-9][0-9]*r|[1-9][0-9]*r[0-9][0-9]*(?![0-9a-z_A-Z]))"
+      scope: constant.numeric.rational.rascal
+    - match: \b(syntax|keyword|lexical|break|continue|finally|private|fail|filter|if|tag|extend|append|non-assoc|assoc|test|anno|layout|data|join|it|bracket|in|import|all|solve|try|catch|notin|else|insert|switch|return|case|while|throws|visit|for|assert|default|map|alias|any|module|mod|public|one|throw|start)\b
+      scope: keyword.control.rascal
+    - match: \b(value|loc|node|num|type|bag|int|rat|rel|lrel|real|tuple|str|bool|void|datetime|set|map|list)\b
+      scope: support.type.basic.rascal
+    - include: string
+    - include: regex
+    - include: annotation
+    - include: comment
+    - match: '\b[a-zA-Z][A-Za-z_0-9]*\b'
+      scope: variable.other.ordinary.rascal
+    - match: \\(syntax|keyword|lexical|break|continue|finally|private|fail|filter|if|tag|extend|append|non-assoc|assoc|test|anno|layout|data|join|it|bracket|in|import|all|solve|try|catch|notin|else|insert|switch|return|case|while|throws|visit|for|assert|default|map|alias|any|module|mod|public|one|throw|start|value|loc|node|num|type|bag|int|rat|rel|lrel|real|tuple|str|bool|void|datetime|set|map|list)
+      scope: variable.other.escaped-keyword.rascal
+    - match: '\|([0-9a-z_A-Z.\-_~:/?#\[\]@!$&''()*+,;=`])+\|'
+      scope: string.other.url.rascal
+      captures:
+        1: markup.underline.link.rascal

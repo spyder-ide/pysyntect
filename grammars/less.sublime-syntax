@@ -1,0 +1,253 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Less
+file_extensions:
+  - less
+  - less.erb
+scope: source.css.less
+contexts:
+  main:
+    - include: strings
+    - match: '(\.[_a-zA-Z][a-zA-Z0-9_-]*(?=\())'
+      captures:
+        1: entity.other.attribute-name.class.mixin.css
+    - match: '((\.)([_a-zA-Z]|(@{[a-zA-Z0-9_-]+}))[a-zA-Z0-9_-]*)'
+      captures:
+        1: entity.other.attribute-name.class.css
+        2: punctuation.definition.entity.css
+        4: variable.other.interpolation.less
+    - match: "(&)[a-zA-Z0-9_-]*"
+      captures:
+        0: entity.other.attribute-name.parent-selector.css
+        1: punctuation.definition.entity.css
+    - match: (format|local|url|attr|counter|counters)\s*(\()
+      captures:
+        1: support.function.misc.css
+        2: punctuation.section.function.css
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.function.css
+          pop: true
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.css
+          push:
+            - meta_scope: string.quoted.single.css
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.css
+              pop: true
+            - match: \\.
+              scope: constant.character.escape.css
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.css
+          push:
+            - meta_scope: string.quoted.double.css
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.css
+              pop: true
+            - match: '\\(\d{1,6}|.)'
+              scope: constant.character.escape.css
+        - match: '[^''") \t]+'
+          scope: variable.parameter.misc.css
+    - match: '(#)([0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b(?!.*?(?<!@){)'
+      scope: constant.other.rgb-value.css
+    - match: "((#)([_a-zA-Z]|(@{[a-zA-Z0-9_-]+}))[a-zA-Z0-9_-]*)"
+      scope: meta.selector.css
+      captures:
+        1: entity.other.attribute-name.id
+        2: punctuation.definition.entity.css
+        4: variable.other.interpolation.less
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.css
+      push:
+        - meta_scope: comment.block.css
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.css
+          pop: true
+    - include: scope:source.css#numeric-values
+    - match: '(?i)(\[)\s*(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)(?:\s*([~|^$*]?=)\s*(?:(-?[_a-z\\[[:^ascii:]]][_a-z0-9\-\\[[:^ascii:]]]*)|((?>([''"])(?:[^\\]|\\.)*?(\6)))))?\s*(\])'
+      scope: meta.attribute-selector.css
+      captures:
+        1: punctuation.definition.begin.entity.css
+        2: entity.other.attribute-name.attribute.css
+        3: punctuation.separator.operator.css
+        4: string.unquoted.attribute-value.css
+        5: string.quoted.double.attribute-value.css
+        6: punctuation.definition.string.begin.css
+        7: punctuation.definition.string.end.css
+        8: punctuation.definition.end.entity.css
+    - match: ((@)import\b)
+      captures:
+        1: keyword.control.at-rule.import.less
+        2: punctuation.definition.keyword.less
+      push:
+        - meta_scope: meta.at-rule.import.css
+        - match: ;
+          captures:
+            0: punctuation.terminator.rule.css
+          pop: true
+        - match: (?<=\(|,|\s)\b(reference|optional|once|multiple|less|inline)\b(?=\)|,)
+          scope: keyword.control.import.option.less
+        - include: brace_round
+        - include: scope:source.css#commas
+        - include: strings
+    - match: ^\s*((@)font-face\b)
+      scope: meta.at-rule.fontface.css
+      captures:
+        1: keyword.control.at-rule.fontface.css
+        2: punctuation.definition.keyword.css
+    - match: ^\s*((@)media\b)
+      scope: meta.at-rule.media.css
+      captures:
+        1: keyword.control.at-rule.media.css
+        2: punctuation.definition.keyword.css
+    - include: scope:source.css#media-features
+    - match: \b(tv|tty|screen|projection|print|handheld|embossed|braille|aural|all)\b
+      scope: support.constant.media-type.media.css
+    - match: \b(portrait|landscape)\b
+      scope: support.constant.property-value.media-property.media.css
+    - match: '(\.[a-zA-Z0-9_-]+)\s*(;|\()'
+      captures:
+        1: support.function.less
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.less
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.less
+          push:
+            - meta_scope: comment.line.double-slash.less
+            - match: \n
+              pop: true
+    - match: '(@|\-\-)[\w-]+(?=\s*)'
+      scope: variable.other.less
+      captures:
+        1: punctuation.definition.variable.less
+    - include: variable_interpolation
+    - match: "{"
+      captures:
+        0: punctuation.section.property-list.begin.bracket.curly.css
+      push:
+        - meta_scope: meta.property-list.css
+        - match: "}"
+          captures:
+            0: punctuation.section.property-list.end.bracket.curly.css
+          pop: true
+        - include: scope:source.css#pseudo-elements
+        - include: scope:source.css#pseudo-classes
+        - include: scope:source.css#tag-names
+        - include: scope:source.css#commas
+        - include: variable_interpolation
+        - include: scope:source.css#property-names
+        - include: property_values
+        - include: main
+    - match: \!\s*important
+      scope: keyword.other.important.css
+    - match: \*|\/|\-|\+|~|=|<=|>=|<|>
+      scope: keyword.operator.less
+    - match: \b(not|and|when)\b
+      scope: keyword.control.logical.operator.less
+    - include: scope:source.css#tag-names
+    - match: '(?<![\w-])[a-z][\w&&[^A-Z]]*+-[\w-&&[^A-Z]]+'
+      scope: entity.name.tag.custom.css
+    - include: scope:source.css#pseudo-elements
+    - include: scope:source.css#pseudo-classes
+    - match: '(\{)(\})'
+      scope: meta.brace.curly.css
+      captures:
+        1: punctuation.section.property-list.begin.css
+        2: punctuation.section.property-list.end.css
+    - match: '\{|\}'
+      scope: meta.brace.curly.css
+    - include: brace_round
+    - match: '\[|\]'
+      scope: meta.brace.square.less
+    - match: ;
+      scope: punctuation.terminator.rule.css
+    - match: ":"
+      scope: punctuation.separator.key-value.css
+    - match: \btrue\b
+      scope: constant.language.boolean.less
+    - match: \bdefault\b
+      scope: support.function.default.less
+    - match: \b(isurl|isstring|isnumber|iskeyword|iscolor)\b
+      scope: support.function.type-checking.less
+    - match: \b(isunit|ispixel|ispercentage|isem)\b
+      scope: support.function.unit-checking.less
+    - include: scope:source.css#property-keywords
+    - include: scope:source.css#color-keywords
+    - include: scope:source.css#commas
+    - include: less_builtin_functions
+    - include: scope:source.css#functions
+  brace_round:
+    - match: \(|\)
+      scope: meta.brace.round.css
+  less_builtin_functions:
+    - match: \b(abs|acos|alpha|argb|asin|atan|average|blue|calc|ceil|color|contrast|convert|convert|cos|darken|data-uri|desaturate|difference|e|escape|exclusion|extract|fade|fadein|fadeout|floor|format|green|greyscale|hardlight|hsl|hsla|hsv|hsva|hsvhue|hsvsaturation|hsvvalue|hue|length|lighten|lightness|luma|max|min|mix|mod|multiply|negation|overlay|percentage|pi|pow|red|replace|round|saturate|saturation|screen|sin|softlight|spin|sqrt|tan|unit)\b
+      scope: support.function.any-method.builtin.less
+  property_values:
+    - match: '(?<!&)(:)\s*(?!(\s*{))(?!.*(?<!@){)'
+      captures:
+        1: punctuation.separator.key-value.css
+      push:
+        - meta_content_scope: meta.property-value.css
+        - match: '\s*(;)|\s*(?=})'
+          captures:
+            1: punctuation.terminator.rule.css
+          pop: true
+        - match: url(\()
+          captures:
+            1: meta.brace.round.css
+          push:
+            - meta_scope: support.function.any-method.builtin.url.css
+            - match: \)
+              captures:
+                0: meta.brace.round.css
+              pop: true
+            - include: strings
+            - match: '(\b|\.{0,2}/)[^)]*\b'
+              scope: string.url.css
+        - include: scope:source.css#property-keywords
+        - include: scope:source.css#color-keywords
+        - include: scope:source.css#commas
+        - include: less_builtin_functions
+        - include: scope:source.css#functions
+        - include: main
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.css
+      push:
+        - meta_scope: string.quoted.double.css
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.css
+          pop: true
+        - match: '\\([0-9A-Fa-f]{1,6}|.)'
+          scope: constant.character.escape.css
+        - include: variable_interpolation
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.css
+      push:
+        - meta_scope: string.quoted.single.css
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.css
+          pop: true
+        - match: '\\([0-9A-Fa-f]{1,6}|.)'
+          scope: constant.character.escape.css
+        - include: variable_interpolation
+  variable_interpolation:
+    - match: "@{[a-zA-Z0-9_-]+}"
+      scope: variable.other.interpolation.less

@@ -1,0 +1,24 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML (Crystal - ECR)
+file_extensions:
+  - ecr
+  - html.ecr
+scope: text.html.ecr
+contexts:
+  main:
+    - include: scope:text.html.basic
+  tags:
+    - match: (<%)(=)?
+      captures:
+        0: punctuation.section.embedded.begin.ecr
+        2: punctuation.section.embedded.return.ecr
+      push:
+        - meta_scope: meta.embedded.line.ecr
+        - meta_content_scope: source.crystal.embedded.ecr
+        - match: "%>"
+          captures:
+            0: punctuation.section.embedded.end.ecr
+          pop: true
+        - include: scope:source.crystal

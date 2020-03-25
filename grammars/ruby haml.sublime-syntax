@@ -1,0 +1,291 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ruby Haml
+file_extensions:
+  - haml
+  - inky-haml
+scope: text.haml
+contexts:
+  main:
+    - match: ^\s*==
+      captures:
+        1: string.quoted.double.ruby
+      push:
+        - match: $\n?
+          captures:
+            1: string.quoted.double.ruby
+          pop: true
+        - include: interpolated_ruby
+    - include: continuation
+    - match: ^(!!!)($|\s.*)
+      scope: meta.prolog.haml
+      captures:
+        1: punctuation.definition.prolog.haml
+    - match: '(?<=\#\{)([^#]+)(?=\})'
+      scope: meta.embedded.ruby
+      captures:
+    - match: '^(\s*)(\/\[[^\]].*?$\n?)'
+      scope: comment.line.slash.haml
+      captures:
+        1: punctuation.section.comment.haml
+    - match: ^(\s*)(\-\#|\/|\-\s*\/\*+)
+      captures:
+        2: punctuation.section.comment.haml
+      push:
+        - meta_scope: comment.line.slash.haml
+        - match: ^(?!\1\s+|$\n?)
+          captures:
+            2: punctuation.section.comment.haml
+          pop: true
+    - match: '^\s*(?:((%)([-\w:]+))|(?=\.|#))'
+      captures:
+        1: meta.tag.haml
+        2: punctuation.definition.tag.haml
+        3: entity.name.tag.haml
+      push:
+        - match: '$|(?!\.|#|\{|\(|\[|&amp;|=|-|~|!=|&=|/)'
+          captures:
+            1: meta.tag.haml
+            2: punctuation.definition.tag.haml
+            3: entity.name.tag.haml
+          pop: true
+        - match: "=="
+          push:
+            - meta_scope: string.quoted.double.ruby
+            - meta_content_scope: string.quoted.double.ruby
+            - match: $\n?
+              pop: true
+            - include: interpolated_ruby
+        - match: '\.[\w-]+'
+          scope: entity.name.tag.class.haml
+        - match: '#[\w-]+'
+          scope: entity.name.tag.id.haml
+        - match: '(?<!\#)\{(?=.+(,|(do)|\{|\}|\||(\#.*))\s*)'
+          push:
+            - meta_scope: meta.section.attributes.haml
+            - match: '\s*\}(?!,)'
+              pop: true
+            - include: continuation
+            - include: scope:source.ruby.rails
+            - include: rubyline
+        - match: \(
+          push:
+            - meta_scope: meta.section.attributes.haml
+            - match: \)
+              pop: true
+            - match: '([\w-]+)'
+              scope: constant.other.symbol.ruby
+            - match: \=
+              scope: punctuation
+            - include: variables
+            - match: '"'
+              push:
+                - meta_scope: string.quoted.double.ruby
+                - match: '"'
+                  pop: true
+                - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+                  scope: constant.character.escape.ruby
+                - include: interpolated_ruby
+            - match: "'"
+              push:
+                - meta_scope: string.quoted.double.ruby
+                - match: "'"
+                  pop: true
+                - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+                  scope: constant.character.escape.ruby
+                - include: interpolated_ruby
+            - include: interpolated_ruby
+        - match: '\[(?=.+(,|\[|\]|\||(\#.*))\s*)'
+          push:
+            - meta_scope: meta.section.object.haml
+            - match: '\s*\](?!.*(?!\#\[)\])'
+              pop: true
+            - include: continuation
+            - include: scope:source.ruby.rails
+            - include: rubyline
+        - include: rubyline
+        - match: /
+          scope: punctuation.terminator.tag.haml
+    - match: ^\s*(\.)
+      captures:
+        1: meta.escape.haml
+    - match: ^\s*(?==|-|~|!=|&=)
+      push:
+        - match: $
+          pop: true
+        - include: rubyline
+    - match: ^(\s*)(:php)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.php
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:text.html.php#language
+    - match: ^(\s*)(:ruby)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.ruby
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.ruby
+    - match: ^(\s*)(:markdown)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.markdown
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.gfm
+    - match: ^(\s*)(:coffee(script)?)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.coffee
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.coffee
+    - match: ^(\s*)(:(javascript|es6))$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.js
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.js
+    - match: ^(\s*)(:(css|styles?))$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.css
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.css
+    - match: ^(\s*)(:ruby2js)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.ruby2js
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.ruby
+    - match: ^(\s*)(:sass)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.sass
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.sass
+    - match: ^(\s*)(:scss)$
+      captures:
+        2: entity.name.tag.haml
+      push:
+        - meta_scope: meta.embedded.scss
+        - match: ^(?!\1\s+|\n)
+          captures:
+            2: entity.name.tag.haml
+          pop: true
+        - include: scope:source.css.scss
+  continuation:
+    - match: (\|)\s*$\n?
+      captures:
+        1: punctuation.separator.continuation.haml
+  interpolated_ruby:
+    - match: '\#\{'
+      captures:
+        1: punctuation.section.embedded.ruby
+      push:
+        - meta_scope: meta.section.object.haml
+        - match: '\}'
+          captures:
+            1: punctuation.section.embedded.ruby
+          pop: true
+        - include: nest_curly_and_self
+        - include: scope:source.ruby
+    - include: variables
+  nest_curly_and_self:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.ruby
+      push:
+        - meta_scope: meta.section.object.haml
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.ruby
+          pop: true
+        - include: nest_curly_and_self
+        - include: scope:source.ruby
+  rubyline:
+    - match: (&amp|!)?(=|-|~)
+      push:
+        - meta_scope: meta.line.ruby.haml
+        - meta_content_scope: source.ruby.embedded.haml
+        - match: '((do|\{)( \|[.*]+\|)?)$|$|^(?!.*\|\s*)$\n?'
+          captures:
+            1: source.ruby.embedded.haml
+            2: keyword.control.ruby.start-block
+          pop: true
+        - match: \s+((elseif|foreach|switch|declare|default|use))(?=\s|\()
+          captures:
+            1: keyword.control.php
+        - match: \s+(require_once|include_once)(?=\s|\()
+          captures:
+            1: keyword.control.import.include.php
+        - match: \s+(catch|try|throw|exception|finally|die)(?=\s|\(|\n)
+          scope: keyword.control.exception.php
+        - match: \s+(function\s*)((?=\())
+          captures:
+            1: storage.type.function.php
+        - match: \s+(use\s*)((?=\())
+          captures:
+            1: keyword.control.php
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ruby
+          push:
+            - meta_scope: string.quoted.double.ruby
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.ruby
+              pop: true
+            - include: scope:source.ruby#interpolated_ruby
+            - include: scope:source.ruby#escaped_char
+        - match: '(\||,|<|do|\{)\s*(\#.*)?$\n?'
+          scope: source.ruby
+          captures:
+        - match: "#.*$"
+          scope: comment.line.number-sign.ruby
+        - include: scope:source.ruby.rails
+        - include: continuation
+  variables:
+    - match: '(@)[a-zA-Z_]\w+'
+      scope: variable.other.readwrite.instance.ruby
+      captures:
+        1: punctuation.definition.variable.ruby
+    - match: '(@@)[a-zA-Z_]\w+'
+      scope: variable.other.readwrite.class.ruby
+      captures:
+        1: punctuation.definition.variable.ruby
+    - match: '(\$)[a-zA-Z_]\w+'
+      scope: variable.other.readwrite.global.ruby
+      captures:
+        1: punctuation.definition.variable.ruby

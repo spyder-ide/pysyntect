@@ -1,0 +1,18 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: nesC
+file_extensions:
+  - nc
+  - h
+first_line_match: "-[*]-( Mode:)? nesC -[*]-"
+scope: source.nesc
+contexts:
+  main:
+    - include: scope:source.c
+    - match: \b(abstract|as|async|atomic|call|command|components|configuration|event|implementation|includes|interface|generic|module|new|norace|post|provides|signal|task|uses|nx_struct)\b
+      scope: keyword.control.nesc
+    - match: \b(result_t|error_t|nx_uint8_t|nx_uint16_t|nx_uint32_t|nx_int8_t|nx_int16_t|nx_int32_t|message_t|void)\b
+      scope: storage.type.nesc
+    - match: \b(SUCCESS|FAIL)\b
+      scope: constant.language.nesc

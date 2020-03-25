@@ -1,0 +1,139 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ObjectScript Routine
+file_extensions:
+  - mac
+  - int
+scope: source.objectscript
+contexts:
+  main:
+    - include: comments
+    - include: embedded
+    - include: constants
+    - include: keywords
+    - include: macros
+    - include: elements
+  commands:
+    - match: '(?i)(?<=\s)\b(BREAK|B|SET|S|DO|D|KILL|K|GOTO|G|READ|R|WRITE|W|OPEN|O|USE|U|CLOSE|C|CONTINUE|FOR|F|HALT|H|HANG|JOB|J|MERGE|M|NEW|N|QUIT|Q|RETURN|RET|TSTART|TS|TCOMMIT|TC|TROLLBACK|TRO|THROW|VIEW|V|XECUTE|X|ZKILL|ZL|ZNSPACE|ZN|ZTRAP|ZWRITE|ZW|ZZDUMP|ZZWRITE)\b(?=( (?![=+-]|\&|\|)|:|$))'
+      captures:
+        1: keyword.control.objectscript
+    - match: '(?i)(?<=\s)\b(LOCK|L)\b(?=( (?![=]|\&|\|)|:|$))'
+      captures:
+        1: keyword.control.objectscript
+  comments:
+    - match: (/\*)
+      captures:
+        1: comment.multiline.objectscript
+      push:
+        - meta_content_scope: comment.multiline.objectscript
+        - match: (.*?\*/)
+          captures:
+            1: comment.multiline.objectscript
+          pop: true
+    - match: ^\s*#;
+      push:
+        - meta_scope: comment.line.macro.objectscript
+        - match: $
+          pop: true
+    - match: //|;
+      push:
+        - meta_scope: comment.endline.objectscript
+        - match: $
+          pop: true
+    - match: "##;"
+      push:
+        - meta_scope: comment.endline.macro.objectscript
+        - match: $
+          pop: true
+  constants:
+    - match: (")
+      captures:
+        1: punctuation.definition.string.begin.objectscript
+      push:
+        - meta_scope: string.quoted.double.objectscript
+        - match: (")
+          captures:
+            1: punctuation.definition.string.end.objectscript
+          pop: true
+    - match: \d+
+      scope: constant.numeric.objectscript
+  control-commands:
+    - match: '(?i)(?<=\s)\b(IF|I|WHILE|FOR|F|TRY|CATCH|ELSE|E|ELSEIF)\b(?=( (?![=+-]|\&|\|)|:|$))'
+      captures:
+        1: keyword.control.objectscript
+  elements:
+    - match: "^[a-zA-Z0-9]+"
+      scope: entity.name.function
+    - match: '(?i)(##class)(\()([^)]+)(\))'
+      captures:
+        1: keyword.other
+        2: punctuation.objectscript
+        3: entity.name.class
+        4: punctuation.objectscript
+    - match: "%[a-zA-Z0-9]+"
+      scope: entity.other.attribute-name
+    - match: "[i|r]%[a-zA-Z0-9]+"
+      scope: entity.other.attribute-name
+    - match: '[i|r]%"[^".]"'
+      scope: entity.other.attribute-name
+    - match: '(\.{1,2})(%?[a-zA-Z0-9]+)(?=\()'
+      captures:
+        1: punctuation.objectscript
+        2: entity.other.attribute-name
+    - match: '(\.{1,2})(%?[a-zA-Z0-9]+)(?!\()'
+      captures:
+        1: punctuation.objectscript
+        2: entity.other.attribute-name
+    - match: '(\.{1,2}#)([a-zA-Z0-9]+)'
+      captures:
+        1: punctuation.objectscript
+        2: meta.parameter.type.variable
+    - match: "%?[a-zA-Z0-9]+"
+      scope: variable.name.objectscrip
+    - match: '\^%?[a-zA-Z0-9]+'
+      scope: variable.name.global.objectscrip
+    - match: '\$[a-zA-Z0-9]+'
+      scope: entity.name.function.system.objectscript
+    - match: '\${2}[a-zA-Z0-9]+'
+      scope: entity.name.function.local.objectscript
+    - match: '\${3}[a-zA-Z0-9]+'
+      scope: meta.preprocessor.objectscript
+  embedded:
+    - include: embeddedSQL
+    - include: embeddedJS
+  embeddedJS:
+    - match: (&js)(\()
+      captures:
+        1: keyword.special.js.objectscript
+        2: punctuation.objectscript
+      push:
+        - meta_content_scope: text.js
+        - match: \)
+          pop: true
+        - include: scope:source.js
+  embeddedSQL:
+    - match: (&sql)(\()
+      captures:
+        1: keyword.special.sql.objectscript
+        2: punctuation.objectscript
+      push:
+        - meta_content_scope: meta.embedded.block.sql
+        - match: \)
+          pop: true
+        - include: scope:source.sql
+  keywords:
+    - include: commands
+    - include: control-commands
+  macros:
+    - match: '(?i)(#dim)(\s)(%?[a-zA-Z0-9]+)(\s)(?:(As)(\s)(%?[a-zA-Z0-9.]+))?'
+      captures:
+        1: meta.preprocessor.dim.objectscript
+        2: whitespace.objectscript
+        3: variable.name
+        4: whitespace.objectscript
+        5: keyword.as.objectscript
+        6: whitespace.objectscript
+        7: entity.name.class
+    - include: scope:source.objectscript_macros
+  statements: []

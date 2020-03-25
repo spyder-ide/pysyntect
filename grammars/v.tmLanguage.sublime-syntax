@@ -1,0 +1,338 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: V
+file_extensions:
+  - .v
+  - .vh
+  - .vsh
+scope: source.v
+contexts:
+  main:
+    - include: comments
+    - include: as
+    - include: attributes
+    - include: assignment
+    - include: module-decl
+    - include: import-decl
+    - include: include-decl
+    - include: flag-decl
+    - include: brackets
+    - include: builtin-fix
+    - include: escaped-fix
+    - include: operators
+    - include: function-limited-overload-decl
+    - include: function-extend-decl
+    - include: function-decl
+    - include: function-exist
+    - include: generic
+    - include: constants
+    - include: type
+    - include: enum
+    - include: interface
+    - include: struct
+    - include: keywords
+    - include: storage
+    - include: numbers
+    - include: strings
+    - include: types
+  as:
+    - match: \s+(as)\s+
+      captures:
+        1: keyword.as.v
+      push:
+        - match: '([\w.]*)'
+          captures:
+            1: entity.name.alias.v
+          pop: true
+  assignment:
+    - match: '([\w.]+)\s*((?:\:|\+|\-|\*|\/|\%|\&|\||\^)?=)\s*(?=.+)'
+      scope: meta.definition.variable.v
+      captures:
+  attributes:
+    - match: '^\s*((\[)(deprecated|unsafe_fn|typedef|live|inline|flag)(\]))'
+      scope: meta.definition.attribute.v
+      captures:
+        1: meta.function.attribute.v
+        2: punctuation.definition.begin.bracket.square.v
+        3: storage.modifier.attribute.v
+        4: punctuation.definition.end.bracket.square.v
+  brackets:
+    - match: "{"
+      captures:
+        0: punctuation.definition.bracket.curly.begin.v
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.definition.bracket.curly.end.v
+          pop: true
+        - include: main
+    - match: \(
+      captures:
+        0: punctuation.definition.bracket.round.begin.v
+      push:
+        - match: \)
+          captures:
+            0: punctuation.definition.bracket.round.end.v
+          pop: true
+        - include: main
+    - match: '\['
+      captures:
+        0: punctuation.definition.bracket.square.begin.v
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.bracket.square.end.v
+          pop: true
+        - include: main
+  builtin-fix: []
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.v
+      push:
+        - meta_scope: comment.block.documentation.v
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.v
+          pop: true
+        - include: comments
+    - match: //
+      captures:
+        0: punctuation.definition.comment.begin.v
+      push:
+        - meta_scope: comment.line.double-slash.v
+        - match: $
+          pop: true
+  constants:
+    - match: \b(true|false)\b
+      scope: constant.language.v
+  enum:
+    - match: ^\s*(?:(pub)?\s+)?(enum)\s+(?:\w+\.)?(\w*)
+      scope: meta.definition.enum.v
+      captures:
+        1: storage.modifier.$1.v
+        2: storage.type.enum.v
+        3: entity.name.enum.v
+  escaped-fix:
+    - match: ((?:@)(?:mut|pub|fn|unsafe|module|import|as|const|map|assert|sizeof|type|struct|interface|enum|in|or|match|if|else|for|go|goto|defer|return|i?(?:8|16|nt|64|128)|u?(?:16|32|64|128)|f?(?:32|64)|bool|byte|byteptr|charptr|voidptr|string|ustring|rune|none))
+      scope: meta.escaped.keyword.v
+      captures:
+        0: keyword.other.escaped.v
+  flag-decl:
+    - match: ^\s*(#flag)
+      captures:
+        1: keyword.flag.v
+      push:
+        - meta_scope: meta.flag.v
+        - match: \s+(.*?)$
+          captures:
+            1: string.quoted.single.v
+          pop: true
+  function-decl:
+    - match: ^\s*(pub)?\s*(fn)\s+
+      captures:
+        1: storage.modifier.v
+        2: keyword.function.v
+      push:
+        - meta_scope: meta.definition.function.v
+        - match: '(?:(?:C\.)?)(\w+)\s*((?<=[\w\s+])(\<)(\w+)(\>))?'
+          pop: true
+  function-exist:
+    - match: '(\w+)((?<=[\w\s+])(\<)(\w+)(\>))?(?=\s*\()'
+      scope: meta.support.function.v
+      captures:
+        0: meta.function.call.v
+  function-extend-decl:
+    - match: '^\s*(pub)?\s*(fn)\s*(\()([^\)]*)(\))\s*(?:(?:C\.)?)(\w+)\s*((?<=[\w\s+])(\<)(\w+)(\>))?'
+      scope: meta.definition.function.v
+      captures:
+        1: storage.modifier.v
+        2: keyword.function.v
+        3: punctuation.definition.bracket.round.begin.v
+        5: punctuation.definition.bracket.round.end.v
+  function-limited-overload-decl:
+    - match: '^\s*(pub)?\s*(fn)\s*(\()([^\)]*)(\))\s*([\+\-\*\/])?\s*(\()([^\)]*)(\))\s*(?:(?:C\.)?)(\w+)'
+      scope: meta.definition.function.v
+      captures:
+        1: storage.modifier.v
+        2: keyword.function.v
+        3: punctuation.definition.bracket.round.begin.v
+        5: punctuation.definition.bracket.round.end.v
+        7: punctuation.definition.bracket.round.begin.v
+        9: punctuation.definition.bracket.round.end.v
+  generic:
+    - match: '(?<=[\w\s+])(\<)(\w+)(\>)'
+      scope: meta.definition.generic.v
+      captures:
+        1: punctuation.definition.bracket.angle.begin.v
+        3: punctuation.definition.bracket.angle.end.v
+  illegal-name:
+    - match: \d\w+
+      scope: invalid.illegal.v
+  import-decl:
+    - match: ^\s*(import)\s+
+      captures:
+        1: keyword.import.v
+      push:
+        - meta_scope: meta.import.v
+        - match: '([\w.]+)'
+          captures:
+            1: entity.name.import.v
+          pop: true
+  include-decl:
+    - match: ^\s*(#include)
+      captures:
+        1: keyword.include.v
+      push:
+        - meta_scope: meta.include.v
+        - match: '\s+(([\<"])\s*(.*)([\>"]))'
+          captures:
+            1: string.quoted.double.v
+          pop: true
+  interface:
+    - match: ^\s*(?:(pub)?\s+)?(interface)\s+(\w*)
+      scope: meta.definition.interface.v
+      captures:
+        1: storage.modifier.$1.v
+        2: keyword.interface.v
+  keywords:
+    - match: (\$if|\$else)
+      scope: keyword.control.v
+    - match: \b(in|or|break|continue|default|unsafe|match|if|else|for|go|goto|defer|return)\b
+      scope: keyword.control.v
+    - match: \b(fn|type|enum|struct|interface|map|assert|sizeof)\b
+      scope: keyword.$1.v
+  module-decl:
+    - match: ^\s*(module)\s+
+      captures:
+        1: keyword.module.v
+      push:
+        - meta_scope: meta.module.v
+        - match: '([\w.]+)'
+          captures:
+            1: entity.name.module.v
+          pop: true
+  numbers:
+    - match: "(?:(?:[-]?)(?:[0-9e]*)(?:[.]){1}(?:[0-9]+))"
+      scope: constant.numeric.float.v
+    - match: '\b(?:0[xX])(?:[0-9a-fA-F]+)'
+      scope: constant.numeric.hex.v
+    - match: '\b(?:[-]?)(?:[0-9]+)'
+      scope: constant.numeric.integer.v
+  operators:
+    - match: (\+|\-|\*|\/|\%|\+\+|\-\-)
+      scope: keyword.operator.arithmethic.v
+    - match: (\:\=|\=|\+\=|\-\=|\*\=|\/\=|\%\=|\&\=|\|\=|\^\=|\&\&\=|\|\|\=|\>\>\=|\<\<\=)
+      scope: keyword.operator.assignment.v
+    - match: (\&|\||\^|<(?!<)|>(?!>))
+      scope: keyword.operator.bitwise.v
+    - match: (\&\&|\|\||\!)
+      scope: keyword.operator.logical.v
+    - match: (\=\=|\!\=|\>|\<|\>\=|\<\=)
+      scope: keyword.operator.relation.v
+  punctuation:
+    - match: \.
+      scope: punctuation.delimiter.period.dot.v
+    - match: ","
+      scope: punctuation.delimiter.comma.v
+    - match: ":"
+      scope: punctuation.separator.key-value.colon.v
+    - match: ;
+      scope: punctuation.definition.other.semicolon.v
+    - match: \?
+      scope: punctuation.definition.other.questionmark.v
+  storage:
+    - match: \b(const|mut|pub)\b
+      scope: storage.modifier.v
+  string-escaped-char:
+    - match: '\\([0-7]{3}|[\$abfnrtv\\''"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})'
+      scope: constant.character.escape.v
+    - match: '\\[^0-7\$xuUabfnrtv\''"]'
+      scope: invalid.illegal.unknown-escape.v
+  string-interpolation:
+    - match: '(\$([\w.]+|\{.*?\}))'
+      scope: meta.string.interpolation.v
+      captures:
+  string-placeholder:
+    - match: '%(\[\d+\])?([\+#\-0\x20]{,2}((\d+|\*)?(\.?(\d+|\*|(\[\d+\])\*?)?(\[\d+\])?)?))?[vT%tbcdoqxXUbeEfFgGsp]'
+      scope: constant.other.placeholder.v
+  strings:
+    - match: "`"
+      captures:
+        0: punctuation.definition.string.raw.begin.v
+      push:
+        - meta_scope: string.quoted.raw.v
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.raw.end.v
+          pop: true
+        - include: string-escaped-char
+        - include: string-interpolation
+        - include: string-placeholder
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.single.begin.v
+      push:
+        - meta_scope: string.quoted.single.v
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.single.end.v
+          pop: true
+        - include: string-escaped-char
+        - include: string-interpolation
+        - include: string-placeholder
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.double.begin.v
+      push:
+        - meta_scope: string.quoted.double.v
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.double.end.v
+          pop: true
+        - include: string-escaped-char
+        - include: string-interpolation
+        - include: string-placeholder
+  struct:
+    - match: '^\s*(?:(mut|pub(?:\s+mut)?|__global)\s+)?(struct)\s+([\w.]+)\s*({)'
+      captures:
+        1: storage.modifier.$1.v
+        2: storage.type.struct.v
+        3: entity.name.struct.v
+        4: punctuation.definition.bracket.curly.begin.v
+      push:
+        - meta_scope: meta.definition.struct.v
+        - match: '\s*(})'
+          captures:
+            1: punctuation.definition.bracket.curly.end.v
+          pop: true
+        - include: struct-access-modifier
+        - match: '\b(\w+)\s+([\w\[\]\*&.]+)(?:\s*(=)\s*((?:.(?=$|//|/\*))*+))?'
+          captures:
+            1: variable.other.property.v
+            3: keyword.operator.assignment.v
+        - include: types
+        - include: main
+    - match: '^\s*(?:(mut|pub(?:\s+mut)?|__global)\s+)?(struct)(?:\s+([\w.]+))?'
+      scope: meta.definition.struct.v
+      captures:
+        1: storage.modifier.$1.v
+        2: storage.type.struct.v
+        3: entity.name.struct.v
+  struct-access-modifier:
+    - match: (?<=\s|^)(mut|pub(?:\s+mut)?|__global)(:|\b)
+      captures:
+        1: storage.modifier.$1.v
+        2: punctuation.separator.struct.key-value.v
+  type:
+    - match: ^\s*(?:(pub)?\s+)?(type)\s+(\w*)\s+(?:\w+\.+)?(\w*)
+      scope: meta.definition.type.v
+      captures:
+        1: storage.modifier.$1.v
+        2: storage.type.type.v
+  types:
+    - match: \b(i(8|16|nt|64|128)|u(8|16|32|64|128)|f(32|64))\b
+      scope: storage.type.numeric.v
+    - match: \b(bool|byte|byteptr|charptr|voidptr|string|ustring|rune|none)\b
+      scope: storage.type.$1.v

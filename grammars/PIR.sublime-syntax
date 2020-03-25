@@ -1,0 +1,89 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Parrot PIR
+file_extensions:
+  - pir
+scope: source.parrot.pir
+contexts:
+  main:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.pir
+      push:
+        - meta_scope: string.quoted.double.pir
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.pir
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.pir
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.pir
+      push:
+        - meta_scope: string.quoted.single.pir
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.pir
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.pir
+    - match: \b(print|save|restore)\b
+      scope: support.function.pir
+    - match: (if|unless|goto|\.return|\.end|\.emit|\.eot)
+      scope: keyword.control.pir
+    - match: (\.(pcc_begin|pcc_end|pcc_call|nci_call|invocant|meth_call|arg|result|pcc_begin_return|pcc_end_return|pcc_begin_yield|pcc_end_yield|yield))
+      scope: keyword.control.pcc.pir
+    - match: '([SNIP]\d+)'
+      scope: variable.other.register.pir
+    - match: '(\$[SNIP]\d+)'
+      scope: variable.other.register.symbolic.pir
+    - match: ^\s*(\S+:)\s*
+      comment: Label
+      scope: keyword.other.label.pir
+    - match: (int|float|string|pmc|array|\.Array|\.Sub)
+      scope: storage.type.pir
+    - match: \.(namespace|endnamespace)
+      scope: storage.type.pir
+    - match: \.(local|arg|lex|param|global|const)
+      scope: storage.modifier.pir
+    - match: "!|-|~"
+      scope: keyword.operator.unary.pir
+    - match: |-
+        (?x)
+        \s* (\.sub) \s+ ([_a-zA-Z](?:[_a-zA-Z0-9]+)?)
+        (?:\s+
+        	(?: (:(?:load|init|immediate|postcomp|main|anon|lex)) #sub_pragma
+        	| (:vtable \s* (?: \("\S+"\) )? ) #vtable_pragma
+        	| (:multi  \s* (?: \( \))? ) #multi_pragma
+        	| (:outer  \s* (?: \( \))? ) #outer_pragma
+        	)\s+
+        )*
+      scope: meta.function.pir
+      captures:
+        1: storage.type.sub.pir
+        2: entity.name.function.pir
+        3: keyword.other.sub_pragma.pir
+        4: keyword.other.vtable_pragma.pir
+        5: keyword.other.multi_pragma.pir
+        6: keyword.other.outer_pragma.pir
+    - match: \+|-|/|\*\*|\*|%|<<|>>|<>|&&|\|\||~~|\||&|~|\.
+      scope: keyword.operator.binary.pir
+    - match: \+=|-=|\=|%=|\*=|\.=|&=|\|=|~=|<<=|>>=|<>=
+      scope: keyword.operator.assign.pir
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.pir
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.pir
+          push:
+            - meta_scope: comment.line.number-sign.pir
+            - match: \n
+              pop: true
+    - match: '\b([_a-zA-Z]([_a-zA-Z0-9]+)?)\b'
+      scope: variable.other.identifier.pir

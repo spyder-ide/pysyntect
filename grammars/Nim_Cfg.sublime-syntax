@@ -1,0 +1,71 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nim Config
+file_extensions:
+  - cfg
+scope: source.nimcfg
+contexts:
+  main:
+    - match: (#\s*(TODO|todo)?).*$\n?
+      scope: comment.line.number-sign.nimcfg
+      captures:
+        1: punctuation.definition.comment.nimcfg
+        2: invalid.illegal.TODO.nimcfg
+    - match: '\[.+\]'
+      comment: Section declarations
+      scope: support.type.nimcfg
+    - match: \@\b(if|elif|else)\b
+      comment: Keywords that affect program control flow or scope.
+      captures:
+        0: keyword.control.nimcfg
+      push:
+        - match: \@\b(end)
+          captures:
+            0: keyword.control.nimcfg
+          pop: true
+        - include: scope:source.nimcfg
+    - match: '([a-zA-Z0-9_\.]+)\s*(\=)'
+      comment: Key declarations
+      push:
+        - match: \n
+          pop: true
+        - match: '\b((\d[_\d]*\.[_\d]+([eE][\+\-]?\d[_\d]*)?)|([eE][\+\-]?\d[_\d]*))(''[fF](32|64))?'
+          scope: constant.numeric.float.decimal.nimcfg
+        - match: '\b(0[xX][0-9A-Fa-f][_0-9A-Fa-f]*)(''[iIuU](8|16|32|64))?'
+          scope: constant.numeric.integer.hexadecimal.nimcfg
+        - match: '\b(0o[0-7][_0-7]*)'
+          comment: For simplicity's sake, we don't enforce floats only having 32 and 64 prefix types.
+          scope: constant.numeric.integer.octal.nimcfg
+        - match: '\b(0(b|B)[01][_01]*)'
+          scope: constant.numeric.integer.binary.nimcfg
+        - match: '\b(\d[_\d]*)'
+          scope: constant.numeric.integer.decimal.nimcfg
+        - match: \b(true|false)\b
+          comment: Language Constants.
+          scope: constant.language.nimcfg
+        - match: r\"
+          comment: Raw Double Quoted String
+          push:
+            - meta_scope: string.quoted.double.raw.nimcfg
+            - match: \"
+              pop: true
+            - match: \"\"
+        - match: \"
+          comment: Double Quoted String
+          captures:
+            1: storage.type.function.nimcfg
+          push:
+            - meta_scope: string.quoted.double.nimcfg
+            - match: \"
+              captures:
+                1: storage.type.function.nimcfg
+              pop: true
+            - match: '(\\([abenrclftv\\]|["'']|[0-9])|x[0-9A-Fa-f]{2})'
+        - match: '\''(\\\d{1,3}|\\?[^\n]?)\'''
+          comment: Single quoted character literal
+          scope: string.quoted.single.nimcfg
+        - match: \b(.+)\b
+          comment: Value declarations
+          captures:
+            1: string.raw.nimcfg

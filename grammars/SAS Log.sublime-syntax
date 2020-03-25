@@ -1,0 +1,18 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SAS Log
+file_extensions:
+  - log
+scope: source.SASLog
+contexts:
+  main:
+    - match: ^NOTE:.*
+      comment: Note line
+      scope: keyword.source.SASLog
+    - match: (^(ERROR|WARNING)|Uninitialized| remerg|invalid\b).*
+      comment: Error line
+      scope: invalid.source.SASLog
+    - match: ^INFO.*
+      comment: Info message
+      scope: entity.name.function.source.SASLog

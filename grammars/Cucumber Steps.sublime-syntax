@@ -1,0 +1,154 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Cucumber Steps
+file_extensions:
+  - steps.rb
+scope: source.ruby.rspec.cucumber.steps
+contexts:
+  main:
+    - match: \b(GivenScenario|Given|When|Then)\b
+      scope: keyword.other.step.cucumber
+    - match: \b(?<=GivenScenario|Given|When|Then) (")
+      comment: string after a Cucumber keyword
+      captures:
+        1: string.quoted.double.ruby
+        2: punctuation.definition.string.ruby
+      push:
+        - meta_content_scope: string.quoted.step.cucumber.classic.ruby
+        - match: ((\1))
+          captures:
+            1: string.quoted.double.ruby
+            2: punctuation.definition.string.ruby
+          pop: true
+        - include: interpolated_ruby
+        - include: regex_sub
+    - match: \b(?<=GivenScenario|Given|When|Then) (')
+      comment: string after a Cucumber keyword
+      captures:
+        1: string.quoted.single.ruby
+        2: punctuation.definition.string.ruby
+      push:
+        - meta_content_scope: string.quoted.step.cucumber.classic.ruby
+        - match: ((\1))
+          captures:
+            1: string.quoted.single.ruby
+            2: punctuation.definition.string.ruby
+          pop: true
+        - include: regex_sub
+        - include: interpolated_ruby
+    - match: \b(?<=GivenScenario|Given|When|Then) (/)
+      comment: regular expression after a Cucumber keyword
+      captures:
+        1: string.regexp.classic.ruby
+        2: punctuation.definition.string.ruby
+      push:
+        - meta_content_scope: string.regexp.step.cucumber.classic.ruby
+        - match: "((/[eimnosux]*))"
+          captures:
+            1: string.regexp.classic.ruby
+            2: punctuation.definition.string.ruby
+          pop: true
+        - include: regex_sub
+    - match: '\b(?<=GivenScenario|Given|When|Then) (%r{)'
+      comment: regular expression after a Cucumber keyword
+      captures:
+        1: string.regexp.mod-r.ruby
+        2: punctuation.definition.string.ruby
+      push:
+        - meta_content_scope: string.regexp.step.cucumber.mod-r.ruby
+        - match: "((}[eimnosux]*))"
+          captures:
+            1: string.regexp.mod-r.ruby
+            2: punctuation.definition.string.ruby
+          pop: true
+        - include: regex_sub
+    - match: (?><<-CUCUMBER\b)
+      comment: embedded Cucumber feature
+      captures:
+        0: punctuation.definition.string.begin.ruby
+      push:
+        - meta_scope: string.unquoted.embedded.cucumber.feature
+        - meta_content_scope: text.cucumber.embedded.ruby
+        - match: \s*CUCUMBER$
+          captures:
+            0: punctuation.definition.string.end.ruby
+          pop: true
+        - include: scope:text.gherkin.feature
+    - include: scope:source.ruby
+  escaped_char:
+    - match: '\\(?:[0-7]{1,3}|x[\da-fA-F]{1,2}|.)'
+      scope: constant.character.escape.ruby
+  interpolated_ruby:
+    - match: '#\{(\})'
+      scope: source.ruby.embedded.source
+      captures:
+        0: punctuation.section.embedded.ruby
+        1: source.ruby.embedded.source.empty
+    - match: '#\{'
+      captures:
+        0: punctuation.section.embedded.ruby
+      push:
+        - meta_scope: source.ruby.embedded.source
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.ruby
+          pop: true
+        - include: nest_curly_and_self
+        - include: scope:source.ruby
+    - match: '(#@)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.instance.ruby
+      captures:
+        1: punctuation.definition.variable.ruby
+    - match: '(#@@)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.class.ruby
+      captures:
+        1: punctuation.definition.variable.ruby
+    - match: '(#\$)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.global.ruby
+      captures:
+        1: punctuation.definition.variable.ruby
+  nest_curly_and_self:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.ruby
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.ruby
+          pop: true
+        - include: nest_curly_and_self
+    - include: scope:source.ruby
+  regex_sub:
+    - include: interpolated_ruby
+    - include: escaped_char
+    - match: '(\{)\d+(,\d+)?(\})'
+      scope: string.regexp.arbitrary-repitition.ruby
+      captures:
+        1: punctuation.definition.arbitrary-repitition.ruby
+        3: punctuation.definition.arbitrary-repitition.ruby
+    - match: '\[(?:\^?\])?'
+      captures:
+        0: punctuation.definition.character-class.ruby
+      push:
+        - meta_scope: string.regexp.character-class.ruby
+        - match: '\]'
+          captures:
+            0: punctuation.definition.character-class.ruby
+          pop: true
+        - include: escaped_char
+    - match: \(
+      captures:
+        0: punctuation.definition.group.ruby
+      push:
+        - meta_scope: string.regexp.group.ruby
+        - match: \)
+          captures:
+            0: punctuation.definition.group.ruby
+          pop: true
+        - include: regex_sub
+    - match: '(?<=^|\s)(#)\s[[a-zA-Z0-9,. \t?!-][^\x{00}-\x{7F}]]*$'
+      comment: We are restrictive in what we allow to go after the comment character to avoid false positives, since the availability of comments depend on regexp flags.
+      scope: comment.line.number-sign.ruby
+      captures:
+        1: punctuation.definition.comment.ruby

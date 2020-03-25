@@ -1,0 +1,38 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Bind Zone Files
+file_extensions:
+  - zone
+  - db
+scope: text.zone_file
+contexts:
+  main:
+    - match: ;.*
+      scope: comment.line.semicolon.zone_file
+    - match: "@"
+      scope: keyword.directive.zone_file
+    - match: '\$(ORIGIN|origin|TTL|ttl|INCLUDE|include)\s*([^;]*)(;.*)?'
+      scope: keyword.directive.zone_file
+      captures:
+        2: variable.other.directive.zone_file
+        3: comment.line.semicolon.zone_file
+    - match: \d+(H|h|D|d|W|w|M|m|Y|y)
+      scope: variable.other.timeunit.zone_file
+    - match: '([A-Za-z0-9_.-]*)\s+(?:([0-9A-Za-z]*)\s+)?([I|i][N|n]\s+[A-Za-z0-9]+)\s+(.*)\('
+      captures:
+        2: variable.other.timeunit.zone_file
+        3: keyword.resourcetype.zone_file
+        4: string.quoted.single.resource.address.zone_file
+      push:
+        - meta_scope: string.quoted.single.address.zone_file
+        - match: \)
+          pop: true
+        - match: ;.*
+          scope: comment.line.semicolon.zone_file
+    - match: '([A-Za-z0-9_.-]*)\s+(?:([0-9A-Za-z]*)\s+)?([I|i][N|n]\s+[A-Za-z0-9]+)\s+(.*)'
+      scope: string.quoted.single.address.zone_file
+      captures:
+        2: variable.other.timeunit.zone_file
+        3: keyword.resourcetype.zone_file
+        4: string.quoted.single.resource.address.zone_file

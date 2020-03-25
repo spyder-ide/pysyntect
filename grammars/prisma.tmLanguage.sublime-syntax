@@ -1,0 +1,199 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Prisma
+scope: source.prisma
+contexts:
+  main:
+    - include: triple_comment
+    - include: double_comment
+    - include: model_block_definition
+    - include: config_block_definition
+    - include: enum_block_definition
+    - include: type_definition
+  array:
+    - match: '\['
+      captures:
+        1: punctuation.definition.tag.prisma
+      push:
+        - meta_scope: source.prisma.array
+        - match: '\]'
+          captures:
+            1: punctuation.definition.tag.prisma
+          pop: true
+        - include: value
+  assignment:
+    - match: ^\s*(\w+)\s*(=)\s*
+      captures:
+        1: variable.other.assignment.prisma
+        2: keyword.operator.terraform
+      push:
+        - match: \n
+          pop: true
+        - include: value
+        - include: double_comment_inline
+  attribute:
+    - match: '(@@?[\w\.]+)'
+      scope: source.prisma.attribute
+      captures:
+        1: entity.name.function.attribute.prisma
+  attribute_with_arguments:
+    - match: '(@@?[\w\.]+)(\()'
+      captures:
+        1: entity.name.function.attribute.prisma
+        2: punctuation.definition.tag.prisma
+      push:
+        - meta_scope: source.prisma.attribute.with_arguments
+        - match: \)
+          captures:
+            0: punctuation.definition.tag.prisma
+          pop: true
+        - include: named_argument
+        - include: value
+  boolean:
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.prisma
+  config_block_definition:
+    - match: '^\s*(generator|datasource)\s+([A-Za-z][\w]*)\s+({)'
+      captures:
+        1: storage.type.config.prisma
+        2: entity.name.type.config.prisma
+        3: punctuation.definition.tag.prisma
+      push:
+        - meta_scope: source.prisma.embedded.source
+        - match: '\s*\}'
+          captures:
+            1: punctuation.definition.tag.prisma
+          pop: true
+        - include: triple_comment
+        - include: double_comment
+        - include: assignment
+  double_comment:
+    - match: //
+      push:
+        - meta_scope: comment.prisma
+        - match: $\n?
+          pop: true
+  double_comment_inline:
+    - match: '//[^\n]*'
+      scope: comment.prisma
+  double_quoted_string:
+    - match: '"'
+      captures:
+        0: string.quoted.double.start.prisma
+      push:
+        - meta_scope: unnamed
+        - match: '"'
+          captures:
+            0: string.quoted.double.end.prisma
+          pop: true
+        - include: string_interpolation
+        - match: '([\w\-\/\._\\%@:\?=]+)'
+          scope: string.quoted.double.prisma
+  enum_block_definition:
+    - match: '^\s*(enum)\s+([A-Za-z][\w]*)\s+({)'
+      captures:
+        1: storage.type.enum.prisma
+        2: entity.name.type.enum.prisma
+        3: punctuation.definition.tag.prisma
+      push:
+        - meta_scope: source.prisma.embedded.source
+        - match: '\s*\}'
+          captures:
+            0: punctuation.definition.tag.prisma
+          pop: true
+        - include: triple_comment
+        - include: double_comment
+        - include: enum_value_definition
+  enum_value_definition:
+    - match: ^\s*(\w+)\s*$
+      captures:
+        1: variable.other.assignment.prisma
+    - include: attribute_with_arguments
+    - include: attribute
+  field_definition:
+    - match: '^\s*(\w+)(\s*:)?\s+(\w+)(\[\])?(\?)?(\!)?'
+      captures:
+        1: variable.other.assignment.prisma
+        2: invalid.illegal.colon.prisma
+        3: support.type.primitive.prisma
+        4: keyword.operator.list_type.prisma
+        5: keyword.operator.optional_type.prisma
+        6: invalid.illegal.required_type.prisma
+    - include: attribute_with_arguments
+    - include: attribute
+  functional:
+    - match: (\w+)(\()
+      captures:
+        1: support.function.functional.prisma
+        2: punctuation.definition.tag.prisma
+      push:
+        - meta_scope: source.prisma.functional
+        - match: \)
+          captures:
+            0: punctuation.definition.tag.prisma
+          pop: true
+        - include: value
+  identifier:
+    - match: \b(\w)+\b
+      scope: support.constant.constant.prisma
+  literal:
+    - include: boolean
+    - include: number
+    - include: double_quoted_string
+    - include: identifier
+  map_key:
+    - match: (\w+)\s*(:)\s*
+      captures:
+        1: variable.parameter.key.prisma
+        2: punctuation.definition.separator.key-value.prisma
+  model_block_definition:
+    - match: '^\s*(model|type)\s+([A-Za-z][\w]*)\s+({)'
+      captures:
+        1: storage.type.model.prisma
+        2: entity.name.type.model.prisma
+        3: punctuation.definition.tag.prisma
+      push:
+        - meta_scope: source.prisma.embedded.source
+        - match: '\s*\}'
+          captures:
+            0: punctuation.definition.tag.prisma
+          pop: true
+        - include: triple_comment
+        - include: double_comment
+        - include: field_definition
+  named_argument:
+    - include: map_key
+    - include: value
+  number:
+    - match: '((0(x|X)[0-9a-fA-F]*)|(\+|-)?\b(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDdg]|UL|ul)?\b'
+      scope: constant.numeric.prisma
+  string_interpolation:
+    - match: '\$\{'
+      captures:
+        0: keyword.control.interpolation.start.prisma
+      push:
+        - meta_scope: source.tag.embedded.source.prisma
+        - match: '\s*\}'
+          captures:
+            0: keyword.control.interpolation.end.prisma
+          pop: true
+        - include: value
+  triple_comment:
+    - match: ///
+      push:
+        - meta_scope: comment.prisma
+        - match: $\n?
+          pop: true
+  type_definition:
+    - match: ^\s*(type)\s+(\w+)\s*=\s*(\w+)
+      captures:
+        1: storage.type.type.prisma
+        2: entity.name.type.type.prisma
+        3: support.type.primitive.prisma
+    - include: attribute_with_arguments
+    - include: attribute
+  value:
+    - include: array
+    - include: functional
+    - include: literal

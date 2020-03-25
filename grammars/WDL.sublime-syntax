@@ -1,0 +1,106 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: WDL
+file_extensions:
+  - wdl
+scope: source.wdl
+contexts:
+  main:
+    - match: \=
+      scope: keyword.operator.assignment.wdl
+    - match: <\=|>\=|\=\=|<|>|\!\=
+      scope: keyword.operator.comparison.wdl
+    - match: \+\=|-\=|\*\=|/\=|//\=|%\=|&\=|\|\=|\^\=|>>\=|<<\=|\*\*\=
+      scope: keyword.operator.assignment.augmented.wdl
+    - match: \+|\-|\*|\*\*|/|//|%|<<|>>|&|\||\^|~
+      scope: keyword.operator.arithmetic.wdl
+    - match: \b(true|false)\b
+      scope: constant.language.wdl
+    - include: builtin_types
+    - include: comments
+    - include: keywords
+    - include: string_quoted_single
+    - include: string_quoted_double
+    - include: command_block
+  builtin_types:
+    - match: (?<!\.)\b(Array|Boolean|File|Float|Int|Map|Object|String|Pair)\b
+      scope: support.type.wdl
+  command_block:
+    - match: '(command)\s*\{(\n|\s)*'
+      comment: "command {}"
+      captures:
+        1: keyword.other.wdl
+      push:
+        - meta_scope: command.block.wdl
+        - match: '(^|\s+)\}'
+          pop: true
+    - match: '(command)\s*<{3}(\n|\s)*'
+      comment: command <<< >>>
+      captures:
+        1: keyword.other.wdl
+      push:
+        - meta_scope: command.block.wdl
+        - match: '(^|\s+)>{3}'
+          pop: true
+  comments:
+    - match: (#).*$\n?
+      scope: comment.line.number-sign.wdl
+      captures:
+        1: punctuation.definition.comment.wdl
+  constant_placeholder:
+    - match: '(?i:%(\([a-z_]+\))?#?0?\-?[ ]?\+?([0-9]*|\*)(\.([0-9]*|\*))?[hL]?[a-z%])'
+      scope: constant.other.placeholder.wdl
+  escaped_char:
+    - match: '(\\x[0-9a-fA-F]{2})|(\\[0-7]{3})|(\\\n)|(\\\\)|(\\\")|(\\'')|(\\a)|(\\b)|(\\f)|(\\n)|(\\r)|(\\t)|(\\v)'
+      captures:
+        1: constant.character.escape.hex.wdl
+        10: constant.character.escape.linefeed.wdl
+        11: constant.character.escape.return.wdl
+        12: constant.character.escape.tab.wdl
+        13: constant.character.escape.vertical-tab.wdl
+        2: constant.character.escape.octal.wdl
+        3: constant.character.escape.newline.wdl
+        4: constant.character.escape.backlash.wdl
+        5: constant.character.escape.double-quote.wdl
+        6: constant.character.escape.single-quote.wdl
+        7: constant.character.escape.bell.wdl
+        8: constant.character.escape.backspace.wdl
+        9: constant.character.escape.formfeed.wdl
+  escaped_unicode_char:
+    - match: '(\\U[0-9A-Fa-f]{8})|(\\u[0-9A-Fa-f]{4})|(\\N\{[a-zA-Z0-9\, ]+\})'
+      captures:
+        1: constant.character.escape.unicode.16-bit-hex.wdl
+        2: constant.character.escape.unicode.32-bit-hex.wdl
+        3: constant.character.escape.unicode.name.wdl
+  keywords:
+    - match: '(^|\s)(call|runtime|task|workflow|if|then|else|import|as|input|output|meta|parameter_meta|scatter)[^A-Za-z_]'
+      scope: keyword.other.wdl
+  string_quoted_double:
+    - match: (")
+      comment: double quoted string
+      captures:
+        1: punctuation.definition.string.begin.wdl
+      push:
+        - meta_scope: string.quoted.double.single-line.wdl
+        - match: (")
+          captures:
+            1: punctuation.definition.string.end.wdl
+            2: invalid.illegal.unclosed-string.wdl
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+  string_quoted_single:
+    - match: (')
+      comment: single quoted string
+      captures:
+        1: punctuation.definition.string.begin.wdl
+      push:
+        - meta_scope: string.quoted.single.single-line.wdl
+        - match: (')
+          captures:
+            1: punctuation.definition.string.end.wdl
+            2: invalid.illegal.unclosed-string.wdl
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char

@@ -1,0 +1,431 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: BlitzMax
+file_extensions:
+  - bmx
+scope: source.blitzmax
+contexts:
+  main:
+    - match: ;
+      scope: punctuation.terminator.line.blitzmax
+    - include: bmax_comment_quote
+    - include: bmax_comment_block
+    - include: bmax_global_variable
+    - include: bmax_local_variable
+    - include: bmax_constant
+    - include: bmax_pointerops
+    - include: bmax_preprocessor
+    - include: bmax_attributes
+    - match: (?i)(?:(?:^|;)\s*)(try)\b
+      captures:
+        1: keyword.control.try.blitzmax
+      push:
+        - meta_scope: meta.try.blitzmax
+        - match: (?i)\b(end\s?try)\b
+          captures:
+            1: keyword.control.try.blitzmax
+          pop: true
+        - match: (?i)^\s*(catch)
+          scope: keyword.control.try.catch.blitzmax
+        - include: main
+    - match: '(?i)(?:(?:^|;)\s*)(extern)(?:\s+((")[^"]*("))|\b)'
+      captures:
+        1: keyword.other.extern.blitzmax
+        2: string.quoted.double.blitzmax
+        3: punctuation.definition.string.begin.blitzmax
+        4: punctuation.definition.string.end.blitzmax
+      push:
+        - meta_scope: meta.extern.blitzmax
+        - match: (?i)(?:(?:^|;)\s*)\b(end\s?extern)\b
+          captures:
+            1: keyword.other.extern.blitzmax
+          pop: true
+        - include: bmax_comment_quote
+        - include: bmax_comment_block
+        - include: bmax_pointerops
+        - include: bmax_constants
+        - include: bmax_null
+        - include: bmax_typename
+        - include: bmax_types
+        - include: bmax_array
+        - include: bmax_string_quoted
+        - include: bmax_global_variable
+        - include: bmax_constant
+        - include: bmax_preprocessor
+        - match: '(?i)(?:(?:^|;)\s*)(function)\s+([a-zA-Z_]\w*)\b'
+          scope: meta.function.extern.blitzmax
+          captures:
+            1: storage.type.function.extern.blitzmax
+            2: entity.name.function.extern.blitzmax
+        - match: '(?i)(?:(?:^|;)\s*)(type)\s+([a-zA-Z_]\w*)(?:\s+(extends)\s+([a-zA-Z_]\w*))?'
+          captures:
+            1: storage.type.class.extern.blitzmax
+            2: entity.name.type.extern.blitzmax
+            3: storage.modifier.extends.extern.blitzmax
+            4: entity.other.inherited-class.extern.blitzmax
+          push:
+            - meta_scope: meta.type.extern.blitzmax
+            - match: (?i)\b(end\s?type)\b
+              captures:
+                1: storage.type.class.extern.blitzmax
+              pop: true
+            - match: '(?i)(?:(?:^|;)\s*)(method)\s+([a-zA-Z_]\w*)\b'
+              scope: meta.method.blitzmax
+              captures:
+                1: storage.type.method.method.extern.blitzmax
+                2: entity.name.function.method.extern.blitzmax
+            - include: bmax_comment_quote
+            - include: bmax_comment_block
+            - include: bmax_pointerops
+            - include: bmax_string_quoted
+            - include: bmax_constants
+            - include: bmax_null
+            - include: bmax_typename
+            - include: bmax_types
+            - include: bmax_array
+            - include: bmax_type_field
+            - include: bmax_preprocessor
+    - include: bmax_function
+    - match: '(?i)\b(import)\s+((?:[a-zA-Z_]\w*\.?)+)'
+      scope: meta.import.module.blitzmax
+      captures:
+        1: keyword.other.import.blitzmax
+        2: string.unquoted.module.blitzmax
+    - match: (?i)\b(import)\s+(("))
+      captures:
+        1: keyword.other.import.blitzmax
+        2: punctuation.definition.string.begin.blitzmax
+        3: string.quoted.double.blitzmax
+      push:
+        - meta_scope: meta.import.file.blitzmax
+        - meta_content_scope: string.quoted.double.blitzmax
+        - match: (")
+          captures:
+            0: punctuation.definition.string.end.blitzmax
+            1: string.quoted.double.blitzmax
+          pop: true
+        - include: bmax_string_content
+    - match: '(?i)\b(framework)\s+((?:[a-zA-Z_]\w*\.?)+)'
+      scope: meta.framework.blitzmax
+      captures:
+        1: keyword.other.framework.blitzmax
+        2: string.unquoted.module.blitzmax
+    - match: '(?i)\b(module)\s+(([a-zA-Z_]\w*\.?)+)'
+      scope: meta.module.blitzmax
+      captures:
+        1: keyword.other.module.blitzmax
+        2: string.unquoted.module.blitzmax
+    - match: (?i)\b(include)\s+(("))
+      captures:
+        1: keyword.other.include.blitzmax
+        2: punctuation.definition.string.begin.blitzmax
+        3: string.quoted.double.blitzmax
+      push:
+        - meta_scope: meta.include.blitzmax
+        - meta_content_scope: string.quoted.double.blitzmax
+        - match: (")
+          captures:
+            0: punctuation.definition.string.end.blitzmax
+            1: string.quoted.double.blitzmax
+          pop: true
+        - include: bmax_string_content
+    - match: (?i)\b(incbin)\s+(("))
+      captures:
+        1: keyword.other.incbin.blitzmax
+        2: punctuation.definition.string.begin.blitzmax
+        3: string.quoted.double.blitzmax
+      push:
+        - meta_scope: meta.incbin.blitzmax
+        - meta_content_scope: string.quoted.double.blitzmax
+        - match: (")
+          captures:
+            0: punctuation.definition.string.end.blitzmax
+            1: string.quoted.double.blitzmax
+          pop: true
+        - include: bmax_string_content
+    - match: (?i)\b(moduleinfo)\s+(("))
+      captures:
+        1: keyword.other.moduleinfo.blitzmax
+        2: punctuation.definition.string.begin.blitzmax
+        3: string.quoted.double.blitzmax
+      push:
+        - meta_scope: meta.moduleinfo.blitzmax
+        - meta_content_scope: string.quoted.double.blitzmax
+        - match: (")
+          captures:
+            0: punctuation.definition.string.end.blitzmax
+            1: string.quoted.double.blitzmax
+          pop: true
+        - include: bmax_string_content
+    - match: '(?i)(?:(?:^|;)\s*)(type)\s+([a-zA-Z_]\w*)(?:\s+(extends)\s+([a-zA-Z_]\w*))?(?:\s+(final|abstract))?'
+      captures:
+        1: storage.type.class.blitzmax
+        2: entity.name.type.blitzmax
+        3: storage.modifier.extends.blitzmax
+        4: entity.other.inherited-class.blitzmax
+        5: storage.modifier.class.blitzmax
+      push:
+        - meta_scope: meta.type.blitzmax
+        - match: (?i)\b(end\s?type)\b
+          captures:
+            1: storage.type.class.blitzmax
+          pop: true
+        - match: '(?i)(?:(?:^|;)\s*)(method)\s+([a-zA-Z_]\w*)'
+          captures:
+            1: storage.type.method.blitzmax
+            2: entity.name.function.method.blitzmax
+          push:
+            - meta_scope: meta.method.blitzmax
+            - match: (?i)(?:\)\s+(abstract)\s*)$|\b(end\s?method)\b
+              captures:
+                1: storage.modifier.abstract.blitzmax
+                2: storage.type.method.blitzmax
+              pop: true
+            - include: main
+            - match: (?i)\bfinal\b
+              scope: storage.modifier.method.final.blitzmax
+        - include: bmax_comment_quote
+        - include: bmax_comment_block
+        - include: bmax_constants
+        - include: bmax_string_quoted
+        - include: bmax_attributes
+        - include: bmax_pointerops
+        - include: bmax_null
+        - include: bmax_types
+        - include: bmax_typename
+        - include: bmax_global_variable
+        - include: bmax_constant
+        - include: bmax_function
+        - include: bmax_type_field
+        - include: bmax_constructor
+        - include: bmax_preprocessor
+    - match: (?i)\b((end\s?|else\s?)?(if)|else|then)\b
+      scope: keyword.control.if.blitzmax
+    - include: bmax_control_keywords
+    - match: (?i)(?:(?:^|;)\s*)(while)\b
+      captures:
+        1: keyword.control.while.blitzmax
+      push:
+        - meta_scope: meta.control.while.blitzmax
+        - match: (?i)(?:(?:^|;)\s*)(end\s?while|wend)\b
+          captures:
+            1: keyword.control.while.end.blitzmax
+          pop: true
+        - include: main
+    - match: (?i)(?:(?:^|;)\s*)(for)\b
+      captures:
+        1: keyword.control.for.blitzmax
+      push:
+        - meta_scope: meta.control.for.blitzmax
+        - match: (?i)(?:(?:^|;)\s*)(next)\b
+          captures:
+            1: keyword.control.for.end.blitzmax
+          pop: true
+        - match: (?i)\beachin\b
+          scope: keyword.control.for.eachin.blitzmax
+        - match: (?i)\bto\b
+          scope: keyword.control.for.to.blitzmax
+        - match: (?i)\buntil\b
+          scope: keyword.control.for.until.blitzmax
+        - match: (?i)\bstep\b
+          scope: keyword.control.for.step.blitzmax
+        - include: main
+    - match: (?i)(?:(?:^|;)\s*)(repeat)\b
+      captures:
+        1: keyword.control.repeat.blitzmax
+      push:
+        - meta_scope: meta.control.repeat.blitzmax
+        - match: (?i)(?:(?:^|;)\s*)(until|forever)\b
+          captures:
+            1: keyword.control.repeat.end.blitzmax
+          pop: true
+        - include: main
+    - match: (?i)(?:(?:^|;)\s*)(select)\b
+      captures:
+        1: keyword.control.select.blitzmax
+      push:
+        - meta_scope: meta.control.select.blitzmax
+        - match: (?i)(?:(?:^|;)\s*)(end\s?select)\b
+          captures:
+            1: keyword.control.select.end.blitzmax
+          pop: true
+        - match: (?i)(?:(?:^|;)\s*)(case)\b
+          scope: meta.control.select.case.blitzmax
+          captures:
+            1: keyword.control.select.case.blitzmax
+        - match: (?i)(?:(?:^|;)\s*)(default)\b
+          scope: meta.control.select.default.blitzmax
+          captures:
+            1: keyword.control.select.default.blitzmax
+        - include: main
+    - match: (?i)\b(mod|shr|shl|sar|and|or|not)\b
+      scope: keyword.operator.blitzmax
+    - match: ':?[\^+\-=&|><]'
+      scope: keyword.operator.blitzmax
+    - match: (?i)\b(private|public)\b
+      scope: keyword.other.scope.blitzmax
+    - match: (?i)\b(strict|superstrict)\b
+      scope: keyword.other.strictness.blitzmax
+    - include: bmax_null
+    - include: bmax_types
+    - include: bmax_constants
+    - include: bmax_string_quoted
+    - match: (?i)\b(self)\b
+      scope: variable.language.self.blitzmax
+    - match: (?i)\b(super)\b
+      scope: variable.language.super.blitzmax
+    - include: bmax_constructor
+    - include: bmax_array
+    - include: bmax_typename
+  bmax_array:
+    - match: '(\[)'
+      captures:
+        1: keyword.operator.array.blitzmax
+      push:
+        - meta_scope: meta.array.blitzmax
+        - match: '(\])'
+          captures:
+            1: keyword.operator.array.blitzmax
+          pop: true
+        - include: main
+  bmax_attributes:
+    - match: '(\{)'
+      captures:
+        1: storage.modifier.attributes.braces.blitzmax
+      push:
+        - meta_scope: meta.attributes.blitzmax
+        - match: '(\})'
+          captures:
+            1: storage.modifier.attributes.braces.blitzmax
+          pop: true
+        - match: '\b([a-zA-Z_]\w*)\s*(=)\s*'
+          captures:
+            1: entity.other.attribute-name.blitzmax
+          push:
+            - meta_scope: meta.attribute.blitzmax
+            - match: '(?=\s|\}|[a-zA-Z_])'
+              pop: true
+            - include: bmax_string_quoted
+            - include: bmax_numbers
+        - match: '\b([a-zA-Z_]\w*)(?:\s*((?!=)|(?=\})))'
+          scope: meta.attribute.blitzmax
+          captures:
+            1: entity.other.attribute-name.blitzmax
+  bmax_boolean:
+    - match: (?i)\b(true|false)\b
+      scope: constant.language.boolean.blitzmax
+  bmax_comment_block:
+    - match: (?i)(?<=\s|^|;)(?<!end|end\s)rem\b
+      push:
+        - meta_scope: comment.block.rem.blitzmax
+        - match: (?i)(?<=\s|^|;)end\s?rem\b
+          pop: true
+        - include: bmax_url_content
+  bmax_comment_quote:
+    - match: "'"
+      push:
+        - meta_scope: comment.line.apostrophe.blitzmax
+        - match: $
+          pop: true
+        - include: bmax_url_content
+  bmax_constant:
+    - match: (?i)\b(const)\b
+      scope: meta.constant.blitzmax
+      captures:
+        1: keyword.other.constant.blitzmax
+  bmax_constants:
+    - include: bmax_pi
+    - include: bmax_boolean
+    - include: bmax_numbers
+  bmax_constructor:
+    - match: '(?i)\b(new)\s+([a-zA-Z_]\w*)\b'
+      scope: meta.call.constructor.blitzmax
+      captures:
+        1: keyword.other.new.blitzmax
+        2: storage.type.class.blitzmax
+  bmax_control_keywords:
+    - match: (?i)\b(throw|return|exit|continue)\b
+      scope: keyword.control.blitzmax
+  bmax_function:
+    - match: '(?i)(?:(?:^|;)\s*)(function)\s+([a-zA-Z_]\w*)\b'
+      captures:
+        1: storage.type.function.blitzmax
+        2: entity.name.function.blitzmax
+      push:
+        - meta_scope: meta.function.blitzmax
+        - match: (?i)\b(end\s?function)\b
+          captures:
+            1: storage.type.function.blitzmax
+          pop: true
+        - include: main
+  bmax_global_variable:
+    - match: (?i)\b(global)\b
+      scope: meta.variable.blitzmax
+      captures:
+        1: storage.modifier.global.blitzmax
+  bmax_local_variable:
+    - match: (?i)\b(local)\b
+      scope: meta.variable.blitzmax
+      captures:
+        1: keyword.other.variable.local.blitzmax
+  bmax_null:
+    - match: (?i)\bnull\b
+      scope: constant.language.null.blitzmax
+  bmax_numbers:
+    - match: '(\$[0-9a-fA-F]{1,16})'
+      scope: constant.numeric.integer.hexadecimal.blitzmax
+    - match: '(\%[01]{1,128})'
+      scope: constant.numeric.integer.binary.blitzmax
+    - match: |-
+        (?x) (?<! % | \$ ) (
+        	\b ([0-9]+ \. [0-9]+) |
+        	(\. [0-9]+)
+        )
+      scope: constant.numeric.float.blitzmax
+    - match: '(?x)\b(([0-9]+))'
+      scope: constant.numeric.integer.blitzmax
+  bmax_pi:
+    - match: (?i)\bpi\b
+      scope: constant.language.blitzmax
+  bmax_pointerops:
+    - match: (?i)\b(?:(ptr|var)|(varptr))\b
+      scope: meta.pointerops.blitzmax
+      captures:
+        1: storage.modifier.blitzmax
+        2: keyword.operator.blitzmax
+  bmax_preprocessor:
+    - match: (?i)^\s*\?(not\s+)?\w*
+      scope: keyword.control.preprocessor.blitzmax
+  bmax_string_content:
+    - match: '\~[^"]'
+      scope: constant.character.escape.blitzmax
+    - include: bmax_url_content
+  bmax_string_quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.blitzmax
+      push:
+        - meta_scope: string.quoted.double.blitzmax
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.blitzmax
+          pop: true
+        - include: bmax_string_content
+  bmax_type_field:
+    - match: (?i)\b(field)\b
+      scope: meta.variable.field.blitzmax
+      captures:
+        1: keyword.other.variable.field.blitzmax
+  bmax_typename:
+    - match: '(?xi)(?: \: \s* ([a-zA-Z_]\w*) | ([!#%]|@{1,2}|\$[zw]?) )'
+      scope: meta.typename.blitzmax
+      captures:
+        1: storage.type.blitzmax
+        2: storage.type.blitzmax
+  bmax_types:
+    - match: (?i)\b(object|string|byte|short|int|long|float|double)\b
+      scope: storage.type.blitzmax
+  bmax_url_content:
+    - match: '[a-zA-Z_]\w*://[^ "''()\[\]]*(?=$|\b)'
+      scope: meta.url.blitzmax

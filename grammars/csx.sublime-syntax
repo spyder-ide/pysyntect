@@ -1,0 +1,12 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: "C# Script File"
+file_extensions:
+  - csx
+scope: source.csx
+contexts:
+  main:
+    - include: scope:source.cs
+    - match: ^#(load|r)
+      scope: preprocessor.source.csx

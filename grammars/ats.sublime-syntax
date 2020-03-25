@@ -1,0 +1,151 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ATS
+file_extensions:
+  - dats
+  - sats
+  - hats
+scope: source.ats
+contexts:
+  main:
+    - include: quantifier_curly
+    - include: quantifier_square
+    - include: block
+    - include: comment_rest
+    - include: comment_line
+    - include: comment_block_c
+    - include: comment_block_sml
+    - include: embed
+    - include: operators
+    - include: quantifier_arrow
+    - include: definition_function
+    - include: definition_type
+    - include: keywords
+    - include: keywords_types
+    - include: false_true
+    - include: string
+    - include: char
+    - include: records
+    - include: tuples
+    - include: number
+    - include: identifier
+  block:
+    - match: '(?<=where|=|^|then|else|\$rec|\$rec_t|\$rec_vt)(?:\s*)\{'
+      push:
+        - meta_scope: meta.block
+        - include: main
+        - match: '\}'
+          pop: true
+  char:
+    - match: '('')([^\\]{0,1}|\\(\\|[abefpnrtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-fA-F0-9]{0,2}|u[a-fA-F0-9]{0,4}|U[a-fA-F0-9]{0,8}))('')'
+      scope: string.quoted.double
+  comment_block_c:
+    - match: /\*
+      push:
+        - meta_scope: comment.block
+        - match: \*/
+          pop: true
+  comment_block_sml:
+    - match: \(\*
+      push:
+        - meta_scope: comment.block
+        - include: comment_block_sml
+        - match: \*\)
+          pop: true
+  comment_line:
+    - match: //.*$
+      scope: comment.line.double-slash
+  comment_rest:
+    - match: ////
+      push:
+        - meta_scope: comment.block
+        - match: .*
+        - match: .\z
+          pop: true
+  definition_function:
+    - match: \b(?:castfn|fn|fun|implement|implmnt|infixl|infixr|infix|overload|postfix|praxi|prfn|prfun|primplement|primplmnt|var)\b
+      captures:
+        0: keyword
+      push:
+        - meta_scope: meta.function-definition
+        - match: '\b[a-zA-Z][a-zA-Z0-9_'']*\b'
+          captures:
+            0: entity.name.function
+          pop: true
+        - include: main
+  definition_type:
+    - match: \b(abstype|abst@ype|abst0pe|absvtype|absvt@ype|absvt0pe|absviewtype|absviewt@ype|absviewt0pe|absview|absprop|datatype|datavtype|dataviewtype|dataview|dataprop|datasort|sortdef|propdef|viewdef|viewtypedef|vtypedef|stadef|stacst|typedef)\b
+      captures:
+        0: keyword
+      push:
+        - meta_scope: meta.type-definition
+        - match: '\b[a-zA-Z][a-zA-Z0-9_'']*\b'
+          captures:
+            0: entity.name.type storage.type
+          pop: true
+        - include: main
+  embed:
+    - match: "(%{)"
+      push:
+        - meta_scope: meta
+        - match: "(%})"
+          pop: true
+  false_true:
+    - match: \b(?:false|true)\b
+      scope: constant.language.boolean
+  identifier:
+    - match: '\b[a-zA-Z][a-zA-Z0-9_'']*\b'
+      scope: identifier
+  keywords:
+    - match: (\#|\$)(\w+)|\b(castfn|and|andalso|assume|as|begin|break|case(\+|-)?|class|continue|dynload|dyn|else|end|exception|extern|fix|fn|for|fun|if|implement|implmnt|primplement|primplmnt|infixl|infixr|infix|in|lam|let|llam|local|macdef|macrodef|method|modprop|modtype|module|nonfix|object|of|op|or|orelse|overload|par|postfix|praxi|prefix|prfn|prfun|prval|rec|scase|sif|stacst|staif|staload|stavar|sta|struct|symelim|symintr|then|try|union|val(\+|-)?|var|when|where|while|withprop|withtype|withviewtype|withview|with)\b
+      scope: keyword
+  keywords_types:
+    - match: (\#|\$)(\w+)|\b(abstype|abst@ype|abst0pe|absvtype|absvt@ype|absvt0pe|absviewtype|absviewt@ype|absviewt0pe|absview|absprop|datatype|datavtype|dataviewtype|dataview|dataprop|datasort|sortdef|propdef|viewdef|viewtypedef|vtypedef|stadef|typedef)\b
+      scope: keyword
+  number:
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|~)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b'
+      scope: constant.numeric
+  operators:
+    - match: '!=|!|%|&&|&|\*|\+|-|-->|->|/|:=|<=|(?<=\s)<|==>|=>|=|>=|>>|>|\?|\|\||\||~|\[\]'
+      scope: keyword.operator
+  quantifier_arrow:
+    - match: (?<!\s)<
+      push:
+        - meta_scope: support.type
+        - match: ">"
+          pop: true
+  quantifier_curly:
+    - match: '\{(?=[\S])'
+      push:
+        - meta_scope: support.type.quantifier.universal
+        - match: '\}'
+          pop: true
+  quantifier_square:
+    - match: '\[(?=[\S])'
+      push:
+        - meta_scope: support.type.quantifier.existential
+        - match: '\]'
+          pop: true
+  records:
+    - match: "('|@)({)"
+      push:
+        - match: "(})"
+          pop: true
+        - include: main
+  string:
+    - match: (")
+      push:
+        - meta_scope: string.quoted.double
+        - match: (")
+          pop: true
+        - include: string_escaped
+  string_escaped:
+    - match: '\\(\\|[abefnprtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-fA-F0-9]{0,2}|u[a-fA-F0-9]{0,4}|U[a-fA-F0-9]{0,8})'
+      scope: constant.character.escape
+  tuples:
+    - match: ('|@)\(
+      push:
+        - match: (\))
+          pop: true
+        - include: main

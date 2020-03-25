@@ -1,0 +1,34 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GDB Session
+scope: source.gdb.session
+contexts:
+  main:
+    - match: '^([0-9]+)(-\S+)'
+      captures:
+        1: constant.other.gdb.command
+        2: entity.name.function
+    - match: ^~.*$
+      scope: comment
+    - match: '^([0-9]+)(\^[^,]+)'
+      captures:
+        1: constant.other.gdb.command
+        2: keyword.gdb.returncode
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.gdb
+      push:
+        - meta_scope: string.quoted.double.gdb
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.gdb
+          pop: true
+        - include: string_escaped_char
+    - match: "[^{,=]+(?==)"
+      scope: storage.type.gdb
+  string_escaped_char:
+    - match: '\\(\\|[abefnprtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-fA-F0-9]{0,2}|u[a-fA-F0-9]{0,4}|U[a-fA-F0-9]{0,8})'
+      scope: constant.character.escape.c
+    - match: \\.
+      scope: invalid.illegal.unknown-escape.c

@@ -1,0 +1,38 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML (ABL)
+file_extensions:
+  - w
+  - html
+scope: text.html.abl
+contexts:
+  main:
+    - match: .*(<)(script) (language)(=)("SpeedScript")(>)
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.script.html
+        3: entity.other.attribute-name.html
+        4: meta.tag.inline.any.html
+        5: string.double.quoted.html
+        6: punctuation.definition.tag.end.html
+      push:
+        - meta_scope: source.abl
+        - match: .*(</)(script)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.script.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: scope:source.abl
+    - match: \`
+      captures:
+        0: string.double.quoted.html
+      push:
+        - meta_scope: source.abl
+        - match: \`
+          captures:
+            0: string.double.quoted.html
+          pop: true
+        - include: scope:source.abl
+    - include: scope:text.html.basic

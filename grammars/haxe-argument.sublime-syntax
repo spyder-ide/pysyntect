@@ -1,0 +1,40 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.hx.argument
+contexts:
+  main:
+    - include: parameter
+  parameter:
+    - include: parameter-name
+    - include: parameter-type-hint
+    - include: parameter-assign
+    - include: scope:source.hx#punctuation-comma
+    - include: scope:source.hx#global
+  parameter-assign:
+    - match: "="
+      captures:
+        0: keyword.operator.assignment.hx
+      push:
+        - match: $
+          pop: true
+        - include: scope:source.hx#block
+        - include: scope:source.hx#block-contents
+  parameter-name:
+    - match: ^
+      push:
+        - match: '([_a-zA-Z]\w*)'
+          captures:
+            1: variable.parameter.hx
+          pop: true
+        - include: scope:source.hx#global
+        - include: scope:source.hx#metadata
+        - include: scope:source.hx#operator-optional
+  parameter-type-hint:
+    - match: ":"
+      captures:
+        0: keyword.operator.type.annotation.hx
+      push:
+        - match: (?=\)(?!\s*->)|,|=)
+          pop: true
+        - include: scope:source.hx#type

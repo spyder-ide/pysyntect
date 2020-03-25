@@ -1,0 +1,137 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Squirrel
+comment: "Squirrel Syntax: version 0.2.1"
+file_extensions:
+  - nut
+scope: source.nut
+contexts:
+  main:
+    - include: special-block
+    - include: comments
+    - match: \b(break|case|catch|default|do|else|for|foreach|if|resume|return|switch|throw|try|while|yield)\b
+      scope: keyword.control.squirrel
+    - match: \b(clone|delete|in|instanceof|typeof)\b
+      scope: keyword.control.squirrel
+    - match: \b(base|this)\b
+      scope: variable.language.squirrel
+    - match: \b(class|constructor|function|local)\b
+      scope: storage.type.squirrel
+    - match: \b(const|extends|static)\b
+      scope: storage.modifier.squirrel
+    - match: \b(null|true|false)\b
+      scope: constant.squirrel.squirrel
+    - match: '!|%|&|\*|\-\-|\-|\+\+|\+|==|=|!=|<=>|<=|>=|<-|>>>|<<|>>|<|>|!|&&|\|\||\?\:|\*=|(?<!\()/=|%=|\+=|\-=|&=|%=|\.'
+      scope: keyword.operator.squirrel
+    - match: '\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?))\b'
+      scope: constant.numeric.squirrel
+    - match: '\b([_A-Za-z][_A-Za-z0-9]\w*)\b(?=\s*(?:[({"'']|\[\[))'
+      scope: support.function.any-method.squirrel
+    - match: '(?<=[^.]\.)\b([_A-Za-z][_A-Za-z0-9]\w*)'
+      scope: variable.other.squirrel
+    - include: attributes
+    - include: block
+    - include: strings
+  attributes:
+    - match: </
+      push:
+        - meta_scope: meta.attributes.squirrel
+        - match: />
+          pop: true
+        - include: $top_level_main
+  block:
+    - match: '\{'
+      captures:
+        0: punctuation.section.block.begin.bracket.curly.squirrel
+      push:
+        - meta_scope: meta.block.squirrel
+        - match: '\}'
+          captures:
+            0: punctuation.section.block.end.bracket.curly.squirrel
+          pop: true
+        - include: $top_level_main
+  comments:
+    - match: ^/\* =(\s*.*?)\s*= \*/$\n?
+      scope: comment.block.squirrel
+      captures:
+        1: meta.toc-list.banner.block.squirrel
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.squirrel
+      push:
+        - meta_scope: comment.block.squirrel
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.squirrel
+          pop: true
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.squirrel
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.squirrel
+          push:
+            - meta_scope: comment.line.double-slash.squirrel
+            - match: (?=\n)
+              pop: true
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.squirrel
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.squirrel
+          push:
+            - meta_scope: comment.line.hash.squirrel
+            - match: (?=\n)
+              pop: true
+  special-block:
+    - match: '\b(class)\b\s*([_A-Za-z][_A-Za-z0-9]*\b)?+(\s*(extends)\s*([_A-Za-z][_A-Za-z0-9]*\b))?'
+      captures:
+        1: storage.type.squirrel
+        2: entity.name.type.squirrel
+        4: storage.type.modifier.squirrel
+        5: entity.name.type.inherited.squirrel
+      push:
+        - meta_scope: meta.class-block.squirrel
+        - match: '(?<=\})|(?=(=))'
+          pop: true
+        - include: block
+    - match: '\b(function)\b\s*([_A-Za-z][_A-Za-z0-9]*\b)?+(\s*(::)\s*([_A-Za-z][_A-Za-z0-9]*\b))?'
+      captures:
+        1: storage.type.squirrel
+        2: entity.name.type.squirrel
+        4: punctuation.separator.global.access.squirrel
+        5: entity.name.function.squirrel
+      push:
+        - meta_scope: meta.function-block.squirrel
+        - match: '(?<=\})|(?=(=))'
+          pop: true
+        - include: block
+    - match: '\b([_A-Za-z][_A-Za-z0-9]*\b)?+(\s*(<-))'
+      captures:
+        1: entity.name.type.squirrel
+        3: punctuation.separator.namespace.access.squirrel
+      push:
+        - meta_scope: meta.namespace-block.squirrel
+        - match: '(?<=\})|(?=(;|,|\(|\)|>|\[|\]|=))'
+          pop: true
+        - include: block
+  strings:
+    - match: '@?"'
+      captures:
+        0: punctuation.definition.string.begin.squirrel
+      push:
+        - meta_scope: string.quoted.double.squirrel
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.squirrel
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.squirrel

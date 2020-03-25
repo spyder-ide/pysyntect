@@ -1,0 +1,107 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Golo
+file_extensions:
+  - golo
+scope: source.golo
+contexts:
+  main:
+    - match: |-
+        (#).*$
+        ?
+      comment: "comment with #"
+      scope: comment.line.number-sign.golo
+    - match: "----"
+      captures:
+        0: punctuation.definition.comment.golo
+      push:
+        - meta_scope: comment.block.golo
+        - match: "----"
+          captures:
+            0: punctuation.definition.comment.golo
+          pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.golo
+      push:
+        - meta_scope: comment.block.golo
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.golo
+          pop: true
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.golo
+      push:
+        - meta_scope: string.quoted.third.golo
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.golo
+          pop: true
+        - match: '(\$\w+|\$\{[^\}]+\})'
+          scope: variable.parameter.template.golo
+        - match: \\.
+          scope: constant.character.escape.golo
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.golo
+      push:
+        - meta_scope: string.quoted.double.golo
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.golo
+          pop: true
+        - match: '(\$\w+|\$\{[^\}]+\})'
+          scope: variable.parameter.template.golo
+        - match: \\.
+          scope: constant.character.escape.golo
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.golo
+      push:
+        - meta_scope: string.quoted.single.golo
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.golo
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.golo
+    - match: \b(true|false|null|super|)\b
+      scope: constant.language.golo
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDd]|UL|ul)?\b'
+      scope: constant.numeric.golo
+    - match: '\b([A-Z][A-Z0-9_]+)\b'
+      scope: constant.other.golo
+    - match: \b(this|checkResult|checkArguments|withContext)\b
+      scope: constant.other.golo
+    - match: \b(var|let|val|local|extends|implements|overrides|interfaces)\b
+      scope: storage.modifier.golo
+    - match: \b(try|catch|finally|throw|raise)\b
+      scope: keyword.control.catch-exception.golo
+    - match: \b(if|then|else|match|while|for|foreach|do|return|when|otherwise|where|break|continue)\b
+      scope: keyword.control.golo
+    - match: \b(println|print|readln|readpwd|function|fun|pimp|spawn|send|shutdown|augment|AdapterFabric|DynamicObject|Thread|Promise|promise|Observable|DynamicVariable|defaultContext|module|import|fileToText|textToFile|mapEntry|compile|TemplateEngine|EvaluationEnvironment|asInterfaceInstance|)\b
+      scope: keyword.other.golo
+    - match: \b(define|fail|onSet|onFail|onChange|invokeWithArguments|stringify|value|get|set|future|times|each|filter|map)\b
+      scope: support.function.js
+    - match: \b(in|not|and|or|is|isnt|as|andThen|bindTo|bindAt|\?:|orIfNull|oftype)\b
+      scope: keyword.operator.golo
+    - match: (==|!=|<=|>=|<>|<|>|\?:)
+      scope: keyword.operator.comparison.golo
+    - match: (=)
+      scope: keyword.operator.assignment.golo
+    - match: (:|\||)
+      scope: keyword.operator.declaration.golo
+    - match: (\.)
+      scope: keyword.operator.dot.golo
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.golo
+    - match: (\-|\+|\*|\/|%)
+      scope: keyword.operator.arithmetic.golo
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.golo
+    - match: '\b(struct|range\[|tuple\[|array\[|map\[|set\[|vector\[|list\[)|\[|\]|\b'
+      scope: support.class.golo
+    - match: '(\{|\}|@|\(|\))'
+      scope: support.class.golo

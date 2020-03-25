@@ -1,0 +1,18 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: markdown.haxe.codeblock
+contexts:
+  main:
+    - include: haxe-code-block
+  haxe-code-block:
+    - match: 'haxe(\s+[^`~]*)?$'
+      push:
+        - match: '(^|\G)(?=\s*[`~]{3,}\s*$)'
+          pop: true
+        - match: (^|\G)(\s*)(.*)
+          push:
+            - meta_content_scope: meta.embedded.block.haxe
+            - match: '"'
+              pop: true
+            - include: scope:source.hx

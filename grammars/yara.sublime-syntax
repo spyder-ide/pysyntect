@@ -1,0 +1,60 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: YARA
+file_extensions:
+  - yara
+  - yar
+scope: source.yara
+contexts:
+  main:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.yara
+      push:
+        - meta_scope: comment.block.yara
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.yara
+          pop: true
+    - match: //
+      captures:
+        0: punctuation.definition.comment.yara
+      push:
+        - meta_scope: comment.line.yara
+        - match: $\n?
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.yara
+    - match: \b(true|false|private|global|rule|strings|meta|condition|and|or|not|filesize|in|at|of|for|all|any|nocase|fullword|wide|ascii|xor|entrypoint|them|int8|int16|int32|int8be|int16be|int32be|uint8|uint16|uint32|uint8be|uint16be|uint32be|include|import|matches|contains)\b
+      scope: keyword.yara
+    - match: '\b(0(x|X)[0-9a-fA-F]+)(MB|KB)?\b'
+      scope: constant.numeric.yara
+    - match: '(\$|#|@)[a-zA-Z0-9_*]*'
+      scope: variable.other.yara
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.yara
+      push:
+        - meta_scope: string.quoted.double.yara
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.yara
+          pop: true
+        - include: string_escaped_char
+    - match: /
+      captures:
+        0: punctuation.definition.string.begin.yara
+      push:
+        - meta_scope: string.regex.yara
+        - match: /
+          captures:
+            0: punctuation.definition.string.end.yara
+          pop: true
+        - match: \\.
+          scope: constant.regex.escape.yara
+  string_escaped_char:
+    - match: '\\(\\|[abefnprtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-fA-F0-9]{0,2}|u[a-fA-F0-9]{0,4}|U[a-fA-F0-9]{0,8})'
+      scope: constant.character.escape.yara
+    - match: \\.
+      scope: invalid.illegal.unknown-escape.yara

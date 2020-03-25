@@ -1,0 +1,284 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ObjectScript Class
+file_extensions:
+  - cls
+scope: source.objectscript_class
+contexts:
+  main:
+    - include: documentation
+    - include: comments
+    - match: '(?i)^(\Include\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*(?:\.[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: identifier.objectscript_class
+    - match: '(?i)^(\bClass\b)(\s)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*(?:\.[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.name.class.objectscript_class
+    - match: '(?i)(\bExtends\b)(\s)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*(?:\.[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.name.class.objectscript_class
+    - match: (?i)(\bExtends\b)(\s+)(\()
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: punctuation.objectscript_class
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - match: '(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*(?:\.[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)*)'
+          captures:
+            1: entity.name.class.objectscript_class
+    - match: "({)"
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - match: "(})"
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: class
+  as:
+    - match: '(?i)(\bAs\b(?:\slist of)?)(\s+)(%?[a-z][0-9a-z]*(?:_[0-9a-z]+)*(?:\.[a-z][0-9a-z]*(?:_[0-9a-z]+)*)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.name.class.objectscript_class
+    - match: (\()
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: scope:source.objectscript
+  class:
+    - include: documentation
+    - include: comments
+    - match: '(?i)(^\bIndex\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+      push:
+        - match: "(^(?=.{0,1})(?:|))"
+          captures:
+            1: whitespace.objectscript_class
+          pop: true
+        - include: index
+    - match: '(?i)^(\bForeignKey\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+    - match: '(?i)^(\bParameter\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+      push:
+        - match: (;)
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: parameter
+    - match: '(?i)^(\bProjection\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+    - match: '(?i)^(\bProperty\b)(\s+)((?:%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)|(?:"[^".]+"))'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+      push:
+        - match: (;)
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: property
+    - match: '(?i)^(\bRelationship\b)(\s+)((?:%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)|(?:"[^".]+"))'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+    - match: '(?i)^(\b(?:Class|Client)?Method\b)(\s+)((?:%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)|(?:"[^".]+"))'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.name.function.objectscript_class
+      push:
+        - match: "^(})$"
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: method
+    - match: '(?i)^(\bQuery\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.name.function.objectscript_class
+      push:
+        - match: "^(})$"
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: query
+    - match: '(?i)^(\bTrigger\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.name.function.objectscript_class
+      push:
+        - match: "^(})$"
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: trigger
+    - match: '(?i)^(\XData\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: identifier.objectscript_class
+      push:
+        - match: "^(})$"
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: xdata
+    - match: '(?i)^(\Storage\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: identifier.objectscript_class
+      push:
+        - match: "^(})$"
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: storage
+  code:
+    - match: "^({)"
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - meta_content_scope: meta.embedded.block.objectscript
+        - match: "^(?=})"
+          pop: true
+        - include: scope:source.objectscript
+  comments:
+    - match: (/\*)
+      captures:
+        1: comment.objectscript_class
+      push:
+        - meta_content_scope: comment.objectscript_class
+        - match: (.*?\*/)
+          captures:
+            1: comment.objectscript_class
+          pop: true
+    - match: (^\s*// .*)
+      scope: comment.objectscript_class
+  documentation:
+    - match: (^/// .*)
+      captures:
+        1: comment.block.documentation.objectscript_class
+      push:
+        - meta_content_scope: comment.block.documentation.objectscript_class
+        - match: "(^(?=.{0,1})(?:|))"
+          captures:
+            1: whitespace.objectscript_class
+          pop: true
+  formal_spec:
+    - match: (\()
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - meta_content_scope: source.objectscript_class
+        - match: (\))
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+        - include: as
+        - match: "[a-zA-Z][a-zA-Z0-9]*"
+          scope: variable.name.objectscrip
+        - include: scope:source.objectscript#constants
+  index:
+    - match: '(\bOn\b)(\s+)(%?[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*(?:\.[a-zA-Z][0-9a-zA-Z]*(?:_[0-9a-zA-Z]+)*)*)'
+      captures:
+        1: keyword.objectscript_class
+        2: whitespace.objectscript_class
+        3: entity.other.attribute-name.objectscript_class
+  method:
+    - include: formal_spec
+    - include: as
+    - include: params
+    - include: code
+  parameter:
+    - include: as
+    - include: parameter_value
+  parameter_value:
+    - include: scope:source.objectscript#constants
+  params:
+    - match: '(\[)'
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - meta_content_scope: source.objectscript_class
+        - match: '(\])'
+          captures:
+            1: punctuation.objectscript_class
+          pop: true
+  property:
+    - include: as
+    - include: params
+  query:
+    - include: formal_spec
+    - include: as
+    - include: params
+    - include: sql
+  sql:
+    - match: "^({)"
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - meta_content_scope: meta.embedded.block.sql
+        - match: "^(?=})"
+          pop: true
+        - include: scope:source.sql
+  storage:
+    - include: params
+    - include: xml
+  trigger:
+    - include: params
+    - include: code
+  xdata:
+    - include: params
+    - include: xdataStyle
+  xdataStyle:
+    - match: "^({)"
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - match: "^(?=})"
+          pop: true
+        - include: scope:text.xml
+        - include: scope:source.css
+  xml:
+    - match: "^({)"
+      captures:
+        1: punctuation.objectscript_class
+      push:
+        - meta_content_scope: text.xml
+        - match: "^(?=})"
+          pop: true
+        - include: scope:text.xml

@@ -1,0 +1,95 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Io
+file_extensions:
+  - io
+scope: source.io
+contexts:
+  main:
+    - match: \((\))
+      comment: we match this to overload return inside () --Allan; scoping rules for what gets the scope have changed, so we now group the ) instead of the ( -- Rob
+      captures:
+        1: meta.empty-parenthesis.io
+    - match: \,(\))
+      comment: We want to do the same for ,) -- Seckar; same as above -- Rob
+      captures:
+        1: meta.comma-parenthesis.io
+    - match: \b(if|ifTrue|ifFalse|ifTrueIfFalse|for|loop|reverseForeach|foreach|map|continue|break|while|do|return)\b
+      scope: keyword.control.io
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.io
+      push:
+        - meta_scope: comment.block.io
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.io
+          pop: true
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.io
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.io
+          push:
+            - meta_scope: comment.line.double-slash.io
+            - match: \n
+              pop: true
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.io
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.io
+          push:
+            - meta_scope: comment.line.number-sign.io
+            - match: \n
+              pop: true
+    - match: \b(self|sender|target|proto|protos|parent)\b
+      comment: I wonder if some of this isn't variable.other.language? --Allan; scoping this as variable.language to match Objective-C's handling of 'self', which is inconsistent with C++'s handling of 'this' but perhaps intentionally so -- Rob
+      scope: variable.language.io
+    - match: <=|>=|=|:=|\*|\||\|\||\+|-|/|&|&&|>|<|\?|@|@@|\b(and|or)\b
+      scope: keyword.operator.io
+    - match: '\bGL[\w_]+\b'
+      scope: constant.other.io
+    - match: '\b([A-Z](\w+)?)\b'
+      scope: support.class.io
+    - match: \b(clone|call|init|method|list|vector|block|(\w+(?=\s*\()))\b
+      scope: support.function.io
+    - match: '\b(gl(u|ut)?[A-Z]\w+)\b'
+      scope: support.function.open-gl.io
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.io
+      push:
+        - meta_scope: string.quoted.triple.io
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.io
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.io
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.io
+      push:
+        - meta_scope: string.quoted.double.io
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.io
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.io
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?\b'
+      scope: constant.numeric.io
+    - match: (Lobby)\b
+      scope: variable.other.global.io
+    - match: \b(TRUE|true|FALSE|false|NULL|null|Null|Nil|nil|YES|NO)\b
+      scope: constant.language.io

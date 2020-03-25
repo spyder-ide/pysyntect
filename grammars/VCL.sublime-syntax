@@ -1,0 +1,179 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: VCL
+file_extensions:
+  - vcl.erb
+  - vcl
+scope: source.varnish.vcl
+contexts:
+  main:
+    - match: \#.*
+      scope: comment.line.number-sign.vcl
+    - match: \/\/.*
+      scope: comment.line.double-slash.vcl
+    - match: \/\*
+      push:
+        - meta_scope: comment.block.vcl
+        - match: \*\/
+          pop: true
+    - match: \b(import|include)\b\s*
+      captures:
+        1: keyword.control.import.php
+      push:
+        - meta_scope: meta.include.vcl
+        - match: (?=\s|;|$)
+          pop: true
+        - include: strings
+    - match: '(?i)^\s*(director)\s+([a-z0-9_]+)\s+(round\-robin|random|client|hash|dns|fallback)\s*\{'
+      captures:
+        1: storage.type.director.vcl
+        2: entity.name.type.director.vcl
+        3: storage.type.director.family.vcl
+      push:
+        - meta_scope: meta.director.vcl
+        - match: '\}'
+          captures:
+            1: storage.type.director.vcl
+            2: entity.name.type.director.vcl
+            3: storage.type.director.family.vcl
+          pop: true
+        - include: main
+    - match: '(?i)^\s*(backend)\s+([a-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.backend.vcl
+        2: entity.name.type.backend.vcl
+      push:
+        - meta_scope: meta.backend.vcl
+        - match: '\}'
+          captures:
+            1: storage.type.backend.vcl
+            2: entity.name.type.backend.vcl
+          pop: true
+        - include: main
+    - match: '(?i)^\s*(acl)\s+([a-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.acl.vcl
+        2: entity.name.type.acl.vcl
+      push:
+        - meta_scope: meta.acl.vcl
+        - match: '\}'
+          captures:
+            1: storage.type.acl.vcl
+            2: entity.name.type.acl.vcl
+          pop: true
+        - include: main
+    - match: '(?i)^\s*(probe)\s+([a-z0-9_]+)\s*'
+      scope: meta.probe.vcl
+      captures:
+        1: storage.type.probe.vcl
+        2: entity.name.type.probe.vcl
+    - match: '(?i)^\s*(sub)\s+([a-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.subroutine.vcl
+        2: entity.name.type.subroutine.vcl
+      push:
+        - meta_scope: meta.subroutine.vcl
+        - match: '\}'
+          captures:
+            1: storage.type.subroutine.vcl
+            2: entity.name.type.subroutine.vcl
+          pop: true
+        - include: main
+    - match: \b(return)\s*\(
+      captures:
+        1: keyword.control.vcl
+      push:
+        - match: \)
+          captures:
+            1: keyword.control.vcl
+          pop: true
+        - match: (deliver|error|fetch|hash|hit_for_pass|lookup|ok|pass|pipe|restart|synth|retry|abandon|fail|purge)
+          scope: constant.language.return.vcl
+    - match: \b(error)\b\s*
+      captures:
+        1: keyword.control.error
+      push:
+        - meta_scope: meta.error.vcl
+        - match: (?=\s|;|$)
+          pop: true
+        - include: strings
+        - include: numbers
+    - match: \b(set|unset|remove|synthetic|call|if|else|elsif|else if)\b
+      captures:
+        1: keyword.control.php
+    - include: variables
+    - include: numbers
+    - include: strings
+    - include: functions
+    - include: constants
+    - include: subkeys
+    - include: blocks
+  blocks:
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: main
+  constants:
+    - match: \b(true|false|now)\b
+      scope: constant.builtin.vcl
+  functions:
+    - match: (hash_data|regsuball|regsub|ban_url|ban|purge|synth)
+      scope: support.function.builtin.vcl
+    - match: std\.(log|toupper|tolower|set_ip_tos|random|log|syslog|fileread|collect|duration|integer|ip)
+      scope: support.function.module.std.vcl
+    - match: 'redis[0-9]?\.(call|send|pipeline|init_redis)'
+      scope: support.function.module.libvmodredis.vcl
+  numbers:
+    - match: '\b[0-9]+ ?(m|s|h|d|w)\b'
+      scope: constant.numeric.time.vcl
+    - match: '\b[0-9]+(\b|;)'
+      scope: constant.numeric.vcl
+  string-double-quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.vcl
+      push:
+        - meta_scope: string.quoted.double.vcl
+        - meta_content_scope: meta.string-contents.quoted.double.vcl
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.vcl
+          pop: true
+        - match: '\\[\\"]'
+          scope: constant.character.escape.vcl
+  string-long:
+    - match: '\{"'
+      captures:
+        0: punctuation.definition.string.begin.vcl
+      push:
+        - meta_scope: string.quoted.long.vcl
+        - meta_content_scope: meta.string-contents.quoted.double.vcl
+        - match: '"\}'
+          captures:
+            0: punctuation.definition.string.end.vcl
+          pop: true
+  string-single-quoted:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.vcl
+      push:
+        - meta_scope: string.quoted.single.vcl
+        - meta_content_scope: meta.string-contents.quoted.single.vcl
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.vcl
+          pop: true
+        - match: '\\[\\'']'
+          scope: constant.character.escape.vcl
+  strings:
+    - include: string-long
+    - include: string-single-quoted
+    - include: string-double-quoted
+  subkeys:
+    - match: \.(max_connections|first_byte_timeout|between_bytes_timeout|probe|host_header|retries|backend|weight|host|list|port|connect_timeout|ttl|suffix|url|request|window|threshold|initial|expected_response|interval|timeout)\b
+      scope: variable.subkey.vcl
+  variables:
+    - match: '(req|bereq|obj|beresp|client|server|resp)\.[a-zA-Z0-9\-\_\.]+'
+      scope: variable.other.vcl

@@ -1,0 +1,252 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: etc
+contexts:
+  main:
+    - include: comma
+    - include: comment
+    - include: esc
+    - include: float
+    - include: int
+    - include: str
+    - include: colon
+    - include: eql
+    - include: dot
+  comment:
+    - include: commentHash
+  bareword:
+    - match: '[^"\s][\S]*'
+      scope: string.unquoted.bareword
+  bool:
+    - match: \b(true|false|TRUE|FALSE)\b
+      scope: "constant.logical.bool.boolean.${1:/downcase}"
+  bracket:
+    - match: '\{'
+      scope: punctuation.definition.bracket.curly.brace.begin
+    - match: '\}'
+      scope: punctuation.definition.bracket.curly.brace.end
+    - match: '\['
+      scope: punctuation.definition.bracket.square.begin
+    - match: '\]'
+      scope: punctuation.definition.bracket.square.end
+    - match: \(
+      scope: punctuation.definition.bracket.round.parenthesis.begin
+    - match: \)
+      scope: punctuation.definition.bracket.round.parenthesis.end
+    - match: <
+      scope: punctuation.definition.bracket.angle.begin
+    - match: ">"
+      scope: punctuation.definition.bracket.angle.end
+  colon:
+    - match: ":"
+      scope: keyword.operator.assignment.key-value.colon
+  comma:
+    - match: ","
+      scope: punctuation.separator.delimiter.comma
+  commentHash:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment
+      push:
+        - meta_scope: comment.line.number-sign
+        - match: $
+          pop: true
+  commentSemi:
+    - match: ;+
+      captures:
+        0: punctuation.definition.comment
+      push:
+        - meta_scope: comment.line.semicolon
+        - match: $
+          pop: true
+  commentSlash:
+    - match: //
+      captures:
+        0: punctuation.definition.comment
+      push:
+        - meta_scope: comment.line.double-slash
+        - match: $
+          pop: true
+  dash:
+    - match: "-"
+      scope: punctuation.delimiter.separator.dash.hyphen
+  dot:
+    - match: \.
+      scope: punctuation.delimiter.separator.property.period.dot
+  dotPair:
+    - match: \.\.|‥
+      scope: keyword.operator.punctuation.dots.splat.range.spread.rest
+  dotTrail:
+    - match: '\.{4,}'
+      scope: punctuation.delimiter.separator.dotted.border.leader.dots
+  dots:
+    - include: ellipsis
+    - include: dotPair
+    - include: dot
+  ellipsis:
+    - match: '\.{3}|…'
+      scope: keyword.operator.punctuation.ellipsis.splat.range.spread.rest
+  eql:
+    - match: "="
+      scope: keyword.operator.assignment.key-value.equals-sign
+  esc:
+    - match: (\\).
+      scope: constant.character.escape.backslash
+      captures:
+        1: punctuation.definition.escape.backslash
+  float:
+    - include: floatExp
+    - include: floatNoExp
+  floatExp:
+    - match: '[-+]?(?:[0-9]*\.[0-9]+|[0-9]+\.)(?:[eE][-+]?[0-9]+)++'
+      scope: constant.numeric.float.real.decimal.dec.exponential.scientific
+  floatNoExp:
+    - match: '[-+]?(?:[0-9]*\.[0-9]+|[0-9]+\.)++'
+      scope: constant.numeric.float.real.decimal.dec
+  hex:
+    - match: "[-+]?[A-Fa-f0-9]+"
+      scope: constant.numeric.integer.int.hexadecimal.hex
+  hexNoSign:
+    - match: "[A-Fa-f0-9]+"
+      scope: constant.numeric.integer.int.hexadecimal.hex
+  int:
+    - include: intExp
+    - include: intNoExp
+  intExp:
+    - match: "[-+]?[0-9]+[eE][-+]?[0-9]+"
+      scope: constant.numeric.integer.int.decimal.dec.exponential.scientific
+  intNoExp:
+    - match: "[-+]?[0-9]+"
+      scope: constant.numeric.integer.int.decimal.dec
+  ip:
+    - match: '(?:\d+\.){3,}\d+(?=\s|$)'
+      scope: constant.numeric.other.ip-address
+      captures:
+  num:
+    - include: float
+    - include: int
+  str:
+    - include: strDouble
+    - include: strSingle
+  strDouble:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: string.quoted.double
+        - match: '"|(?=$)'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - include: esc
+  strSingle:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: string.quoted.single
+        - match: "'|(?=$)"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - include: esc
+  url:
+    - match: |-
+        (?x)
+        ("|'|\b)
+        (
+        	# Protocol
+        	( https?
+        	| s?ftp
+        	| ftps
+        	| file
+        	| wss?
+        	| smb
+        	| git (?:\+https?)?
+        	| ssh
+        	| rsync
+        	| afp
+        	| nfs
+        	| (?:x-)?man(?:-page)?
+        	| gopher
+        	| txmt
+        	| issue
+        	| atom
+        	) ://
+
+        	# Path specifier
+        	(?:
+        		(?! \#\w*\#)
+        		(?: [-:\@\w.,~%+_/?=&\#;|!])
+        	)+
+
+        	# Don't include trailing punctuation
+        	(?<![-.,?:\#;])
+        )
+        (\1)
+      captures:
+        1: punctuation.definition.link.begin.url
+        2: constant.other.reference.link.underline.$3.url
+        4: punctuation.definition.link.end.url
+    - match: |-
+        (?x)
+        ("|'|\b)
+        (
+        	mailto (:)
+        	(?:
+        		(?! \#\w*\#)
+        		(?: [-:@\w.,~%+_/?=&\#;|!])
+        	)+
+        	(?<![-.,?:\#;])
+        )
+        (\1)
+      captures:
+        1: punctuation.definition.link.begin.url
+        2: constant.other.reference.link.underline.mailto.url
+        3: punctuation.separator.delimiter.scheme.url
+        4: punctuation.definition.link.end.url
+  version:
+    - match: |-
+        (?x)
+        ("|'|\b)
+        ([vV]?)
+        (0 | [1-9]\d*) (\.)
+        (0 | [1-9]\d*) (\.)
+        (0 | [1-9]\d*)
+        (?:
+        	(-)
+        	(
+        		(?: 0
+        		| [1-9]\d*
+        		| \d*[a-zA-Z-][0-9a-zA-Z-]*
+        		)
+
+        		(?:
+        			\.
+        			(?: 0
+        			| [1-9]\d*
+        			| \d*[a-zA-Z-][0-9a-zA-Z-]*
+        			)
+        		)*
+        	)
+        )?
+        (?:
+        	(\+)
+        	(
+        		[0-9a-zA-Z-]+
+        		(?:\.[0-9a-zA-Z-]+)*
+        	)
+        )?
+        (\1)
+      scope: constant.other.version-string
+      captures:
+        1: punctuation.definition.version-string.begin
+        10: punctuation.delimiter.separator.plus
+        11: meta.build-metadata
+        12: punctuation.definition.version-string.end
+        2: punctuation.definition.version-prefix
+        3: meta.major.release-number
+        5: meta.minor.release-number
+        7: meta.patch.release-number
+        9: meta.prerelease.release-number

@@ -1,0 +1,47 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: X10
+file_extensions:
+  - x10
+scope: source.x10
+contexts:
+  main:
+    - match: \b(assert|async|at|athome|ateach|atomic|break|case|catch|clocked|continue|def|default|do|else|finally|finish|for|goto|if|in|new|offer|operator|return|switch|throw|try|val|var|when|while)\b
+      scope: keyword.control.x10
+    - match: \b(as|haszero|instanceof|isref)\b
+      scope: keyword.operator.x10
+    - match: \b(false|null|true)\b
+      scope: constant.language.x10
+    - match: \b(here|self|super|this)\b
+      scope: "variable.language.x10:"
+    - match: \b(class|interface|struct|type)\b
+      scope: entity.name.type.x10
+    - match: \b(void)\b
+      scope: storage.type.primitive.x10
+    - match: \b(abstract|extends|final|implements|native|offers|private|property|protected|public|static|throws|transient)\b
+      scope: storage.modifier.x10
+    - match: \b(import|package)\b
+      scope: keyword.other.x10
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.x10
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.x10
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.x10
+        - match: \n
+          pop: true
+    - match: /\*\*
+      push:
+        - meta_scope: comment.block.documentationx10
+        - match: \*/
+          pop: true
+    - match: /\*
+      push:
+        - meta_scope: comment.block.x10
+        - match: \*/
+          pop: true

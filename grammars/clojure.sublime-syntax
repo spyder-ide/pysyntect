@@ -1,0 +1,242 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Clojure
+file_extensions:
+  - boot
+  - clj
+  - clj.hl
+  - cljc
+  - cljs
+  - cljs.hl
+  - cljx
+  - clojure
+  - edn
+  - org
+  - joke
+  - joker
+first_line_match: |-
+  (?x)
+  	# Hashbang
+  	^\#!.*(?:\s|\/)
+  	  boot
+  	(?:$|\s)
+  	|
+  	# Modeline
+  	(?i:
+  	  # Emacs
+  	  -\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  	    clojure(script)?
+  	  (?=[\s;]|(?<![-*])-\*-).*?-\*-
+  	  |
+  	  # Vim
+  	  (?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s*set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  	    clojure
+  	  (?=\s|:|$)
+  	)
+scope: source.clojure
+contexts:
+  main:
+    - include: comment
+    - include: shebang-comment
+    - include: quoted-sexp
+    - include: sexp
+    - include: keyfn
+    - include: string
+    - include: vector
+    - include: set
+    - include: map
+    - include: regexp
+    - include: var
+    - include: constants
+    - include: dynamic-variables
+    - include: metadata
+    - include: namespace-symbol
+    - include: symbol
+  comment:
+    - match: (?<!\\);
+      captures:
+        0: punctuation.definition.comment.clojure
+      push:
+        - meta_scope: comment.line.semicolon.clojure
+        - match: $
+          pop: true
+  constants:
+    - match: '(nil)(?=(\s|\)|\]|\}))'
+      scope: constant.language.nil.clojure
+    - match: (true|false)
+      scope: constant.language.boolean.clojure
+    - match: (-?\d+/\d+)
+      scope: constant.numeric.ratio.clojure
+    - match: '(-?\d+[rR]\w+)'
+      scope: constant.numeric.arbitrary-radix.clojure
+    - match: "(-?0[xX][0-9a-fA-F]+)"
+      scope: constant.numeric.hexadecimal.clojure
+    - match: (-?0\d+)
+      scope: constant.numeric.octal.clojure
+    - match: '(-?\d+\.\d+([eE][+-]?\d+)?M)'
+      scope: constant.numeric.bigdecimal.clojure
+    - match: '(-?\d+\.\d+([eE][+-]?\d+)?)'
+      scope: constant.numeric.double.clojure
+    - match: (-?\d+N)
+      scope: constant.numeric.bigint.clojure
+    - match: (-?\d+)
+      scope: constant.numeric.long.clojure
+    - include: keyword
+  dynamic-variables:
+    - match: '\*[\w\.\-\_\:\+\=\>\<\!\?\d]+\*'
+      scope: meta.symbol.dynamic.clojure
+  keyfn:
+    - match: '(?<=(\s|\(|\[|\{))(if(-[-\p{Ll}\?]*)?|when(-[-\p{Ll}]*)?|for(-[-\p{Ll}]*)?|cond|do|let(-[-\p{Ll}\?]*)?|binding|loop|recur|fn|throw[\p{Ll}\-]*|try|catch|finally|([\p{Ll}]*case))(?=(\s|\)|\]|\}))'
+      scope: storage.control.clojure
+    - match: '(?<=(\s|\(|\[|\{))(declare-?|(in-)?ns|import|use|require|load|compile|(def[\p{Ll}\-]*))(?=(\s|\)|\]|\}))'
+      scope: keyword.control.clojure
+  keyword:
+    - match: '(?<=(\s|\(|\[|\{)):[\w\#\.\-\_\:\+\=\>\<\/\!\?\*]+(?=(\s|\)|\]|\}|\,))'
+      scope: constant.keyword.clojure
+  map:
+    - match: '(\{)'
+      captures:
+        1: punctuation.section.map.begin.clojure
+      push:
+        - meta_scope: meta.map.clojure
+        - match: '(\}(?=[\}\]\)\s]*(?:;|$)))|(\})'
+          captures:
+            1: punctuation.section.map.end.trailing.clojure
+            2: punctuation.section.map.end.clojure
+          pop: true
+        - include: main
+  metadata:
+    - match: '(\^\{)'
+      captures:
+        1: punctuation.section.metadata.map.begin.clojure
+      push:
+        - meta_scope: meta.metadata.map.clojure
+        - match: '(\}(?=[\}\]\)\s]*(?:;|$)))|(\})'
+          captures:
+            1: punctuation.section.metadata.map.end.trailing.clojure
+            2: punctuation.section.metadata.map.end.clojure
+          pop: true
+        - include: main
+    - match: (\^)
+      push:
+        - meta_scope: meta.metadata.simple.clojure
+        - match: (\s)
+          pop: true
+        - include: keyword
+        - include: main
+  namespace-symbol:
+    - match: '([\p{L}\.\-\_\+\=\>\<\!\?\*][\w\.\-\_\:\+\=\>\<\!\?\*\d]*)/'
+      captures:
+        1: meta.symbol.namespace.clojure
+  quoted-sexp:
+    - match: '([''``]\()'
+      captures:
+        1: punctuation.section.expression.begin.clojure
+      push:
+        - meta_scope: meta.quoted-expression.clojure
+        - match: '(\))$|(\)(?=[\}\]\)\s]*(?:;|$)))|(\))'
+          captures:
+            1: punctuation.section.expression.end.trailing.clojure
+            2: punctuation.section.expression.end.trailing.clojure
+            3: punctuation.section.expression.end.clojure
+          pop: true
+        - include: main
+  regexp:
+    - match: '#"'
+      captures:
+        0: punctuation.definition.regexp.begin.clojure
+      push:
+        - meta_scope: string.regexp.clojure
+        - match: '"'
+          captures:
+            0: punctuation.definition.regexp.end.clojure
+          pop: true
+        - include: regexp_escaped_char
+  regexp_escaped_char:
+    - match: \\.
+      scope: constant.character.escape.clojure
+  set:
+    - match: '(\#\{)'
+      captures:
+        1: punctuation.section.set.begin.clojure
+      push:
+        - meta_scope: meta.set.clojure
+        - match: '(\}(?=[\}\]\)\s]*(?:;|$)))|(\})'
+          captures:
+            1: punctuation.section.set.end.trailing.clojure
+            2: punctuation.section.set.end.clojure
+          pop: true
+        - include: main
+  sexp:
+    - match: (\()
+      captures:
+        1: punctuation.section.expression.begin.clojure
+      push:
+        - meta_scope: meta.expression.clojure
+        - match: '(\))$|(\)(?=[\}\]\)\s]*(?:;|$)))|(\))'
+          captures:
+            1: punctuation.section.expression.end.trailing.clojure
+            2: punctuation.section.expression.end.trailing.clojure
+            3: punctuation.section.expression.end.clojure
+          pop: true
+        - match: '(?<=\()(ns|declare|def[\w\d._:+=><!?*-]*|[\w._:+=><!?*-][\w\d._:+=><!?*-]*/def[\w\d._:+=><!?*-]*)\s+'
+          captures:
+            1: keyword.control.clojure
+          push:
+            - meta_scope: meta.definition.global.clojure
+            - match: (?=\))
+              pop: true
+            - include: metadata
+            - include: dynamic-variables
+            - match: '([\p{L}\.\-\_\+\=\>\<\!\?\*][\w\.\-\_\:\+\=\>\<\!\?\*\d]*)'
+              scope: entity.global.clojure
+            - include: main
+        - include: keyfn
+        - include: constants
+        - include: vector
+        - include: map
+        - include: set
+        - include: sexp
+        - match: (?<=\()(.+?)(?=\s|\))
+          captures:
+            1: entity.name.function.clojure
+        - include: main
+  shebang-comment:
+    - match: ^(#!)
+      captures:
+        1: punctuation.definition.comment.shebang.clojure
+      push:
+        - meta_scope: comment.line.shebang.clojure
+        - match: $
+          pop: true
+  string:
+    - match: (?<!\\)(")
+      captures:
+        1: punctuation.definition.string.begin.clojure
+      push:
+        - meta_scope: string.quoted.double.clojure
+        - match: (")
+          captures:
+            1: punctuation.definition.string.end.clojure
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.clojure
+  symbol:
+    - match: '([\p{L}\.\-\_\+\=\>\<\!\?\*][\w\.\-\_\:\+\=\>\<\!\?\*\d]*)'
+      scope: meta.symbol.clojure
+  var:
+    - match: '(?<=(\s|\(|\[|\{)\#)''[\w\.\-\_\:\+\=\>\<\/\!\?\*]+(?=(\s|\)|\]|\}))'
+      scope: meta.var.clojure
+  vector:
+    - match: '(\[)'
+      captures:
+        1: punctuation.section.vector.begin.clojure
+      push:
+        - meta_scope: meta.vector.clojure
+        - match: '(\](?=[\}\]\)\s]*(?:;|$)))|(\])'
+          captures:
+            1: punctuation.section.vector.end.trailing.clojure
+            2: punctuation.section.vector.end.clojure
+          pop: true
+        - include: main

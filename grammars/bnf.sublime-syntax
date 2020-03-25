@@ -1,0 +1,122 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Backus-Naur Form
+file_extensions:
+  - bnf
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		bnf
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		bnf
+  	(?=\s|:|$)
+scope: source.bnf
+contexts:
+  main:
+    - include: rule
+    - include: comment
+  comment:
+    - match: ;
+      captures:
+        0: punctuation.definition.comment.bnf
+      push:
+        - meta_scope: comment.line.semicolon.bnf
+        - match: $
+          pop: true
+  rhs:
+    - match: \|
+      scope: keyword.operator.logical.or.alternation.pipe.bnf
+    - match: \*
+      scope: keyword.operator.logical.repetition.asterisk.star.bnf
+    - match: \+
+      scope: keyword.operator.logical.repetition.plus.bnf
+    - match: '\['
+      captures:
+        0: punctuation.definition.square.bracket.begin.bnf
+      push:
+        - meta_scope: meta.optional.bnf
+        - match: '\]'
+          captures:
+            0: punctuation.definition.square.bracket.end.bnf
+          pop: true
+        - include: rhs
+    - match: "{"
+      captures:
+        0: punctuation.definition.curly.bracket.begin.bnf
+      push:
+        - meta_scope: meta.repetition.bnf
+        - match: "}"
+          captures:
+            0: punctuation.definition.curly.bracket.end.bnf
+          pop: true
+        - include: rhs
+    - match: \(
+      captures:
+        0: punctuation.definition.round.bracket.begin.bnf
+      push:
+        - meta_scope: meta.group.bnf
+        - match: \)
+          captures:
+            0: punctuation.definition.round.bracket.end.bnf
+          pop: true
+        - include: rhs
+    - match: <
+      captures:
+        0: punctuation.definition.angle.bracket.begin.bnf
+      push:
+        - meta_scope: meta.lhs.bnf
+        - meta_content_scope: constant.language.term.bnf
+        - match: ">|(?=$)"
+          captures:
+            0: punctuation.definition.angle.bracket.end.bnf
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.bnf
+      push:
+        - meta_scope: string.quoted.double.bnf
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.bnf
+          pop: true
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.bnf
+      push:
+        - meta_scope: string.quoted.single.bnf
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.bnf
+          pop: true
+  rule:
+    - match: (?=<)
+      push:
+        - meta_scope: meta.rule.bnf
+        - match: $|(?=;)
+          pop: true
+        - match: \G<
+          captures:
+            0: punctuation.definition.angle.bracket.begin.bnf
+          push:
+            - meta_scope: meta.lhs.bnf
+            - meta_content_scope: entity.name.rule.identifier.bnf
+            - match: ">|(?=$|;)"
+              captures:
+                0: punctuation.definition.angle.bracket.end.bnf
+              pop: true
+        - match: "::="
+          captures:
+            0: keyword.operator.assignment.bnf
+          push:
+            - meta_scope: meta.rhs.bnf
+            - match: (?=$|;)
+              pop: true
+            - include: rhs

@@ -1,0 +1,268 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: WebAssembly
+file_extensions:
+  - wast
+  - wat
+first_line_match: |-
+  (?x)
+  	# Hashbang
+  	^\#!.*(?:\s|\/|(?<=!)\b)
+  		(?:wasm(?:time)?|wast)
+  	(?:$|\s)
+  	|
+  	# Modeline
+  	(?i:
+  		# Emacs
+  		-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  			(?:wasm|wast|web[\s-]?assembly)
+  		(?=[\s;]|(?<![-*])-\*-).*?-\*-
+  		|
+  		# Vim
+  		(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s*set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  			(?:wasm|wast|web[\s-]?assembly)
+  		(?=\s|:|$)
+  	)
+scope: source.webassembly
+contexts:
+  name:
+    - match: '(\$)[-A-Za-z0-9_.+*/\\^~=<>!?@#$%&|:''`]+'
+      scope: variable.other.name.webassembly
+      captures:
+        1: punctuation.definition.variable.webassembly
+  main:
+    - include: comment-line
+    - include: comment-block
+    - include: expression
+    - include: type
+    - include: instructions
+    - include: number
+    - include: name
+    - include: string
+    - include: optional-immediate
+  comment-block:
+    - match: \(;
+      captures:
+        0: punctuation.section.comment.begin.webassembly
+      push:
+        - meta_scope: comment.block.semicolon.webassembly
+        - match: ;\)
+          captures:
+            0: punctuation.section.comment.end.webassembly
+          pop: true
+        - include: comment-block
+  comment-line:
+    - match: ;;
+      captures:
+        0: punctuation.definition.comment.webassembly
+      push:
+        - meta_scope: comment.line.semicolon.webassembly
+        - match: $
+          pop: true
+  expression:
+    - match: '(\()\s*(module)(?=[\s()]|$|;;)'
+      captures:
+        1: punctuation.section.expression.begin.webassembly
+        2: keyword.control.module.webassembly
+      push:
+        - meta_scope: meta.expression.module.root.webassembly
+        - match: \)
+          captures:
+            0: punctuation.section.expression.end.webassembly
+          pop: true
+        - include: main
+    - match: '(\()\s*(\w+)(?=[\s()]|$|;;)'
+      captures:
+        1: punctuation.section.expression.begin.webassembly
+        2: entity.name.function.webassembly
+      push:
+        - meta_scope: meta.expression.$2.webassembly
+        - match: \)
+          captures:
+            0: punctuation.section.expression.end.webassembly
+          pop: true
+        - include: main
+    - match: \(
+      captures:
+        0: punctuation.section.expression.begin.webassembly
+      push:
+        - meta_scope: meta.expression.webassembly
+        - match: \)
+          captures:
+            0: punctuation.section.expression.end.webassembly
+          pop: true
+        - include: main
+  instructions:
+    - match: |-
+        (?x) \b
+        ( block
+        | br
+        | br_if
+        | br_table
+        | call
+        | call_indirect
+        | else
+        | if
+        | end
+        | export
+        | loop
+        | return
+        | then
+        ) (?=[\s()]|$|;;)
+      scope: keyword.control.instruction.$1.webassembly
+    - match: |-
+        (?x) \b
+        ( data
+        | elem
+        | func
+        | global
+        | import
+        | local
+        | memory
+        | module
+        | offset
+        | param
+        | result
+        | start
+        | table
+        | type
+        ) (?=[\s()]|$|;;)
+      scope: keyword.operator.declaration.instruction.$1.webassembly
+    - match: |-
+        (?x) \b
+        ( assert_exhaustion
+        | assert_invalid
+        | assert_malformed
+        | assert_return (?:_(?:arithmetic|canonical)_nan)?
+        | assert_trap
+        | assert_unlinkable
+        | binary
+        | get
+        | input
+        | invoke
+        | output
+        | quote
+        | register
+        | script
+        ) (?=[\s()]|$|;;)
+      scope: entity.name.function.scripting.instruction.$1.webassembly
+    - match: |-
+        (?x) \b
+        ( current_memory
+        | drop
+        | [gs]et_(?:global|local)
+        | grow_memory
+        | nop
+        | select
+        | tee_local
+        | unreachable
+        ) (?=[\s()]|$|;;)
+      scope: entity.name.function.misc.instruction.$1.webassembly
+  number:
+    - match: '(?<!\w)[-+]?nan(:)(0x[A-Fa-f0-9]+)'
+      scope: constant.language.nan.with-payload.webassembly
+      captures:
+        1: punctuation.separator.payload.colon.webassembly
+        2: constant.numeric.int.hex.payload.webassembly
+    - match: '(?<!\w)[-+]?(inf|nan)(?!\w)'
+      scope: constant.language.$1.webassembly
+    - match: |-
+        (?x) (?<!\w)
+        [-+]?
+        0x [A-Fa-f0-9]+
+        (?: \.[A-Fa-f0-9]* )?
+        (?: [pP][-+]?[0-9]+ )?
+      scope: constant.numeric.float.hex.webassembly
+    - match: '(?<!\w)[-+]?\d+(?:\.\d*)?(?:[eE][-+]?[0-9]+)?'
+      scope: constant.numeric.float.decimal.webassembly
+    - match: '(?<!\w)[-+]?0x[A-Fa-f0-9]+'
+      scope: constant.numeric.int.hex.webassembly
+    - match: '(?<!\w)[-+]?\d+'
+      scope: constant.numeric.int.decimal.webassembly
+  optional-immediate:
+    - match: '(?<!\w)(align|offset)(=)(?=[-+]?(?:\d|0x[\dA-Fa-f]))'
+      captures:
+        1: variable.parameter.$1.webassembly
+        2: keyword.operator.assignment.webassembly
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.webassembly
+      push:
+        - meta_scope: string.quoted.double.webassembly
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.webassembly
+          pop: true
+        - match: \\n
+          scope: constant.character.escape.newline.webassembly
+        - match: \\t
+          scope: constant.character.escape.tab.webassembly
+        - match: '\\{2}'
+          scope: constant.character.escape.backslash.webassembly
+        - match: \\'
+          scope: constant.character.escape.quote.single.webassembly
+        - match: \\"
+          scope: constant.character.escape.quote.double.webassembly
+        - match: '\\[0-9A-Fa-f]{2}|\\u({)[A-Fa-f0-9]+(})'
+          scope: constant.character.escape.hex.unicode.webassembly
+          captures:
+            1: punctuation.definition.unicode-escape.begin.bracket.curly.webassembly
+            2: punctuation.definition.unicode-escape.end.bracket.curly.webassembly
+  type:
+    - match: |-
+        (?x)
+        \b (i32|i64) (\.)
+        (?:
+        	((?:div|rem|shr|[lg][et])_[su]|and|c[lt]z|x?or|shl|rot[lr]|eqz|popcnt)
+        	|
+        	(
+        		(?<=i32 \.) (?:reinterpret|trunc_[su]|wrap) |
+        		(?<=i64 \.) (?:reinterpret|(?:extend|trunc)_[su])
+        	)
+        	(/) (i32|i64|f32|f64)
+        )
+      captures:
+        1: storage.type.var.$1.webassembly
+        2: punctuation.separator.method.period.webassembly
+        3: entity.name.method-call.webassembly
+        4: entity.name.method-call.webassembly
+        5: keyword.operator.datatype.webassembly
+        6: storage.type.var.$6.webassembly
+    - match: |-
+        (?x)
+        \b (f32|f64) (\.)
+        (?:
+        	(div|abs|neg|copysign|ceil|floor|trunc|nearest|le|lt|gt|ge|sqrt|min|max)
+        	|
+        	(
+        		(?<=f32 \.)  (?:demote|convert_[su]|reinterpret) |
+        		(?<=f64 \.) (?:promote|convert_[su]|reinterpret)
+        	)
+        	(/) (i32|i64|f32|f64)
+        )
+      captures:
+        1: storage.type.var.$1.webassembly
+        2: punctuation.separator.method.period.webassembly
+        3: entity.name.method-call.webassembly
+        4: entity.name.method-call.webassembly
+        5: keyword.operator.datatype.webassembly
+        6: storage.type.var.$6.webassembly
+    - match: |-
+        (?x) \b
+        (i32|i64|f32|f64)
+        (?:
+        	(\.)
+        	(const|add|sub|mul|(?:extend|trunc)_[su]|eq|ne
+        	|load((?:8|16|32)_[su])?
+        	|store(?:8|16|32)?)
+        )?
+        (?=[\s()]|$|;;)
+      captures:
+        1: storage.type.var.$1.webassembly
+        2: punctuation.separator.method.period.webassembly
+        3: entity.name.method-call.webassembly
+    - match: \b(anyfunc)\b
+      captures:
+        1: storage.type.var.$1.webassembly

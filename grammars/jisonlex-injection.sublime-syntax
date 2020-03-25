@@ -1,0 +1,9 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Jison Lex Injection
+scope: source.jisonlex-injection
+contexts:
+  main:
+    - match: \byy(?:l(?:eng|ineno|loc)|text)\b
+      scope: variable.language.jisonlex

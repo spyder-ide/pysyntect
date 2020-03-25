@@ -1,0 +1,796 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Marko
+file_extensions:
+  - marko
+scope: text.marko
+contexts:
+  main:
+    - include: scriptlet
+    - include: special-js-tags
+    - include: js-code-block
+    - include: component-style
+    - include: comment-concise-line
+    - include: comment-concise-block
+    - include: comment-html
+    - include: comment-html-tag
+    - include: html-block-concise
+    - include: html-line-concise
+    - include: cdata
+    - include: doctype
+    - include: tag-script-concise
+    - include: tag-style-concise
+    - include: tag-concise
+    - include: tag-html
+    - include: placeholder-patterns
+  attr-assignment-concise:
+    - match: '(?:\s+|[,])(?:(key)|([a-zA-Z][a-zA-Z]*)|([_a-zA-Z0-9][a-zA-Z0-9:_.-]*))\s*([=])\s*'
+      captures:
+        1: support.function.marko-attribute
+        2: entity.other.attribute-name.html
+        3: entity.other.attribute-name.html
+        4: punctuation.separator.key-value.html
+      push:
+        - include: expression
+        - match: '(?=([,;]|\s|$))'
+          pop: true
+  attr-assignment-html:
+    - match: '(?:\s+|[,])(?:(key)|([a-zA-Z][a-zA-Z]*)|([_a-zA-Z0-9][a-zA-Z0-9:_.-]*))\s*([=])\s*'
+      captures:
+        1: support.function.marko-attribute
+        2: entity.other.attribute-name.html
+        3: entity.other.attribute-name.html
+        4: punctuation.separator.key-value.html
+      push:
+        - include: expression-no-gt
+        - match: '(?=[,;]|\s|/>|>)'
+          pop: true
+  attr-js-block:
+    - match: '\s\{'
+      captures:
+        0: punctuation.section.scope.begin.js
+      push:
+        - include: js
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.end.js
+          pop: true
+  attr-no-value:
+    - match: '\s+(?:([a-zA-Z][a-zA-Z]*)|(data-[a-zA-Z0-9-]*)|([a-zA-Z0-9][a-zA-Z0-9:_.-]+))(?=\s|/>|>|$)'
+      captures:
+        1: entity.other.attribute-name.html
+        2: entity.other.attribute-name.html
+        3: entity.other.attribute-name.html
+  attr-semicolon:
+    - match: "([;])"
+      captures:
+        1: punctuation.terminator.statement.js
+      push:
+        - include: comment-line
+        - include: comment-block
+        - match: (?=\n)
+          pop: true
+  attr-special:
+    - match: \s+(else)\b
+      captures:
+        1: support.function.marko-attribute
+  attr-spread-concise:
+    - match: '(?:\s+|[,])(\.\.\.)\s*'
+      captures:
+        5: punctuation.separator.key-value.html
+      push:
+        - include: expression
+        - match: '(?=([,;]|\s|$))'
+          pop: true
+  attr-spread-html:
+    - match: '(?:\s+|[,])(\.\.\.)\s*'
+      captures:
+        1: punctuation.separator.key-value.html
+      push:
+        - include: expression-no-gt
+        - match: '(?=[,;]|\s|/>|>)'
+          pop: true
+  attr-stuff-concise:
+    - include: comment-line
+    - include: comment-block
+    - match: '\s[\[]'
+      push:
+        - match: '[\]]'
+          pop: true
+        - include: attr-stuff-concise
+    - match: '[,]\s*$'
+      push:
+        - match: (?=\s)
+          pop: true
+    - include: attr-with-arg
+    - include: attr-assignment-concise
+    - include: attr-spread-concise
+    - include: attr-no-value
+    - include: placeholder
+    - include: attr-js-block
+    - include: expression
+    - include: attr-semicolon
+  attr-stuff-html:
+    - include: comment-block
+    - include: attr-special
+    - include: attr-with-arg
+    - include: attr-assignment-html
+    - include: attr-spread-html
+    - include: attr-no-value
+    - include: placeholder
+    - include: attr-js-block
+    - include: expression-no-gt
+    - include: attr-semicolon
+  attr-with-arg:
+    - match: '\s+([_a-zA-Z0-9][a-zA-Z0-9:_.-]+)(\()'
+      captures:
+        1: support.function.marko-attribute
+        2: meta.brace.round.js
+      push:
+        - include: expression
+        - match: \)
+          captures:
+            1: meta.brace.round.js
+          pop: true
+  cdata:
+    - match: '<!\[CDATA\['
+      captures:
+        0: punctuation.definition.string.begin.xml
+      push:
+        - meta_scope: string.unquoted.cdata.xml
+        - match: "]]>"
+          captures:
+            0: punctuation.definition.string.end.xml
+          pop: true
+  comment-block:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.js
+      push:
+        - meta_scope: comment.block.js
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.js
+          pop: true
+  comment-concise-block:
+    - match: ^(\s*)/\*
+      captures:
+        0: punctuation.definition.comment.begin.js
+      push:
+        - meta_scope: comment.block.js
+        - match: \*/.*
+          captures:
+            0: punctuation.definition.comment.end.js
+          pop: true
+  comment-concise-line:
+    - match: ^(\s*)//
+      comment: Single line comment (concise)
+      push:
+        - meta_scope: comment.line.double-slash.marko
+        - match: $
+          pop: true
+  comment-html:
+    - match: \s*<!--
+      captures:
+        0: punctuation.definition.comment.html
+      push:
+        - meta_scope: comment.block.html
+        - match: "-->"
+          captures:
+            0: punctuation.definition.comment.html
+          pop: true
+  comment-html-tag:
+    - match: \s*<html-comment>
+      captures:
+        0: punctuation.definition.comment.html
+      push:
+        - meta_scope: comment.block.html
+        - match: </html-comment>
+          captures:
+            0: punctuation.definition.comment.html
+          pop: true
+  comment-line:
+    - match: (//)
+      captures:
+        1: punctuation.definition.comment.js
+      push:
+        - meta_scope: comment.line.double-slash.js
+        - match: (?=\n)
+          pop: true
+  component-style:
+    - include: component-style-less
+    - include: component-style-css
+  component-style-css:
+    - match: '^(style)(?:\.([a-z]+))?\s+(\{)'
+      captures:
+        1: storage.type.marko.css
+        2: storage.modifier.marko.less
+        3: punctuation.section.scope.begin.css
+      push:
+        - include: scope:source.css
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.end.css
+          pop: true
+  component-style-less:
+    - match: '^(style)\.(less)\s+(\{)'
+      captures:
+        1: storage.type.marko.less
+        2: storage.modifier.marko.less
+        3: punctuation.section.scope.begin.less
+      push:
+        - include: scope:source.css.less
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.end.less
+          pop: true
+  doctype:
+    - match: <!
+      captures:
+        0: punctuation.definition.marko-tag.html
+      push:
+        - meta_scope: meta.tag.sgml.html
+        - match: ">"
+          captures:
+            0: punctuation.definition.marko-tag.html
+          pop: true
+        - match: (?i:DOCTYPE)
+          captures:
+            1: entity.name.tag.doctype.html
+          push:
+            - meta_scope: meta.tag.sgml.doctype.html
+            - match: (?=>)
+              captures:
+                1: entity.name.tag.doctype.html
+              pop: true
+            - match: '"[^">]*"'
+              scope: string.quoted.double.doctype.identifiers-and-DTDs.html
+  expression: []
+  expression-common: []
+  expression-constant:
+    - match: (true)|(false)|(Infinity)|(NaN)|(null)|(undefined)
+      captures:
+        1: constant.language.boolean.true.js
+        2: constant.language.boolean.false.js
+        3: constant.language.infinity.js
+        4: constant.language.nan.js
+        5: constant.language.null.js
+        6: constant.language.undefined.js
+  expression-group-braces:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.begin.js
+      push:
+        - include: expression
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.end.js
+          pop: true
+  expression-group-brackets:
+    - match: '\['
+      captures:
+        0: meta.brace.square.js
+      push:
+        - include: expression
+        - match: '\]'
+          captures:
+            0: meta.brace.square.js
+          pop: true
+  expression-group-parens:
+    - match: \(
+      captures:
+        0: meta.brace.round.js
+      push:
+        - include: expression
+        - match: \)
+          captures:
+            0: meta.brace.round.js
+          pop: true
+  expression-hex:
+    - match: '\b0[xX][0-9A-Fa-f]+\b'
+      scope: constant.numeric.hex.js
+  expression-no-gt: []
+  expression-numeric:
+    - match: |-
+        (?x)
+        	(?<!\w)									# Ensure word boundry
+        	(?>
+        		(
+        			(0|[1-9][0-9]*)(\.[0-9]*)?		# 0 or 1 or 1. or 1.0
+        		  | \.[0-9]+						# .1
+        		)
+        		([eE][+-]?[0-9]+)?					# Exponent
+        	)
+        	(?!\w)									# Ensure word boundry
+      scope: constant.numeric.js
+  expression-operator-binary:
+    - match: '(\s+|\b)(===|==|!==|!=|<=|<<|&&|\|\||<|\+=|-=|\*=|/=|%=|[=+*/%|&~^:])(\s+|\b)'
+      captures:
+        2: keyword.operator.js
+  expression-operator-gt:
+    - match: (\s+|\b)(>=|>>|>)(\s+|\b)
+      captures:
+        2: keyword.operator.js
+  expression-operator-special:
+    - match: (?<!\.|\$)\b(delete|in|instanceof|new|typeof\s*|void|with|from|to|step)\b(?!\$)
+      scope: keyword
+  expression-operator-unary:
+    - match: \b(!|\+\+)\b|\b\-\-(?<!\s)
+      scope: keyword.operator.js
+  expression-special-class:
+    - match: (?<!\.|\$)\b(Array|Boolean|Date|Error|EvalError|Function|Number|Object|RangeError|ReferenceError|RegExp|String|SyntaxError|TypeError|URIError)\b(?!\$)
+      scope: support.class.js
+  expression-string-double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.js
+      push:
+        - meta_scope: string.quoted.double.js
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.js
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.js
+  expression-string-escapes:
+    - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+      scope: constant.character.escape.js
+  expression-string-single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.js
+      push:
+        - meta_scope: string.quoted.single.js
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.js
+          pop: true
+        - include: expression-string-escapes
+        - include: placeholder-patterns
+  expression-string-template:
+    - match: "`"
+      captures:
+        0: punctuation.definition.string.begin.js
+      push:
+        - meta_scope: string.quoted.other.template.js
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.end.js
+          pop: true
+        - include: expression-string-escapes
+        - match: '\$\{'
+          captures:
+            0: punctuation.section.embedded.begin.js
+          push:
+            - meta_scope: meta.embedded.line.js
+            - meta_content_scope: source.js
+            - match: '(\})'
+              captures:
+                0: punctuation.section.embedded.end.js
+                1: source.js
+              pop: true
+            - include: expression
+  expression-ternary-if:
+    - match: \?
+      push:
+        - meta_scope: meta.ternary-if.js
+        - match: ":"
+          pop: true
+        - include: main
+  html-block-concise:
+    - match: '(\s*)(-[-]+)\n'
+      captures:
+        2: keyword.operator.marko
+      push:
+        - meta_scope: meta.section.marko-html-block
+        - match: ^(\1\2|(?!(\1)))
+          captures:
+            2: keyword.operator.marko
+          pop: true
+        - include: cdata
+        - include: comment-html
+        - include: comment-html-tag
+        - include: tag-html
+        - include: js-code-block
+        - include: placeholder-patterns
+  html-line-block-concise:
+    - match: '\s*([-][-]+)\n'
+      captures:
+        1: keyword.operator.marko.blah
+      push:
+        - include: cdata
+        - include: comment-html
+        - include: comment-html-tag
+        - include: tag-html
+        - include: placeholder-patterns
+        - match: (?!\2)|(\2\1)
+          pop: true
+  html-line-concise:
+    - match: '\s*([-][-]+)'
+      captures:
+        1: keyword.operator.marko
+      push:
+        - match: (?=\n)
+          pop: true
+        - include: cdata
+        - include: comment-html
+        - include: comment-html-tag
+        - include: tag-html
+        - include: placeholder-patterns
+  js:
+    - include: comment-line
+    - include: comment-block
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.begin.js
+      push:
+        - include: js
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.end.js
+          pop: true
+    - match: \(
+      captures:
+        0: punctuation.section.scope.begin.js
+      push:
+        - include: js
+        - match: \)
+          captures:
+            0: punctuation.section.scope.end.js
+          pop: true
+    - match: '\['
+      captures:
+        0: punctuation.section.scope.begin.js
+      push:
+        - include: js
+        - match: '\]'
+          captures:
+            0: punctuation.section.scope.end.js
+          pop: true
+    - match: '[.]([\p{L}\p{Nl}$_][\p{L}\p{Nl}$\p{Mn}\p{Mc}\p{Nd}\p{Pc}\x{200C}\x{200D}]*)\b'
+    - include: expression
+    - match: \b(break|case|catch|continue|default|do|else|export|finally|for|if|return|switch|throw|try|while|with|import|from|await|async)\b
+      scope: keyword.control.js
+    - match: (\s+|\b)(\=\>)(\s+|\b)
+      scope: storage.type.function.arrow.js
+    - match: \;
+      scope: punctuation.terminator.statement.js
+    - match: \b(function)\b
+      scope: storage.type.function.js
+    - match: \b(class)\b
+      scope: entity.name.type.class.js
+    - match: \bextends\b
+      scope: entity.other.inherited-class.js
+    - match: '([\p{L}\p{Nl}$_][\p{L}\p{Nl}$\p{Mn}\p{Mc}\p{Nd}\p{Pc}\x{200C}\x{200D}]*)\s*(\()(?=(?:[^\(\)]*)?\)\s*\{)'
+      captures:
+        1: entity.name.function.js
+        2: punctuation.definition.parameters.begin.js
+      push:
+        - meta_scope: meta.method.js
+        - match: \)
+          captures:
+            0: punctuation.definition.parameters.END.js
+          pop: true
+  js-code-block:
+    - match: '^\s*([$])\s'
+      captures:
+        1: storage.modifier.embedded.js
+      push:
+        - meta_content_scope: source.js.embedded
+        - include: js
+        - match: (?=\n)
+          pop: true
+  open-tag-end:
+    - match: (>)
+      comment: Concise style tag with CSS code.
+      captures:
+        1: punctuation.definition.tag.end.open.html
+      push:
+        - match: (?=</)
+          pop: true
+        - include: cdata
+        - include: comment-html
+        - include: comment-html-tag
+        - include: scriptlet
+        - include: tag-html
+        - include: js-code-block
+        - include: placeholder-patterns
+  open-tag-end-script:
+    - match: (>)
+      comment: Concise style tag with CSS code.
+      captures:
+        1: punctuation.definition.tag.end.open.html
+      push:
+        - match: (?=</)
+          pop: true
+        - include: placeholder-patterns
+        - include: js
+  open-tag-end-style:
+    - match: (>)
+      comment: Concise style tag with CSS code.
+      captures:
+        1: punctuation.definition.tag.end.open.html
+      push:
+        - match: (?=</)
+          pop: true
+        - include: placeholder-patterns
+        - include: scope:source.css
+  placeholder:
+    - match: '[$][!]?\{'
+      comment: "${ } placeholder note: should be punctuation.section.embedded.js"
+      captures:
+        0: keyword.operator.marko
+      push:
+        - meta_scope: meta.section.marko-placeholder
+        - include: expression
+        - match: '\}'
+          captures:
+            0: keyword.operator.marko
+          pop: true
+  placeholder-escaped:
+    - match: '\\[$][!]?[{]'
+      comment: '\${'
+  placeholder-escaped-escaped:
+    - match: '\\\\(?=[$][!]?[{])'
+      comment: '\\${'
+  placeholder-patterns:
+    - include: placeholder-escaped-escaped
+    - include: placeholder-escaped
+    - include: placeholder
+  scriptlet:
+    - match: <%
+      comment: Scriptlet block
+      captures:
+        0: keyword.operator.scriptlet.marko
+      push:
+        - include: js
+        - match: "%>"
+          captures:
+            0: keyword.operator.scriptlet.marko
+          pop: true
+  special-js-tags:
+    - match: ^\s*(?:(class)|(static)|(import))\s
+      captures:
+        1: storage.type.class.js
+        2: storage.modifier.marko
+        3: storage.modifier.marko
+      push:
+        - meta_content_scope: source.js.embedded
+        - include: js
+        - match: (?=\n)
+          pop: true
+  tag-concise:
+    - include: tag-name-custom-concise
+    - include: tag-name-dynamic-concise
+    - include: tag-name-concise
+  tag-html: []
+  tag-name-concise:
+    - match: '^\s*(([a-zA-Z0-9_-]+)([.#][a-zA-Z0-9_.#-]*)?)(?=(\s+(?![=])|$|\(|\|))'
+      comment: A concise tag name
+      captures:
+        1: entity.name.tag.concise
+        3: entity.other.attribute-name.shorthand
+      push:
+        - include: tag-params
+        - include: html-line-block-concise
+        - include: html-line-concise
+        - include: attr-stuff-concise
+        - match: (?=\n)
+          pop: true
+  tag-name-custom-concise:
+    - match: '^\s*(for|if|unless|while|else-if|else|var|assign|macro|invoke|include|await|[a-zA-Z0-9_]+([:])[a-zA-Z0-9_:-]*|[@][a-zA-Z0-9_-]+)(?=(\s+(?![=])|$|[(]|\|))'
+      comment: A concise custom tag name
+      captures:
+        1: support.function.marko-tag.concise
+      push:
+        - include: tag-params
+        - include: html-line-concise
+        - include: attr-stuff-concise
+        - match: (?=\n)
+          pop: true
+  tag-name-custom-html:
+    - match: '(<)(for|if|unless|while|else-if|else|var|assign|macro|invoke|include|await|[a-zA-Z0-9_]+[:][a-zA-Z0-9\-_:]*|[@][a-zA-Z0-9_-]+)(?=(>|/>|\s|\(|\|))'
+      comment: The beginning of a custom/special HTML tag
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        2: support.function.marko-tag.open.html
+      push:
+        - match: (</)(\2)?(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            2: support.function.marko-tag.close.html
+            3: punctuation.definition.tag.end.close.html
+            4: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end
+  tag-name-dynamic-concise:
+    - match: '^\s*(?=\$\{.*\})'
+      comment: A concise custom tag name
+      push:
+        - include: placeholder
+        - include: tag-params
+        - include: html-line-concise
+        - include: attr-stuff-concise
+        - match: (?=\n)
+          pop: true
+  tag-name-dynamic-html:
+    - match: '(<)(?=\$\{.*\})'
+      comment: The beginning of a regular HTML tag in non-concise mode
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+      push:
+        - match: (</)(\2)?(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            2: support.function.marko-tag.close.html
+            3: punctuation.definition.tag.end.close.html
+            4: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: placeholder
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end
+  tag-name-html:
+    - match: '(<)([a-zA-Z0-9-]+)(?=(>|/>|\s|\(|\|))'
+      comment: The beginning of a regular HTML tag in non-concise mode
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        2: entity.name.tag.open.html
+      push:
+        - match: (</)(\2)?(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            2: entity.name.tag.close.html
+            3: punctuation.definition.tag.end.close.html
+            4: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end
+  tag-name-open-tag-only-html:
+    - match: (<)(base|br|col|hr|embed|img|input|keygen|link|meta|param|source|track|wbr|lasso-img)(?=(>|/>|\s|\(|\|))
+      comment: HTML tags that are open tag only
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        2: entity.name.tag.open.html
+      push:
+        - match: (>|/>)
+          captures:
+            1: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+  tag-name-script-html:
+    - match: (<)(script)(?=(>|/>|\s|\(|\|))
+      comment: HTML style tag
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        2: entity.name.tag.script.open.html
+      push:
+        - match: (</)(script)?(>)|/>
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            2: entity.name.tag.script.close.html
+            3: punctuation.definition.tag.end.close.html
+            4: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end-script
+  tag-name-shorthand-html:
+    - match: '(<)(([a-zA-Z0-9_-]+)([#.][a-zA-Z0-9_#.:-]+))(?=(>|/>|\s+(?![=])|\(|\|))'
+      comment: HTML tag with shorthand ID/class parts
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        3: entity.name.tag.open.html
+        4: entity.other.attribute-name.shorthand
+      push:
+        - match: (</)((\3)(\4)?)?(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            3: entity.name.tag.close.html
+            4: entity.other.attribute-name.shorthand
+            5: punctuation.definition.tag.end.close.html
+            6: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end
+  tag-name-shorthand-no-tag-name-html:
+    - match: '(<)([#.][a-zA-Z0-9_#.:-]+)(?=(>|/>|\s|\(|\|))'
+      comment: HTML style tag
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        2: entity.other.attribute-name.shorthand
+      push:
+        - match: (</)(\2|div)(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            2: entity.name.tag.close.html
+            3: punctuation.definition.tag.end.close.html
+            4: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end
+  tag-name-style-html:
+    - match: (<)(style)(?=(>|/>|\s|\(|\|))
+      comment: HTML style tag
+      captures:
+        1: punctuation.definition.tag.begin.open.html
+        2: entity.name.tag.style.open.html
+      push:
+        - match: (</)(style)?(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.begin.close.html
+            2: entity.name.tag.style.close.html
+            3: punctuation.definition.tag.end.close.html
+            4: punctuation.definition.tag.end.self-close.html
+          pop: true
+        - include: tag-params
+        - include: attr-stuff-html
+        - include: open-tag-end-style
+  tag-params:
+    - match: \|
+      captures:
+        0: meta.pipe.js
+      push:
+        - match: \|
+          captures:
+            0: meta.pipe.js
+          pop: true
+        - include: expression
+  tag-script-body-block:
+    - match: '(\s*-[-]+)'
+      comment: HTML script tag with nested JavaScript code
+      push:
+        - match: '(\1)[.]*$'
+          pop: true
+        - include: js
+  tag-script-body-line:
+    - match: '\s+-[-]+\s'
+      comment: HTML script tag with nested JavaScript code
+      push:
+        - match: (?=\n)
+          pop: true
+        - include: js
+  tag-script-concise:
+    - match: ^(\s*)(script)(?=(\s|$|\())
+      comment: HTML script tag with nested JavaScript code
+      captures:
+        2: entity.name.tag.script.marko.concise
+      push:
+        - include: attr-stuff-concise
+        - include: tag-script-body-line
+        - include: tag-script-body-block
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+  tag-style-body-block:
+    - match: '(\s*[-][-]+)'
+      comment: HTML script tag with nested CSS code
+      push:
+        - match: '(\1)[.]*$'
+          pop: true
+        - include: scope:source.css
+  tag-style-body-line:
+    - match: '\s[-][-]+\s'
+      comment: HTML style tag with nested CSS code
+      push:
+        - match: (?=\n)
+          pop: true
+        - include: scope:source.css
+  tag-style-concise:
+    - match: ^(\s*)(style)(?=(\s|$|\())
+      comment: style tag with CSS code.
+      captures:
+        2: entity.name.tag.style.marko.concise
+      push:
+        - meta_scope: meta.tag.other.style
+        - include: attr-stuff-concise
+        - include: tag-style-body-line
+        - include: tag-style-body-block
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true

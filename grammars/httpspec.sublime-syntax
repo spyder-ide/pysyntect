@@ -1,0 +1,103 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTTP Spec
+file_extensions:
+  - httpspec
+scope: source.httpspec
+contexts:
+  main: []
+  ampersand:
+    - match: (?<!\&)\&(?!\&)
+      scope: support.function.ampersand.httpspec
+  closingbracket:
+    - match: '\]'
+  comma:
+    - match: \,
+      scope: keyword.other.comma.httpspec.test
+  emptyline:
+    - match: ^\s*$
+  equals:
+    - match: \=
+      scope: support.function.keyvaluepairseparator.httpspec
+  header:
+    - match: '^([a-zA-Z\-_]+\:)\s(.*)$'
+      scope: string.unquoted.uri.httpspec
+      captures:
+        1: variable.parameter.headername.httpspec
+  invalidcomma:
+    - match: ^\,|\,(?=\s)
+      scope: invalid.illegal.comma.httpspec
+  jsonblock:
+    - include: scope:source.json
+  methodlist:
+    - include: methodname
+    - include: invalidcomma
+    - include: comma
+  methodname:
+    - match: (?:\b)(OPTIONS|HEAD|GET|DELETE|PUT|PATCH|POST)
+      scope: keyword.other.method.httpspec
+  multiplex:
+    - match: '(\[)'
+      captures:
+        0: keyword.other
+      push:
+        - match: '\]'
+          captures:
+            0: keyword.other
+          pop: true
+        - include: uripart
+        - include: comma
+  namevaluepair:
+    - include: uriqueryname
+    - include: equals
+    - include: uriqueryvalue
+  openingbracket:
+    - match: '\['
+      scope: keyword.other.multiplexstart.httpspec
+  questionmark:
+    - match: \?
+      scope: support.function.queryseparator.httpspec
+  request:
+    - match: ^(?=OPTIONS|HEAD|GET|DELETE|PUT|PATCH|POST)
+      push:
+        - match: ^(?=\d\d\d)
+          pop: true
+        - include: requestline
+        - include: header
+        - include: jsonblock
+  requestline:
+    - include: methodlist
+    - include: uri
+  response:
+    - include: statusline
+    - include: header
+    - include: jsonblock
+  statusline:
+    - match: ^(\d\d\d)\s(.*)$
+      captures:
+        0: constant.language.statustext.httpspec
+  uri:
+    - include: uripath
+    - include: multiplex
+    - include: questionmark
+    - include: uriquery
+  uripart:
+    - match: '([a-bA-B0-9\-_/]+)'
+  uripath:
+    - match: (?:\s)\/
+      push:
+        - meta_scope: support.function.httpspec
+        - match: (?:$)
+          pop: true
+        - include: uripart
+        - include: multiplex
+  uriquery:
+    - include: namevaluepair
+    - include: ampersand
+  uriqueryname:
+    - match: "(?<=[?&])([^=&])+"
+      scope: support.function.uriqueryname.httpspec
+  uriqueryvalue:
+    - match: '(?<=\=)([^=&]+)'
+      scope: support.function.uriqueryvalue.httpspec

@@ -1,0 +1,126 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Pony
+file_extensions:
+  - pony
+scope: source.pony
+contexts:
+  main:
+    - include: block-comments
+    - include: line-comments
+    - include: typedeclarations
+    - include: methoddeclarations
+    - include: keywords
+    - include: constants
+    - include: identifiers
+    - include: strings
+  block-comments:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.pony
+        - match: \*/
+          pop: true
+        - include: block-comments
+  constants:
+    - match: \b(this)\b
+      scope: constant.other.pony
+    - match: \b(true|false)\b
+      scope: constant.language.pony
+    - match: '\b((0b[0-1_]*)|(0x[0-9a-fA-F_]*)|([0-9][0-9_]*(\.[0-9][0-9_]*)?((e|E)(\+|-)?[0-9_]+)?))\b'
+      scope: constant.numeric.pony
+  identifiers:
+    - match: '\b([_a-z][_a-zA-Z0-9]*)\b(\(|\[)'
+      captures:
+        1: support.function.pony
+    - match: '\.\s*([_a-z][_a-zA-Z0-9]*)\b[^\(\[]'
+      captures:
+        1: variable.parameter.pony
+    - match: '@\s*([_a-zA-z][_a-zA-Z0-9]*)\s*(\(|\[)'
+      captures:
+        1: support.function.pony
+    - match: '\b(_*[A-Z][_a-zA-Z0-9]*)\b'
+      scope: entity.name.class.pony
+    - match: '\b(_*[a-z][_a-zA-Z0-9'']*)'
+      scope: ""
+  keywords:
+    - match: \b(compile_intrinsic|compile_error)\b
+      scope: keyword.other.intrinsic.pony
+    - match: \b(use)\b
+      scope: keyword.other.import.pony
+    - match: \b(var|let|embed|delegate)\b
+      scope: keyword.other.declaration.pony
+    - match: \b(iso|trn|ref|val|box|tag)\b
+      scope: entity.other.attribute-name.pony
+    - match: \b(break|continue|return|error)\b
+      scope: keyword.control.jump.pony
+    - match: \b(if|ifdef|then|elseif|else|end|match|where|try|with|as|recover|consume|object|digestof)\b
+      scope: keyword.control.pony
+    - match: \b(while|do|repeat|until|for|in)\b
+      scope: keyword.control.loop.pony
+    - match: '(\?|[-=]>)'
+      scope: ""
+    - match: '(\-|\+|\*|/(?![/*])|%|<<|>>)'
+      scope: ""
+    - match: (==|!=|<=|>=|<|>)
+      scope: ""
+    - match: \b(is|isnt|not|and|or|xor)\b
+      scope: ""
+    - match: "="
+      scope: ""
+    - match: (\||\&|\,|\^)
+      scope: ""
+  line-comments:
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.pony
+        - match: \n
+          pop: true
+  methoddeclarations:
+    - match: '\b(new|be|fun)\s+(iso|trn|ref|val|box|tag)?\b\s*([_a-z][_a-zA-Z0-9]*)'
+      captures:
+        1: keyword.declaration.pony
+        2: keyword.other.capability.pony
+        3: entity.name.function.pony
+  strings:
+    - match: "'"
+      captures:
+        0: punctuation.definition.character.begin.pony
+      push:
+        - meta_scope: constant.character.pony
+        - match: "'"
+          captures:
+            0: punctuation.definition.character.end.pony
+          pop: true
+        - match: '\\(?:[abfnrtv\\"0]|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape.pony
+        - match: \\.
+          scope: invalid.illegal.pony
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.pony
+      push:
+        - meta_scope: variable.parameter.pony
+        - match: '"""(?!")'
+          captures:
+            0: punctuation.definition.string.end.pony
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.pony
+      push:
+        - meta_scope: string.quoted.double.pony
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.pony
+          pop: true
+        - match: '\\(?:[abfnrtv\\"0]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{6})'
+          scope: constant.string.escape.pony
+        - match: \\.
+          scope: invalid.illegal.pony
+  typedeclarations:
+    - match: '\b(type|interface|trait|primitive|struct|class|actor)\s+(iso|trn|ref|val|box|tag)?@?\s*([_A-Z][_a-zA-Z0-9]*)'
+      captures:
+        1: keyword.declaration.pony
+        2: keyword.other.capability.pony
+        3: entity.name.type.pony

@@ -1,0 +1,121 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Clean
+file_extensions:
+  - icl
+  - dcl
+first_line_match: ^((definition|implementation|system) )?module
+scope: source.clean
+contexts:
+  main:
+    - include: marks
+    - include: comments
+    - include: keywords
+    - include: literals
+    - include: operators
+    - include: delimiters
+  commentBlock:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.clean
+      push:
+        - meta_scope: comment.block.clean
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.clean
+          pop: true
+  commentDoc:
+    - match: /\*\*
+      captures:
+        0: punctuation.definition.comment.documentation.begin.clean
+      push:
+        - meta_scope: comment.block.documentation
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.documentation.begin.clean
+          pop: true
+        - include: scope:text.md
+  commentLine:
+    - match: //
+      captures:
+        0: punctuation.definition.comment.clean
+      push:
+        - meta_scope: comment.line.double-slash.clean
+        - match: $
+          pop: true
+  comments:
+    - include: commentDoc
+    - include: commentBlock
+    - include: commentLine
+  delimiters:
+    - match: "[,;(){}]"
+      scope: punctuation.separator
+  keywordGeneral:
+    - match: \b(if|let|in|with|where|case|of|class|instance)\b
+      scope: keyword.control.clean
+  keywordImport:
+    - match: \b(implementation|definition|system|module|from|import|qualified|as)\b
+      scope: keyword.control.import.clean
+  keywordReserved:
+    - match: \b(special|code|inline|foreign|export|ccall|stdcall|generic|derive|infix(l|r)?|otherwise|dynamic)\b
+      scope: keyword.reserved.clean
+  keywords:
+    - include: keywordGeneral
+    - include: keywordImport
+    - include: keywordReserved
+  literalBool:
+    - match: \b(True|False)\b
+      scope: constant.language.boolean.clean
+  literalChar:
+    - match: '''([^''\\]|\\(x[0-9a-fA-F]+|\d+|.))'''
+      scope: constant.character.clean
+  literalHex:
+    - match: '\b[+~-]?0x[0-9A-Fa-f]+\b'
+      scope: constant.numeric.integer.hexadecimal.clean
+  literalInt:
+    - match: '\b[+~-]?[0-9]+\b'
+      scope: constant.numeric.integer.decimal.clean
+  literalOct:
+    - match: '\b[+~-]?0[0-7]+\b'
+      scope: constant.numeric.integer.octal.clean
+  literalReal:
+    - match: '\b[+~-]?[0-9]+\.[0-9]+(E[+-]?[0-9]+)?\b'
+      scope: constant.numeric.float.clean
+  literalString:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.clean
+      push:
+        - meta_scope: string.quoted.double.clean
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.clean
+          pop: true
+  literals:
+    - include: literalChar
+    - include: literalInt
+    - include: literalOct
+    - include: literalHex
+    - include: literalReal
+    - include: literalBool
+    - include: literalString
+  mark:
+    - match: "/// #+ "
+      captures:
+        0: punctuation.definition.comment.clean
+      push:
+        - meta_scope: markup.heading.clean
+        - match: $
+          pop: true
+  marks:
+    - include: mark
+  operatorComposition:
+    - match: \s+o\s+
+      scope: keyword.operator.composition.clean
+  operatorGeneral:
+    - match: '[-~@#$%^?!+*<>\\/|&=:.]+'
+      scope: keyword.operator.clean
+  operators:
+    - include: operatorGeneral
+    - include: operatorComposition

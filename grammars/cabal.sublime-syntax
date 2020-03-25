@@ -1,0 +1,34 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Cabal
+file_extensions:
+  - cabal
+scope: source.cabal
+contexts:
+  main:
+    - match: '(version)\W*:\W*([\d.]+)'
+      scope: version
+      captures:
+        1: keyword.other
+        2: constant.numeric
+    - match: '(\S+):[^/]'
+      scope: cabal-keyword
+      captures:
+        1: keyword.other
+    - match: "&&"
+      scope: keyword.other
+    - match: '([><=]+)\s*([\d.]+)'
+      scope: cabal-keyword
+      captures:
+        1: keyword.other
+        2: constant.numeric
+    - match: (benchmark|common|executable|flag|source-repository|test-suite)\s+(\S+)
+      scope: module-type
+      captures:
+        1: entity.name.function
+        2: support.other
+    - match: library
+      scope: entity.name.function
+    - match: '--.*\n'
+      scope: comment

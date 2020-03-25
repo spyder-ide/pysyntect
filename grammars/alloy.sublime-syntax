@@ -1,0 +1,27 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: text.alloy
+file_extensions:
+  - src
+scope: source.alloy
+contexts:
+  main:
+    - match: \b(run|check)\b
+      scope: keyword.control.alloy
+    - match: \b(implies|or|and|let|else)\b
+      scope: keyword.operator.alloy
+    - match: \b(fact|abstract|sig|extends|some|one|lone|set|all|no|none|open|module|not|in|pred|assert|for|but exactly|disj)\b
+      scope: keyword.other.alloy
+    - match: \/\/.*
+      scope: comment.line.double-slash.alloy
+    - match: \/\*(.)*\*\/|\s\*\s(.)*\n|\*/|\/\*(.)*
+      scope: comment.block.empty.alloy
+    - match: \b(fact|sig|module|pred|fun|enum)\b
+      scope: storage.type.alloy
+    - match: 'pred \w*\[(.)*]{'
+      push:
+        - meta_scope: entity.name.function.predicate.alloy
+        - match: "}"
+          pop: true
+        - include: main

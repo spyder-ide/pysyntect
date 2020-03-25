@@ -1,0 +1,661 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: APL
+file_extensions:
+  - apl
+  - apla
+  - aplc
+  - aplf
+  - apli
+  - apln
+  - aplo
+  - dyalog
+  - dyapp
+  - mipage
+first_line_match: |-
+  (?x)
+  	# APL symbols
+  	[⌶-⍺]
+  	|
+
+  	# Hashbang
+  	^\#!.*(?:\s|\/|(?<=!)\b)
+  		(?:gnu[-._]?apl|aplx?|dyalog)
+  	(?:$|\s)
+  	|
+
+  	# Modeline
+  	(?i:
+  		# Emacs
+  		-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  			apl
+  		(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  		|
+
+  		# Vim
+  		(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  			apl
+  		(?=\s|:|$)
+  	)
+scope: source.apl
+contexts:
+  name:
+    - match: |-
+        (?x)
+        [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+        [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+      scope: variable.other.readwrite.apl
+  main:
+    - include: class
+    - include: definition
+    - include: comment
+    - include: label
+    - include: sck
+    - include: strings
+    - include: number
+    - include: lambda
+    - include: sysvars
+    - include: symbols
+    - include: name
+  comment:
+    - match: ⍝
+      captures:
+        0: punctuation.definition.comment.apl
+      push:
+        - meta_scope: comment.line.apl
+        - match: $
+          captures:
+            0: punctuation.definition.comment.apl
+          pop: true
+  class:
+    - match: |-
+        (?x)
+        (?<=\s|^)
+        ((:)Class)
+        \s+
+        (
+        	'[^']*'?
+        	|
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+        )
+        \s*
+        (
+        	(:)
+        	\s*
+        	(?:
+        		(
+        			'[^']*'?
+        			|
+        			[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+        			[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+        		)
+        		\s*
+        	)?
+        )?
+        (.*?)$
+      captures:
+        0: meta.class.apl
+        1: keyword.control.class.apl
+        2: punctuation.definition.class.apl
+        3: entity.name.type.class.apl
+        4: entity.other.inherited-class.apl
+        5: punctuation.separator.inheritance.apl
+        7: entity.other.class.interfaces.apl
+      push:
+        - match: (?<=\s|^)((:)EndClass)(?=\b)
+          captures:
+            1: keyword.control.class.apl
+            2: punctuation.definition.class.apl
+          pop: true
+        - match: (?<=\s|^)(:)Field(?=\s)
+          captures:
+            0: keyword.control.field.apl
+            1: punctuation.definition.field.apl
+          push:
+            - meta_scope: meta.field.apl
+            - match: \s*(←.*)?(?:$|(?=⍝))
+              captures:
+                0: entity.other.initial-value.apl
+              pop: true
+            - match: (?<=\s|^)(Public|Private)(?=\s|$)
+              scope: "storage.modifier.access.${1:/downcase}.apl"
+            - match: (?<=\s|^)(Shared|Instance|ReadOnly)(?=\s|$)
+              scope: "storage.modifier.${1:/downcase}.apl"
+            - match: |-
+                (?x)
+                (
+                	'[^']*'?
+                	|
+                	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+                	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+                )
+              scope: entity.name.type.apl
+              captures:
+        - include: main
+  command-arguments:
+    - match: \b(?=\S)
+      push:
+        - meta_scope: variable.parameter.argument.apl
+        - match: \b(?=\s)
+          pop: true
+        - include: main
+  command-switches:
+    - match: |-
+        (?x)
+        (?<=\s)(-)
+        (
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+        )
+        (=)
+      captures:
+        1: punctuation.delimiter.switch.apl
+        2: entity.name.switch.apl
+        3: punctuation.assignment.switch.apl
+      push:
+        - meta_scope: variable.parameter.switch.apl
+        - match: \b(?=\s)
+          pop: true
+        - include: main
+    - match: |-
+        (?x)
+        (?<=\s)(-)
+        (
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+        )
+        (?!=)
+      scope: variable.parameter.switch.apl
+      captures:
+        1: punctuation.delimiter.switch.apl
+        2: entity.name.switch.apl
+  csv:
+    - match: ","
+      scope: punctuation.separator.apl
+    - include: main
+  definition:
+    - match: '(?x) ^\s*? (?# 1: keyword.operator.nabla.apl) (∇) (?: \s* (?: (?# 2: entity.function.return-value.apl) ( [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* ) | \s* (?# 3: entity.function.return-value.shy.apl) ( (\{)             (?# 4: punctuation.definition.return-value.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\})             (?# 5: punctuation.definition.return-value.end.apl) | (\()             (?# 6: punctuation.definition.return-value.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\))             (?# 7: punctuation.definition.return-value.end.apl) | (\(\s*\{)      (?# 8: punctuation.definition.return-value.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\}\s*\))      (?# 9: punctuation.definition.return-value.end.apl) | (\{\s*\()      (?# 10: punctuation.definition.return-value.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\)\s*\})      (?# 11: punctuation.definition.return-value.end.apl) ) \s* ) \s* (?# 12: keyword.operator.assignment.apl) (←) )? \s* (?: (?# MONADIC) (?: (?# 13: entity.function.name.apl) ( [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* ) \s* (?# 14: entity.function.axis.apl) ( (?# 15: punctuation.definition.axis.begin.apl) (\[) \s* (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* (?# 16: invalid.illegal.extra-characters.apl) (.*?) | (?# 17: invalid.illegal.apl) ([^\]]*) ) \s* (?# 18: punctuation.definition.axis.end.apl) (\]) )? \s*? (?# 19: entity.function.arguments.right.apl) ( (?<=\s|\]) [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* | (\()   (?# 20: punctuation.definition.arguments.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\))   (?# 21: punctuation.definition.arguments.end.apl) ) \s* (?=;|$) ) | (?# DYADIC/AMBIVALENT) (?#==================) (?: (?# 22: entity.function.arguments.left.apl) ( [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s+ ) | (?# 23: entity.function.arguments.left.optional.apl) ( (\{)          (?# 24: punctuation.definition.arguments.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\})          (?# 25: punctuation.definition.arguments.end.apl) | (\(\s*\{)   (?# 26: punctuation.definition.arguments.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\}\s*\))   (?# 27: punctuation.definition.arguments.end.apl) | (\{\s*\()   (?# 28: punctuation.definition.arguments.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\)\s*\})   (?# 29: punctuation.definition.arguments.end.apl) ) )? \s* (?: (?# 30: entity.function.name.apl) ( [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* ) \s* (?# 31: entity.function.axis.apl) ( (?# 32: punctuation.definition.axis.begin.apl) (\[) \s* (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* (?# 33: invalid.illegal.extra-characters.apl) (.*?) | (?# 34: invalid.illegal.apl) ([^\]]*) ) \s* (?# 35: punctuation.definition.axis.end.apl) (\]) )? | (?# 36: entity.function.operands.apl) ( (?# 37: punctuation.definition.operands.begin.apl) (\() (?# 38: entity.function.operands.left.apl) ( \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* )? \s* (?# 39: entity.function.name.apl) ( [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* ) \s*? (?# 40: entity.function.axis.apl) ( (?# 41: punctuation.definition.axis.begin.apl) (\[) \s* (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* (?# 42: invalid.illegal.extra-characters.apl) (.*?) | (?# 43: invalid.illegal.apl) ([^\]]*) ) \s* (?# 44: punctuation.definition.axis.end.apl) (\]) )? \s* (?# 45: entity.function.operands.right.apl) ( [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )? (?# 46: punctuation.definition.operands.end.apl) (\)) ) ) \s* (?# 47: entity.function.arguments.right.apl) ( (?<=\s|\]) [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* | \s* (\()   (?# 48: punctuation.definition.arguments.begin.apl) (?: \s* [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )* (\))   (?# 49: punctuation.definition.arguments.end.apl) )? (?#==================) ) \s* (?# 50: invalid.illegal.arguments.right.apl) ([^;]+)? (?# 51: entity.function.local-variables.apl) ( (?# 52: Include “;”) ( (?> \s* ; (?: \s* [⎕A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ] [A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]* \s* )+ )+ ) | (?# 53: invalid.illegal.local-variables.apl) ([^⍝]+) )? \s* (?# 54: comment.line.apl) (⍝.*)? $'
+      captures:
+        0: entity.function.definition.apl
+        1: keyword.operator.nabla.apl
+        10: punctuation.definition.return-value.begin.apl
+        11: punctuation.definition.return-value.end.apl
+        12: keyword.operator.assignment.apl
+        13: entity.function.name.apl
+        14: entity.function.axis.apl
+        15: punctuation.definition.axis.begin.apl
+        16: invalid.illegal.extra-characters.apl
+        17: invalid.illegal.apl
+        18: punctuation.definition.axis.end.apl
+        19: entity.function.arguments.right.apl
+        2: entity.function.return-value.apl
+        20: punctuation.definition.arguments.begin.apl
+        21: punctuation.definition.arguments.end.apl
+        22: entity.function.arguments.left.apl
+        23: entity.function.arguments.left.optional.apl
+        24: punctuation.definition.arguments.begin.apl
+        25: punctuation.definition.arguments.end.apl
+        26: punctuation.definition.arguments.begin.apl
+        27: punctuation.definition.arguments.end.apl
+        28: punctuation.definition.arguments.begin.apl
+        29: punctuation.definition.arguments.end.apl
+        3: entity.function.return-value.shy.apl
+        30: entity.function.name.apl
+        31: entity.function.axis.apl
+        32: punctuation.definition.axis.begin.apl
+        33: invalid.illegal.extra-characters.apl
+        34: invalid.illegal.apl
+        35: punctuation.definition.axis.end.apl
+        36: entity.function.operands.apl
+        37: punctuation.definition.operands.begin.apl
+        38: entity.function.operands.left.apl
+        39: entity.function.name.apl
+        4: punctuation.definition.return-value.begin.apl
+        40: entity.function.axis.apl
+        41: punctuation.definition.axis.begin.apl
+        42: invalid.illegal.extra-characters.apl
+        43: invalid.illegal.apl
+        44: punctuation.definition.axis.end.apl
+        45: entity.function.operands.right.apl
+        46: punctuation.definition.operands.end.apl
+        47: entity.function.arguments.right.apl
+        48: punctuation.definition.arguments.begin.apl
+        49: punctuation.definition.arguments.end.apl
+        5: punctuation.definition.return-value.end.apl
+        50: invalid.illegal.arguments.right.apl
+        51: entity.function.local-variables.apl
+        53: invalid.illegal.local-variables.apl
+        54: comment.line.apl
+        6: punctuation.definition.return-value.begin.apl
+        7: punctuation.definition.return-value.end.apl
+        8: punctuation.definition.return-value.begin.apl
+        9: punctuation.definition.return-value.end.apl
+      push:
+        - meta_scope: meta.function.apl
+        - match: ^\s*?(?:(∇)|(⍫))\s*?(⍝.*?)?$
+          captures:
+            1: keyword.operator.nabla.apl
+            2: keyword.operator.lock.apl
+            3: comment.line.apl
+          pop: true
+        - match: |-
+            (?x)
+            ^\s*
+            (
+            	(?>
+            		;
+            		(?:
+            			\s*
+            			[⎕A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+            			[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+            			\s*
+            		)+
+            	)+
+            )
+          scope: entity.function.definition.apl
+          captures:
+            0: entity.function.local-variables.apl
+        - include: main
+  embedded-apl:
+    - match: (?i)(<(\?|%)(?:apl(?=\s+)|=))
+      captures:
+        1: punctuation.section.embedded.begin.apl
+      push:
+        - meta_scope: meta.embedded.block.apl
+        - match: (?<=\s)(\2>)
+          captures:
+            1: punctuation.section.embedded.end.apl
+          pop: true
+        - include: main
+  embolden:
+    - match: .+
+      scope: markup.bold.identifier.apl
+  heredocs:
+    - match: ^.*?⎕INP\s+('|")((?i).*?HTML?.*?|END-OF-⎕INP)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - meta_content_scope: text.embedded.html.basic
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: scope:text.html.basic
+        - include: embedded-apl
+    - match: ^.*?⎕INP\s+('|")((?i).*?(?:XML|XSLT|SVG|RSS).*?)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - meta_content_scope: text.embedded.xml
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: scope:text.xml
+        - include: embedded-apl
+    - match: ^.*?⎕INP\s+('|")((?i).*?(?:CSS|stylesheet).*?)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - meta_content_scope: source.embedded.css
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: scope:source.css
+        - include: embedded-apl
+    - match: ^.*?⎕INP\s+('|")((?i).*?(?:JS(?!ON)|(?:ECMA|J|Java).?Script).*?)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - meta_content_scope: source.embedded.js
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: scope:source.js
+        - include: embedded-apl
+    - match: ^.*?⎕INP\s+('|")((?i).*?(?:JSON).*?)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - meta_content_scope: source.embedded.json
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: scope:source.json
+        - include: embedded-apl
+    - match: ^.*?⎕INP\s+('|")(?i)((?:Raw|Plain)?\s*Te?xt)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - meta_content_scope: text.embedded.plain
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: embedded-apl
+    - match: ^.*?⎕INP\s+('|")(.*?)\1.*$
+      push:
+        - meta_scope: meta.heredoc.apl
+        - match: ^.*?\2.*?$
+          captures:
+            0: constant.other.apl
+          pop: true
+        - include: main
+  label:
+    - match: |-
+        (?x)
+        ^\s*
+        (
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ]
+        	[A-Z_a-zÀ-ÖØ-Ýßà-öø-üþ∆⍙Ⓐ-Ⓩ¯0-9]*
+        )
+        (:)
+      scope: meta.label.apl
+      captures:
+        1: entity.label.name.apl
+        2: punctuation.definition.label.end.apl
+  lambda:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.lambda.begin.apl
+      push:
+        - meta_scope: meta.lambda.function.apl
+        - match: '\}'
+          captures:
+            0: punctuation.definition.lambda.end.apl
+          pop: true
+        - include: main
+        - include: lambda-variables
+  lambda-variables:
+    - match: ⍺⍺
+      scope: constant.language.lambda.operands.left.apl
+    - match: ⍵⍵
+      scope: constant.language.lambda.operands.right.apl
+    - match: "[⍺⍶]"
+      scope: constant.language.lambda.arguments.left.apl
+    - match: "[⍵⍹]"
+      scope: constant.language.lambda.arguments.right.apl
+    - match: χ
+      scope: constant.language.lambda.arguments.axis.apl
+    - match: ∇∇
+      scope: constant.language.lambda.operands.self.operator.apl
+    - match: ∇
+      scope: constant.language.lambda.operands.self.function.apl
+    - match: λ
+      scope: constant.language.lambda.symbol.apl
+  number:
+    - match: '¯?[0-9][¯0-9A-Za-z]*(?:\.[¯0-9Ee][¯0-9A-Za-z]*)*|¯?\.[0-9Ee][¯0-9A-Za-z]*'
+      scope: constant.numeric.apl
+  sck:
+    - match: '(?<=\s|^)(:)[A-Za-z]+'
+      scope: keyword.control.sck.apl
+      captures:
+        1: punctuation.definition.sck.begin.apl
+  strings:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.apl
+      push:
+        - meta_scope: string.quoted.single.apl
+        - match: "'|$"
+          captures:
+            0: punctuation.definition.string.end.apl
+          pop: true
+        - match: '[^'']*[^''\n\r\\]$'
+          scope: invalid.illegal.string.apl
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.apl
+      push:
+        - meta_scope: string.quoted.double.apl
+        - match: '"|$'
+          captures:
+            0: punctuation.definition.string.end.apl
+          pop: true
+        - match: '[^"]*[^"\n\r\\]$'
+          scope: invalid.illegal.string.apl
+  symbols:
+    - match: (?<=\s)←(?=\s|$)
+      scope: keyword.spaced.operator.assignment.apl
+    - match: (?<=\s)→(?=\s|$)
+      scope: keyword.spaced.control.goto.apl
+    - match: (?<=\s)≡(?=\s|$)
+      scope: keyword.spaced.operator.identical.apl
+    - match: (?<=\s)≢(?=\s|$)
+      scope: keyword.spaced.operator.not-identical.apl
+    - match: \+
+      scope: keyword.operator.plus.apl
+    - match: "[-−]"
+      scope: keyword.operator.minus.apl
+    - match: ×
+      scope: keyword.operator.times.apl
+    - match: ÷
+      scope: keyword.operator.divide.apl
+    - match: ⌊
+      scope: keyword.operator.floor.apl
+    - match: ⌈
+      scope: keyword.operator.ceiling.apl
+    - match: "[∣|]"
+      scope: keyword.operator.absolute.apl
+    - match: "[⋆*]"
+      scope: keyword.operator.exponent.apl
+    - match: ⍟
+      scope: keyword.operator.logarithm.apl
+    - match: ○
+      scope: keyword.operator.circle.apl
+    - match: "!"
+      scope: keyword.operator.factorial.apl
+    - match: ∧
+      scope: keyword.operator.and.apl
+    - match: ∨
+      scope: keyword.operator.or.apl
+    - match: ⍲
+      scope: keyword.operator.nand.apl
+    - match: ⍱
+      scope: keyword.operator.nor.apl
+    - match: <
+      scope: keyword.operator.less.apl
+    - match: ≤
+      scope: keyword.operator.less-or-equal.apl
+    - match: "="
+      scope: keyword.operator.equal.apl
+    - match: ≥
+      scope: keyword.operator.greater-or-equal.apl
+    - match: ">"
+      scope: keyword.operator.greater.apl
+    - match: ≠
+      scope: keyword.operator.not-equal.apl
+    - match: "[∼~]"
+      scope: keyword.operator.tilde.apl
+    - match: \?
+      scope: keyword.operator.random.apl
+    - match: "[∊∈]"
+      scope: keyword.operator.member-of.apl
+    - match: ⍷
+      scope: keyword.operator.find.apl
+    - match: ","
+      scope: keyword.operator.comma.apl
+    - match: ⍪
+      scope: keyword.operator.comma-bar.apl
+    - match: ⌷
+      scope: keyword.operator.squad.apl
+    - match: ⍳
+      scope: keyword.operator.iota.apl
+    - match: ⍴
+      scope: keyword.operator.rho.apl
+    - match: ↑
+      scope: keyword.operator.take.apl
+    - match: ↓
+      scope: keyword.operator.drop.apl
+    - match: ⊣
+      scope: keyword.operator.left.apl
+    - match: ⊢
+      scope: keyword.operator.right.apl
+    - match: ⊤
+      scope: keyword.operator.encode.apl
+    - match: ⊥
+      scope: keyword.operator.decode.apl
+    - match: \/
+      scope: keyword.operator.slash.apl
+    - match: ⌿
+      scope: keyword.operator.slash-bar.apl
+    - match: \x5C
+      scope: keyword.operator.backslash.apl
+    - match: ⍀
+      scope: keyword.operator.backslash-bar.apl
+    - match: ⌽
+      scope: keyword.operator.rotate-last.apl
+    - match: ⊖
+      scope: keyword.operator.rotate-first.apl
+    - match: ⍉
+      scope: keyword.operator.transpose.apl
+    - match: ⍋
+      scope: keyword.operator.grade-up.apl
+    - match: ⍒
+      scope: keyword.operator.grade-down.apl
+    - match: ⌹
+      scope: keyword.operator.quad-divide.apl
+    - match: ≡
+      scope: keyword.operator.identical.apl
+    - match: ≢
+      scope: keyword.operator.not-identical.apl
+    - match: ⊂
+      scope: keyword.operator.enclose.apl
+    - match: ⊃
+      scope: keyword.operator.pick.apl
+    - match: ∩
+      scope: keyword.operator.intersection.apl
+    - match: ∪
+      scope: keyword.operator.union.apl
+    - match: ⍎
+      scope: keyword.operator.hydrant.apl
+    - match: ⍕
+      scope: keyword.operator.thorn.apl
+    - match: ⊆
+      scope: keyword.operator.underbar-shoe-left.apl
+    - match: ⍸
+      scope: keyword.operator.underbar-iota.apl
+    - match: ¨
+      scope: keyword.operator.each.apl
+    - match: ⍤
+      scope: keyword.operator.rank.apl
+    - match: ⌸
+      scope: keyword.operator.quad-equal.apl
+    - match: ⍨
+      scope: keyword.operator.commute.apl
+    - match: ⍣
+      scope: keyword.operator.power.apl
+    - match: \.
+      scope: keyword.operator.dot.apl
+    - match: ∘
+      scope: keyword.operator.jot.apl
+    - match: ⍠
+      scope: keyword.operator.quad-colon.apl
+    - match: "&"
+      scope: keyword.operator.ampersand.apl
+    - match: ⌶
+      scope: keyword.operator.i-beam.apl
+    - match: ⌺
+      scope: keyword.operator.quad-diamond.apl
+    - match: "@"
+      scope: keyword.operator.at.apl
+    - match: ◊
+      scope: keyword.operator.lozenge.apl
+    - match: ;
+      scope: keyword.operator.semicolon.apl
+    - match: ¯
+      scope: keyword.operator.high-minus.apl
+    - match: ←
+      scope: keyword.operator.assignment.apl
+    - match: →
+      scope: keyword.control.goto.apl
+    - match: ⍬
+      scope: constant.language.zilde.apl
+    - match: ⋄
+      scope: keyword.operator.diamond.apl
+    - match: ⍫
+      scope: keyword.operator.lock.apl
+    - match: ⎕
+      scope: keyword.operator.quad.apl
+    - match: "##"
+      scope: constant.language.namespace.parent.apl
+    - match: "#"
+      scope: constant.language.namespace.root.apl
+    - match: ⌻
+      scope: keyword.operator.quad-jot.apl
+    - match: ⌼
+      scope: keyword.operator.quad-circle.apl
+    - match: ⌾
+      scope: keyword.operator.circle-jot.apl
+    - match: ⍁
+      scope: keyword.operator.quad-slash.apl
+    - match: ⍂
+      scope: keyword.operator.quad-backslash.apl
+    - match: ⍃
+      scope: keyword.operator.quad-less.apl
+    - match: ⍄
+      scope: keyword.operator.greater.apl
+    - match: ⍅
+      scope: keyword.operator.vane-left.apl
+    - match: ⍆
+      scope: keyword.operator.vane-right.apl
+    - match: ⍇
+      scope: keyword.operator.quad-arrow-left.apl
+    - match: ⍈
+      scope: keyword.operator.quad-arrow-right.apl
+    - match: ⍊
+      scope: keyword.operator.tack-down.apl
+    - match: ⍌
+      scope: keyword.operator.quad-caret-down.apl
+    - match: ⍍
+      scope: keyword.operator.quad-del-up.apl
+    - match: ⍏
+      scope: keyword.operator.vane-up.apl
+    - match: ⍐
+      scope: keyword.operator.quad-arrow-up.apl
+    - match: ⍑
+      scope: keyword.operator.tack-up.apl
+    - match: ⍓
+      scope: keyword.operator.quad-caret-up.apl
+    - match: ⍔
+      scope: keyword.operator.quad-del-down.apl
+    - match: ⍖
+      scope: keyword.operator.vane-down.apl
+    - match: ⍗
+      scope: keyword.operator.quad-arrow-down.apl
+    - match: ⍘
+      scope: keyword.operator.underbar-quote.apl
+    - match: ⍚
+      scope: keyword.operator.underbar-diamond.apl
+    - match: ⍛
+      scope: keyword.operator.underbar-jot.apl
+    - match: ⍜
+      scope: keyword.operator.underbar-circle.apl
+    - match: ⍞
+      scope: keyword.operator.quad-quote.apl
+    - match: ⍡
+      scope: keyword.operator.dotted-tack-up.apl
+    - match: ⍢
+      scope: keyword.operator.dotted-del.apl
+    - match: ⍥
+      scope: keyword.operator.dotted-circle.apl
+    - match: ⍦
+      scope: keyword.operator.stile-shoe-up.apl
+    - match: ⍧
+      scope: keyword.operator.stile-shoe-left.apl
+    - match: ⍩
+      scope: keyword.operator.dotted-greater.apl
+    - match: ⍭
+      scope: keyword.operator.stile-tilde.apl
+    - match: ⍮
+      scope: keyword.operator.underbar-semicolon.apl
+    - match: ⍯
+      scope: keyword.operator.quad-not-equal.apl
+    - match: ⍰
+      scope: keyword.operator.quad-question.apl
+  sysvars:
+    - match: "(?:(⎕)|(⍞))[A-Za-z]*"
+      scope: support.system.variable.apl
+      captures:
+        1: punctuation.definition.quad.apl
+        2: punctuation.definition.quad-quote.apl

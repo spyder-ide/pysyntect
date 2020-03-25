@@ -1,0 +1,78 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: RTF
+file_extensions:
+  - rtf
+scope: text.rtf
+contexts:
+  main:
+    - match: '\{\\\*'
+      captures:
+        0: keyword.operator.begin-ignorable-destination-group.rtf
+      push:
+        - match: "}"
+          captures:
+            0: keyword.operator.end-ignorable-destination-group.rtf
+          pop: true
+        - include: main
+    - match: '\{'
+      captures:
+        0: keyword.operator.begin-group.rtf
+      push:
+        - match: "}"
+          captures:
+            0: keyword.operator.end-group.rtf
+          pop: true
+        - include: main
+    - match: '\\[\\{}]'
+      scope: constant.character.escape.rtf
+    - match: \\\|
+      scope: keyword.operator.formula.rtf
+    - match: \\~
+      scope: constant.character.escape.non-breaking-space.rtf
+    - match: \\-
+      scope: constant.character.escape.optional-hyphen.rtf
+    - match: \\_
+      scope: constant.character.escape.non-breaking-hyphen.rtf
+    - match: '\\:'
+      scope: keyword.operator.index-subentry.rtf
+    - match: \\\*
+      scope: keyword.operator.ignorable-destination.rtf
+    - match: '\\[\n\r]'
+      scope: support.function.par.rtf
+    - match: '(\\'')[0-9A-Fa-f]{2}'
+      scope: constant.character.entity.rtf
+      captures:
+        1: punctuation.definition.constant.rtf
+    - match: \\b\b
+      captures:
+        0: support.function.rtf
+      push:
+        - meta_content_scope: markup.bold.rtf
+        - match: '(?=\\(?:b0|plain)\b|})'
+          pop: true
+        - include: main
+    - match: \\i\b
+      captures:
+        0: support.function.rtf
+      push:
+        - meta_content_scope: markup.italic.rtf
+        - match: '(?=\\(?:i0|plain)\b|})'
+          pop: true
+        - include: main
+    - match: \\strike\b
+      captures:
+        0: support.function.rtf
+      push:
+        - meta_content_scope: markup.strike.rtf
+        - match: '(?=\\(?:strike0|plain)\b|})'
+          pop: true
+        - include: main
+    - match: '(\\[A-Za-z]+)(?:(-?)(\d+))?'
+      captures:
+        1: support.function.rtf
+        2: keyword.operator.rtf
+        3: constant.numeric.rtf
+    - match: '\\[^A-Za-z]'
+      scope: invalid.unimplemented.rtf

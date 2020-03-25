@@ -1,0 +1,54 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: X Font Directory Index
+file_extensions:
+  - fonts.dir
+  - fonts.scale
+  - fonts.alias
+  - encodings.dir
+scope: source.fontdir
+contexts:
+  main:
+    - include: comment
+    - include: keywords
+    - include: entryCount
+    - include: entryName
+    - include: scope:source.xlfd#name
+    - include: otherField
+  comment:
+    - match: ^!
+      captures:
+        0: punctuation.definition.comment.fontdir
+      push:
+        - meta_scope: comment.line.bang.exclamation-mark.fontdir
+        - match: (?=$)
+          pop: true
+  entryCount:
+    - match: '\A([0-9]+)(?=\s|$)'
+      scope: constant.numeric.integer.int.decimal.fontdir
+  entryName:
+    - include: string
+    - match: '^(?:[^-\s]|\s(?!-|\S+$)|(?<!\s)-)+'
+      scope: string.unquoted.font-name.fontdir
+  keywords:
+    - match: ^(FILE_NAMES_ALIASES)(?=\s|$)
+      scope: keyword.control.directive.font-name-aliases.fontdir
+  otherField:
+    - include: string
+    - match: (?<=\s)\S+$
+      scope: constant.language.other.fontdir
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.fontdir
+      push:
+        - meta_scope: string.quoted.double.font-name.fontdir
+        - match: '"|(?=$)'
+          captures:
+            0: punctuation.definition.string.end.fontdir
+          pop: true
+        - match: (\\).
+          scope: constant.character.escape.backslash.fontdir
+          captures:
+            1: punctuation.definition.escape.backslash.fontdir

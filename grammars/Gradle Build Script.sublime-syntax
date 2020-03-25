@@ -1,0 +1,34 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Gradle Build Script
+file_extensions:
+  - gradle
+scope: source.groovy.gradle
+contexts:
+  main:
+    - include: gradle
+  blocks:
+    - match: '(?!<project\.)(\w+)\s*{'
+      captures:
+        1: entity.name.block.groovy.gradle
+      push:
+        - meta_scope: meta.definition.block.groovy.gradle
+        - match: "}"
+          pop: true
+        - include: gradle-groovy
+  gradle:
+    - include: tasks
+    - include: blocks
+    - include: scope:source.groovy
+  gradle-groovy:
+    - include: scope:source.groovy
+  tasks:
+    - match: 'task\s+(\w+)\s*(?=[\({])'
+      captures:
+        1: entity.name.task.groovy.gradle
+      push:
+        - meta_scope: meta.definition.task.groovy.gradle
+        - match: ^
+          pop: true
+        - include: gradle-groovy

@@ -1,0 +1,76 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Mata
+file_extensions: []
+scope: source.mata
+contexts:
+  main:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.mata
+      push:
+        - meta_scope: string.quoted.double.mata
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.mata
+          pop: true
+    - match: '`"'
+      captures:
+        0: punctuation.definition.string.begin.mata
+      push:
+        - meta_scope: string.quoted.double.compound.mata
+        - match: '"'''
+          captures:
+            0: punctuation.definition.string.end.mata
+          pop: true
+        - include: cdq_string_content
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.mata
+      push:
+        - meta_scope: comment.block.mata
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.mata
+          pop: true
+        - include: cb_content
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.mata
+      captures:
+        0: punctuation.definition.comment.mata
+    - match: '(?<![^$\s])(version|pragma|if|else|for|while|do|break|continue|goto|return)(?=\s)'
+      scope: keyword.control.mata
+    - match: '\b(transmorphic|string|numeric|real|complex|(pointer(\([^)]+\))?))\s+(matrix|vector|rowvector|colvector|scalar)\b'
+      scope: storage.type.mata
+      captures:
+        1: storage.type.eltype.mata
+        4: storage.type.orgtype.mata
+    - match: '\b(transmorphic|string|numeric|real|complex|(pointer(\([^)]+\))?))\s'
+      comment: need to end with whitespace character here or last group doesn't match
+      scope: storage.type.eltype.mata
+    - match: \b(matrix|vector|rowvector|colvector|scalar)\b
+      scope: storage.type.orgtype.mata
+    - match: \!|\+\+|\-\-|\&|\'|\?|\\|\:\:|\,|\.\.|\||\=|\=\=|\>\=|\<\=|\<|\>|\!\=|\#|\+|\-|\*|\^|\/
+      scope: keyword.operator.mata
+    - include: builtin_functions
+  builtin_functions:
+    - match: |-
+        (?x)(
+                        abs|acos|acosh|acosr|ado_fromlchar|ado_intolchar|adosubdir|all|allof|
+        			  any|anyof|arg|args|ascii|asin|asinh|asinr|assert|asserteq|atan|atan2|
+        			  atanh|atanr
+        			)(?=\()
+      scope: support.function.builtin.mata
+  cb_content:
+    - match: /\*
+      push:
+        - match: \*/
+          pop: true
+        - include: cb_content
+  cdq_string_content:
+    - match: '`"'
+      push:
+        - match: '"'''
+          pop: true
+        - include: cdq_string_content

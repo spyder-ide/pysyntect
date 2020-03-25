@@ -1,0 +1,320 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JSDoc
+scope: source.jsdoc
+contexts:
+  main:
+    - match: |-
+        (?x)
+        ((@)(?:access|api))
+        \s+
+        (private|protected|public)
+        \b
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: constant.language.access-type.jsdoc
+    - match: |-
+        (?x)
+        ((@)author)
+        \s+
+        (
+          [^@\s<>*/]
+          (?:[^@<>*/]|\*[^/])*
+        )
+        (?:
+          \s*
+          (<)
+          ([^>\s]+)
+          (>)
+        )?
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: entity.name.type.instance.jsdoc
+        4: punctuation.definition.bracket.angle.begin.jsdoc
+        5: constant.other.email.link.underline.jsdoc
+        6: punctuation.definition.bracket.angle.end.jsdoc
+    - match: |-
+        (?x)
+        ((@)borrows) \s+
+        ((?:[^@\s*/]|\*[^/])+)    # <that namepath>
+        \s+ (as) \s+              # as
+        ((?:[^@\s*/]|\*[^/])+)    # <this namepath>
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: entity.name.type.instance.jsdoc
+        4: keyword.operator.control.jsdoc
+        5: entity.name.type.instance.jsdoc
+    - match: ((@)example)\s+
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - meta_scope: meta.example.jsdoc
+        - match: (?=@|\*/)
+          pop: true
+        - match: ^\s\*\s+
+        - match: \G(<)caption(>)
+          captures:
+            0: entity.name.tag.inline.jsdoc
+            1: punctuation.definition.bracket.angle.begin.jsdoc
+            2: punctuation.definition.bracket.angle.end.jsdoc
+          push:
+            - meta_content_scope: constant.other.description.jsdoc
+            - match: (</)caption(>)|(?=\*/)
+              captures:
+                0: entity.name.tag.inline.jsdoc
+                1: punctuation.definition.bracket.angle.begin.jsdoc
+                2: punctuation.definition.bracket.angle.end.jsdoc
+              pop: true
+        - match: '[^\s@*](?:[^*]|\*[^/])*'
+          captures:
+            0: source.embedded.js
+    - match: |-
+        (?x)
+        ((@)kind)
+        \s+
+        (class|constant|event|external|file|function|member|mixin|module|namespace|typedef)
+        \b
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: constant.language.symbol-type.jsdoc
+    - match: |-
+        (?x)
+        ((@)see)
+        \s+
+        (?:
+          # URL
+          (
+            (?=https?://)
+            (?:[^\s*]|\*[^/])+
+          )
+          |
+          # JSDoc namepath
+          (
+            (?!
+              # Avoid matching bare URIs (also acceptable as links)
+              https?://
+              |
+              # Avoid matching {@inline tags}; we match those below
+              (?:\[[^\[\]]*\])? # Possible description [preceding]{@tag}
+              {@(?:link|linkcode|linkplain|tutorial)\b
+            )
+            # Matched namepath
+            (?:[^@\s*/]|\*[^/])+
+          )
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.link.underline.jsdoc
+        4: entity.name.type.instance.jsdoc
+    - match: |-
+        (?x)
+        ((@)template)
+        \s+
+        # One or more valid identifiers
+        (
+          [A-Za-z_$]        # First character: non-numeric word character
+          [\w$.\[\]]*    # Rest of identifier
+          (?:               # Possible list of additional identifiers
+            \s* , \s*
+            [A-Za-z_$]
+            [\w$.\[\]]*
+          )*
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+    - match: |-
+        (?x)
+        (
+          (@)
+          (?:arg|argument|const|constant|member|namespace|param|var)
+        )
+        \s+
+        (
+          [A-Za-z_$]
+          [\w$.\[\]]*
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+    - match: '((@)typedef)\s+(?={)'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - match: '(?=\s|\*/|[^{}\[\]A-Za-z_$])'
+          pop: true
+        - include: type
+        - match: '(?:[^@\s*/]|\*[^/])+'
+          scope: entity.name.type.instance.jsdoc
+    - match: '((@)(?:arg|argument|const|constant|member|namespace|param|prop|property|var))\s+(?={)'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - match: '(?=\s|\*/|[^{}\[\]A-Za-z_$])'
+          pop: true
+        - include: type
+        - match: '([A-Za-z_$][\w$.\[\]]*)'
+          scope: variable.other.jsdoc
+        - match: |-
+            (?x)
+            (\[)\s*
+            [\w$]+
+            (?:
+              (?:\[\])?                                        # Foo[].bar properties within an array
+              \.                                                # Foo.Bar namespaced parameter
+              [\w$]+
+            )*
+            (?:
+              \s*
+              (=)                                                # [foo=bar] Default parameter value
+              \s*
+              (
+                # The inner regexes are to stop the match early at */ and to not stop at escaped quotes
+                (?>
+                  "(?:(?:\*(?!/))|(?:\\(?!"))|[^*\\])*?" |  # [foo="bar"] Double-quoted
+                  '(?:(?:\*(?!/))|(?:\\(?!'))|[^*\\])*?' |  # [foo='bar'] Single-quoted
+                  \[ (?:(?:\*(?!/))|[^*])*? \] |              # [foo=[1,2]] Array literal
+                  (?:(?:\*(?!/))|\s(?!\s*\])|\[.*?(?:\]|(?=\*/))|[^*\s\[\]])* # Everything else (sorry)
+                )*
+              )
+            )?
+            \s*(?:(\])((?:[^*\s]|\*[^\s/])+)?|(?=\*/))
+          scope: variable.other.jsdoc
+          captures:
+            1: punctuation.definition.optional-value.begin.bracket.square.jsdoc
+            2: keyword.operator.assignment.jsdoc
+            3: source.embedded.js
+            4: punctuation.definition.optional-value.end.bracket.square.jsdoc
+            5: invalid.illegal.syntax.jsdoc
+    - match: |-
+        (?x)
+        (
+          (@)
+          (?:define|enum|exception|export|extends|lends|implements|modifies
+          |namespace|private|protected|returns?|suppress|this|throws|type
+          |yields?)
+        )
+        \s+(?={)
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+      push:
+        - match: '(?=\s|\*/|[^{}\[\]A-Za-z_$])'
+          pop: true
+        - include: type
+    - match: |-
+        (?x)
+        (
+          (@)
+          (?:alias|augments|callback|constructs|emits|event|fires|exports?
+          |extends|external|function|func|host|lends|listens|interface|memberof!?
+          |method|module|mixes|mixin|name|requires|see|this|typedef|uses)
+        )
+        \s+
+        (
+          (?:
+            [^{}@\s*] | \*[^/]
+          )+
+        )
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: entity.name.type.instance.jsdoc
+    - match: '((@)(?:default(?:value)?|license|version))\s+(([''"]))'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+        4: punctuation.definition.string.begin.jsdoc
+      push:
+        - meta_content_scope: variable.other.jsdoc
+        - match: (\3)|(?=$|\*/)
+          captures:
+            0: variable.other.jsdoc
+            1: punctuation.definition.string.end.jsdoc
+          pop: true
+    - match: '((@)(?:default(?:value)?|license|tutorial|variation|version))\s+([^\s*]+)'
+      captures:
+        1: storage.type.class.jsdoc
+        2: punctuation.definition.block.tag.jsdoc
+        3: variable.other.jsdoc
+    - match: |-
+        (?x) (@)
+        (?:abstract|access|alias|api|arg|argument|async|attribute|augments|author|beta|borrows|bubbles
+        |callback|chainable|class|classdesc|code|config|const|constant|constructor|constructs|copyright
+        |default|defaultvalue|define|deprecated|desc|description|dict|emits|enum|event|example|exception
+        |exports?|extends|extension(?:_?for)?|external|externs|file|fileoverview|final|fires|for|func
+        |function|generator|global|hideconstructor|host|ignore|implements|implicitCast|inherit[Dd]oc
+        |inner|instance|interface|internal|kind|lends|license|listens|main|member|memberof!?|method
+        |mixes|mixins?|modifies|module|name|namespace|noalias|nocollapse|nocompile|nosideeffects
+        |override|overview|package|param|polymer(?:Behavior)?|preserve|private|prop|property|protected
+        |public|read[Oo]nly|record|require[ds]|returns?|see|since|static|struct|submodule|summary
+        |suppress|template|this|throws|todo|tutorial|type|typedef|unrestricted|uses|var|variation
+        |version|virtual|writeOnce|yields?)
+        \b
+      scope: storage.type.class.jsdoc
+      captures:
+        1: punctuation.definition.block.tag.jsdoc
+    - include: inline-tags
+  brackets:
+    - match: "{"
+      push:
+        - match: '}|(?=\*/)'
+          pop: true
+        - include: brackets
+    - match: '\['
+      push:
+        - match: '\]|(?=\*/)'
+          pop: true
+        - include: brackets
+  inline-tags:
+    - match: '(\[)[^\]]+(\])(?={@(?:link|linkcode|linkplain|tutorial))'
+      scope: constant.other.description.jsdoc
+      captures:
+        1: punctuation.definition.bracket.square.begin.jsdoc
+        2: punctuation.definition.bracket.square.end.jsdoc
+    - match: '({)((@)(?:link(?:code|plain)?|tutorial))\s*'
+      captures:
+        1: punctuation.definition.bracket.curly.begin.jsdoc
+        2: storage.type.class.jsdoc
+        3: punctuation.definition.inline.tag.jsdoc
+      push:
+        - meta_scope: entity.name.type.instance.jsdoc
+        - match: '}|(?=\*/)'
+          captures:
+            0: punctuation.definition.bracket.curly.end.jsdoc
+          pop: true
+        - match: '\G((?=https?://)(?:[^|}\s*]|\*[/])+)(\|)?'
+          captures:
+            1: variable.other.link.underline.jsdoc
+            2: punctuation.separator.pipe.jsdoc
+        - match: '\G((?:[^{}@\s|*]|\*[^/])+)(\|)?'
+          captures:
+            1: variable.other.description.jsdoc
+            2: punctuation.separator.pipe.jsdoc
+  type:
+    - match: '\G{(?:[^}*]|\*[^/}])+$'
+      scope: invalid.illegal.type.jsdoc
+    - match: '\G({)'
+      captures:
+        0: entity.name.type.instance.jsdoc
+        1: punctuation.definition.bracket.curly.begin.jsdoc
+      push:
+        - meta_content_scope: entity.name.type.instance.jsdoc
+        - match: '((}))\s*|(?=\*/)'
+          captures:
+            1: entity.name.type.instance.jsdoc
+            2: punctuation.definition.bracket.curly.end.jsdoc
+          pop: true
+        - include: brackets
