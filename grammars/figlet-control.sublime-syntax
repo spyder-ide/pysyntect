@@ -1,0 +1,136 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: FIGlet Control File
+file_extensions:
+  - flc
+first_line_match: \Aflc2a
+scope: source.figctrl
+contexts:
+  main:
+    - include: comment
+    - include: transform
+    - include: extendedCommands
+    - include: transformArgs
+  comment:
+    - match: "^#"
+      captures:
+        0: punctuation.definition.comment.figctrl
+      push:
+        - meta_scope: comment.line.number-sign.figctrl
+        - match: $
+          pop: true
+  char:
+    - match: '(\\)[ abefnrtv\\]'
+      scope: constant.character.escape.figctrl
+      captures:
+        1: punctuation.definition.escape.backslash.figctrl
+    - match: '(\\)[-+]?(?:0[Xx][A-Fa-f0-9]*|[0-9]+)'
+      scope: constant.character.escape.codepoint.figctrl
+      captures:
+        1: punctuation.definition.escape.backslash.figctrl
+    - match: '[^\s\\]'
+      scope: string.unquoted.character.literal.figctrl
+  extendedCommands:
+    - match: "^[bfhju]"
+      captures:
+        0: keyword.operator.command.figctrl
+      push:
+        - meta_scope: meta.extended.command.input-encoding.figctrl
+        - match: $
+          pop: true
+        - include: invalidArgument
+    - match: ^g
+      captures:
+        0: keyword.operator.command.figctrl
+      push:
+        - meta_scope: meta.extended.command.input-encoding.figctrl
+        - match: $
+          pop: true
+        - match: '\G\s*(L|R)\s*([0-3])?'
+          captures:
+            1: storage.type.var.byte-half.figctrl
+            2: constant.numeric.decimal.integer.int.figctrl
+        - match: '\G\s*([0-3])(?:\s*(94x94|94|96)\s*(\\ |\S+))?'
+          captures:
+            1: constant.numeric.decimal.integer.int.figctrl
+            2: constant.language.size.figctrl
+        - include: invalidArgument
+  invalidArgument:
+    - match: \S+
+      scope: invalid.illegal.unexpected-argument.figctrl
+  number:
+    - match: "[-+]?0[Xx][0-9A-Fa-f]*"
+      scope: constant.numeric.hexadecimal.hex.integer.int.figctrl
+    - match: "[-+]?[0-9]+"
+      scope: constant.numeric.decimal.integer.int.figctrl
+  transform:
+    - match: ^t
+      captures:
+        0: keyword.operator.command.figctrl
+      push:
+        - meta_scope: meta.transform.command.figctrl
+        - match: $
+          pop: true
+        - include: transformArgs
+  transformArgs:
+    - match: |-
+        (?x)
+        (?:^|\G) \s*
+
+        # 1: meta.transform.argument.from.figctrl
+        (
+        	(?:
+        		# 2: include: “#number”
+        		([-+]?0[Xx][0-9A-Fa-f]*|[-+]?[0-9]+)
+        		|
+        		# 3: include: “#char”
+        		(\\[ ]|(?:\\-)?[^-\s]+)
+        	)
+        	(?:
+        		# 4: punctuation.separator.dash.range.figctrl
+        		(-)
+
+        		(?:
+        			# 5: include: “#number”
+        			([-+]?0[Xx][0-9A-Fa-f]*|[-+]?[0-9]+)
+        			|
+        			# 6: include: “#char”
+        			(\\[ ]|(?:\\-)?[^-\s]+)
+        		)
+        	)?
+        )
+
+        \s+
+
+        # 7: meta.transform.argument.to.figctrl
+        (
+        	(?:
+        		# 8: include: “#number”
+        		([-+]?0[Xx][0-9A-Fa-f]*|[-+]?[0-9]+)
+        		|
+        		# 9: include: “#char”
+        		(\\[ ]|(?:\\-)?[^-\s]+)
+        	)
+        	(?:
+        		# 10: punctuation.separator.dash.range.figctrl
+        		(-)
+
+        		(?:
+        			# 11: include: “#number”
+        			([-+]?0[Xx][0-9A-Fa-f]*|[-+]?[0-9]+)
+        			|
+        			# 12: include: “#char”
+        			(\\[ ]|(?:\\-)?[^-\s]+)
+        		)
+        	)?
+        )
+
+        # 13: Possible trailing comment
+        (\s+\S.*)?
+      scope: meta.transform.arguments.figctrl
+      captures:
+        1: meta.transform.argument.from.figctrl
+        10: punctuation.separator.dash.range.figctrl
+        4: punctuation.separator.dash.range.figctrl
+        7: meta.transform.argument.to.figctrl

@@ -1,0 +1,647 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+file_extensions: []
+scope: hint.message.haskell
+contexts:
+  main:
+    - match: "^[^:]*:(.+)$"
+      captures:
+    - match: "^[^:]*:$"
+      push:
+        - match: ^(?=\S)
+          pop: true
+        - include: scope:source.haskell
+    - match: ‘
+      push:
+        - match: ’
+          pop: true
+        - include: scope:source.haskell
+  arrow:
+    - match: '(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:->|→)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))'
+      scope: keyword.other.arrow.haskell
+  assignment_op:
+    - match: "="
+      captures:
+        0: keyword.operator.assignment.haskell
+  attribute_name:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: entity.other.attribute-name.haskell
+  big_arrow:
+    - match: '(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:=>|⇒)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))'
+      scope: keyword.other.big-arrow.haskell
+  block_comment:
+    - match: '\{-\s*[|^]'
+      captures:
+        0: punctuation.definition.comment.haddock.haskell
+      push:
+        - meta_scope: comment.block.haddock.haskell
+        - include: block_comment
+        - match: '-\}'
+          captures:
+            0: punctuation.definition.comment.haddock.haskell
+          pop: true
+    - match: '\{-'
+      captures:
+        0: punctuation.definition.comment.block.start.haskell
+      push:
+        - meta_scope: comment.block.haskell
+        - include: block_comment
+        - match: '-\}'
+          captures:
+            0: punctuation.definition.comment.block.end.haskell
+          pop: true
+  c_preprocessor:
+    - match: ^(?=#)
+      push:
+        - meta_scope: meta.preprocessor.c.haskell
+        - match: (?<!\\)(?=$)
+          pop: true
+        - match: ^#\S+
+          scope: keyword.control.c.haskell
+  characters:
+    - match: '\\(?:NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\"''\&])'
+      scope: constant.character.escape.haskell
+    - match: '(?:\\o[0-7]+)'
+      scope: constant.character.escape.octal.haskell
+    - match: '(?:\\x[0-9A-Fa-f]+)'
+      scope: constant.character.escape.hexadecimal.haskell
+    - match: '(?:\\\^[A-Z@\[\]\\^_])'
+      scope: constant.character.escape.control.haskell
+  class_decl:
+    - match: '^([ \t]*)(class)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.class.haskell
+      push:
+        - meta_scope: meta.declaration.class.haskell
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(where)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))|^(?!\1[ \t]|[ \t]*$)'
+          captures:
+            1: keyword.other.haskell
+          pop: true
+        - include: type_signature
+  comma:
+    - match: ","
+      scope: punctuation.separator.comma.haskell
+  comments:
+    - match: '(^[ \t]+)?(?=--+\s+[|^])'
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: '(--+)\s+([|^])'
+          captures:
+            1: punctuation.definition.comment.haskell
+            2: punctuation.definition.comment.haddock.haskell
+          push:
+            - meta_scope: comment.line.double-dash.haddock.haskell
+            - match: $
+              pop: true
+    - match: '(^[ \t]+)?(?=--+(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))'
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "--"
+          captures:
+            0: punctuation.definition.comment.haskell
+          push:
+            - meta_scope: comment.line.double-dash.haskell
+            - match: $
+              pop: true
+    - include: block_comment
+  common_toplevel:
+    - include: class_decl
+    - include: instance_decl
+    - include: deriving_instance_decl
+    - include: foreign_import
+    - include: regular_import
+    - include: data_decl
+    - include: type_alias
+    - include: c_preprocessor
+  ctor_type_declaration:
+    - match: '^([ \t]*)(?:(?:((?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\)))(?:(?:\s*,\s*)(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))))*))(?:\s*((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))))'
+      captures:
+        3: keyword.other.double-colon.haskell
+      push:
+        - meta_scope: meta.ctor.type-declaration.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: type_signature
+  data_decl:
+    - match: '^([ \t]*)(data|newtype)\s+((?:(?!(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:=|--+)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))|(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))where(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))|{-).|{-.*?-})*)'
+      captures:
+        2: keyword.other.data.haskell
+        3: meta.type-signature.haskell
+      push:
+        - meta_scope: meta.declaration.type.data.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: comments
+        - include: string
+        - include: where
+        - include: deriving
+        - include: via
+        - include: assignment_op
+        - include: type_ctor_forall
+        - include: type_ctor_alt
+        - match: \|
+          captures:
+            0: punctuation.separator.pipe.haskell
+        - match: '\{'
+          captures:
+            0: keyword.operator.record.begin.haskell
+          push:
+            - meta_scope: meta.declaration.type.data.record.block.haskell
+            - match: '\}'
+              captures:
+                0: keyword.operator.record.end.haskell
+              pop: true
+            - include: comments
+            - include: comma
+            - include: record_field_declaration
+        - include: ctor_type_declaration
+  deriving:
+    - include: deriving_list
+    - include: deriving_simple
+    - include: deriving_keyword
+  deriving_instance_decl:
+    - match: '^([ \t]*)(?:(?:(deriving)(?:\s+([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*))?)\s+|(deriving)\s+(via)\s+(.*)\s+)?(instance)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.haskell
+        4: keyword.other.haskell
+        5: keyword.other.haskell
+        6: meta.type-signature.haskell
+        7: keyword.other.haskell
+      push:
+        - meta_scope: meta.declaration.instance.deriving.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: pragma
+        - include: type_signature
+  deriving_keyword:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:(deriving)(?:\s+([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*))?)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: meta.deriving.haskell
+      captures:
+        1: keyword.other.haskell
+  deriving_list:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:(deriving)(?:\s+([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*))?)\s*\('
+      captures:
+        1: keyword.other.haskell
+      push:
+        - meta_scope: meta.deriving.haskell
+        - match: \)
+          pop: true
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+          captures:
+            1: entity.other.inherited-class.haskell
+  deriving_simple:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:(deriving)(?:\s+([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*))?)\s*([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: meta.deriving.haskell
+      captures:
+        1: keyword.other.haskell
+        3: entity.other.inherited-class.haskell
+  deriving_strategies:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(stock|newtype|anyclass)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: meta.deriving.strategy.haskell
+      captures:
+        1: keyword.other.haskell
+  double_colon_operator:
+    - match: '(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))'
+      scope: keyword.other.double-colon.haskell
+  empty_list:
+    - match: '\[\]'
+      scope: constant.language.empty-list.haskell
+  family_and_instance:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(family|instance)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: keyword.other.haskell
+  foreign_import:
+    - match: '^([ \t]*)(foreign)\s+(import|export)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.haskell
+        3: keyword.other.haskell
+      push:
+        - meta_scope: meta.foreign.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - match: (?:un)?safe
+          captures:
+            0: keyword.other.haskell
+        - include: function_type_declaration
+        - include: haskell_expr
+        - include: comments
+  function_name:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: entity.name.function.haskell
+      captures:
+  function_type_declaration:
+    - match: '^([ \t]*)(?:(?:((?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\)))(?:(?:\s*,\s*)(?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))))*)\s*((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))))'
+      captures:
+        3: keyword.other.double-colon.haskell
+      push:
+        - meta_scope: meta.function.type-declaration.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)|(?=(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:<-|=)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))'
+          pop: true
+        - include: type_signature
+  function_type_declaration_with_scoped_type:
+    - include: scoped_type_override
+    - include: function_type_declaration
+    - include: multiline_type_declaration
+  haskell_expr:
+    - include: infix_function
+    - include: unit
+    - include: empty_list
+    - include: quasi_quotes
+    - include: keywords
+    - include: pragma
+    - include: string
+    - include: newline_escape
+    - include: quoted_character
+    - include: comments
+    - include: infix_op
+    - include: comma
+    - include: lit_num
+    - include: scoped_type
+    - include: operator
+    - include: identifier
+    - include: type_ctor
+  haskell_source:
+    - include: shebang
+    - include: module_decl
+    - include: haskell_toplevel
+  haskell_toplevel:
+    - include: liquidhaskell_annotation
+    - include: common_toplevel
+    - include: function_type_declaration_with_scoped_type
+    - include: haskell_expr
+  hsig_decl:
+    - match: '^([ \t]*)(signature)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.haskell
+      push:
+        - meta_scope: meta.declaration.module.haskell
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(where)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))|^(?!\1[ \t]|[ \t]*$)'
+          captures:
+            1: keyword.other.haskell
+          pop: true
+        - include: comments
+        - include: module_name
+        - include: module_exports
+        - include: invalid
+  hsig_source:
+    - include: hsig_decl
+    - include: hsig_toplevel
+  hsig_toplevel:
+    - include: common_toplevel
+    - include: function_type_declaration
+    - include: lazy_function_type_signature
+    - include: comments
+  identifier:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: identifier.haskell
+      captures:
+  infix_function:
+    - match: '(`)(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(`)'
+      scope: keyword.operator.function.infix.haskell
+      captures:
+        1: punctuation.definition.entity.haskell
+        2: punctuation.definition.entity.haskell
+  infix_op:
+    - match: '(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))'
+      scope: entity.name.function.operator.haskell
+      captures:
+  instance_decl:
+    - match: '^([ \t]*)(instance)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.haskell
+      push:
+        - meta_scope: meta.declaration.instance.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(where)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))|^(?!\1[ \t]|[ \t]*$)'
+          captures:
+            1: keyword.other.haskell
+          pop: true
+        - include: pragma
+        - include: type_signature
+  invalid:
+    - match: \S+
+      scope: invalid.illegal.character-not-allowed-here.haskell
+  keywords:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(deriving|where|data|type|newtype)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: keyword.other.$1.haskell
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(infix[lr]?)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: keyword.operator.$1.haskell
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(do|if|then|else|case|of|let|in|default|mdo|rec|proc)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: keyword.control.$1.haskell
+  lazy_function_type_signature:
+    - match: '^([ \t]*)(((?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\)))(?:(?:\s*,\s*)(?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))))*))\s*$'
+      push:
+        - meta_scope: meta.function.type-declaration.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: double_colon_operator
+        - include: type_signature
+  liquidhaskell_annotation:
+    - match: '\{-@(?!#)'
+      push:
+        - meta_scope: block.liquidhaskell.haskell
+        - meta_content_scope: block.liquidhaskell.annotation.haskell
+        - match: '@-\}'
+          pop: true
+        - include: scope:annotation.liquidhaskell.haskell
+  lit_num:
+    - match: '0[xX][0-9a-fA-F_]*(?:\.[0-9a-fA-F_]+(?:[pP][+-]?[0-9_]+)?|[pP][+-]?[0-9_]+)'
+      scope: constant.numeric.hexfloat.haskell
+    - match: "0[xX][_0-9a-fA-F]+"
+      scope: constant.numeric.hexadecimal.haskell
+    - match: "0[oO][_0-7]+"
+      scope: constant.numeric.octal.haskell
+    - match: "0[bB][_01]+"
+      scope: constant.numeric.binary.haskell
+    - match: '[0-9][0-9_]*(?:\.[0-9_]+(?:[eE][+-]?[0-9_]+)?|[eE][+-]?[0-9_]+)'
+      scope: constant.numeric.float.haskell
+    - match: "[0-9][_0-9]*"
+      scope: constant.numeric.decimal.haskell
+  module_decl:
+    - match: '^([ \t]*)(module)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.haskell
+      push:
+        - meta_scope: meta.declaration.module.haskell
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(where)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))|^(?!\1[ \t]|[ \t]*$)'
+          captures:
+            1: keyword.other.haskell
+          pop: true
+        - include: comments
+        - include: module_name
+        - include: module_exports
+        - include: invalid
+  module_exports:
+    - match: \(
+      push:
+        - meta_scope: meta.declaration.exports.haskell
+        - include: comments
+        - include: c_preprocessor
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(module)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+          captures:
+            1: keyword.other.haskell
+          push:
+            - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+              captures:
+                1: support.other.module.haskell
+              pop: true
+            - include: invalid
+        - include: function_name
+        - include: type_name
+        - include: comma
+        - include: infix_op
+        - match: \(
+          push:
+            - meta_scope: meta.other.constructor-list.haskell
+            - match: \)
+              pop: true
+            - include: comments
+            - include: c_preprocessor
+            - include: type_ctor
+            - include: attribute_name
+            - include: comma
+            - match: \.\.
+              scope: keyword.operator.wildcard.haskell
+            - include: infix_op
+        - match: \)
+          pop: true
+  module_name:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: support.other.module.haskell
+  module_name_prefix:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.'
+      scope: support.other.module.haskell
+  multiline_type_declaration:
+    - match: '^([ \t]*)((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))'
+      captures:
+        2: keyword.other.double-colon.haskell
+      push:
+        - meta_scope: meta.multiline.type-declaration.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!\1|[ \t]*$)|(?=(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:<-|=)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))'
+          pop: true
+        - include: type_signature
+  newline_escape:
+    - match: \\$
+      scope: markup.other.escape.newline.haskell
+  operator:
+    - match: '(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+'
+      scope: keyword.operator.haskell
+      captures:
+  pragma:
+    - match: '\{-#'
+      push:
+        - meta_scope: meta.preprocessor.haskell
+        - match: '#-\}'
+          pop: true
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))((?i:NOTINLINE CONSTRUCTORLIKE|NOINLINE CONSTRUCTORLIKE|INLINE CONSTRUCTORLIKE|SPECIALISE NOTINLINE|SPECIALIZE NOTINLINE|SPECIALISE NOINLINE|SPECIALIZE NOINLINE|NOTINLINE CONLIKE|SPECIALISE INLINE|SPECIALIZE INLINE|NOINLINE CONLIKE|VECTORISE SCALAR|VECTORIZE SCALAR|OPTIONS_HADDOCK|INLINE CONLIKE|OPTIONS_DERIVE|OPTIONS_CATCH|OPTIONS_NHC98|OPTIONS_HUGS|OVERLAPPABLE|NOVECTORISE|NOVECTORIZE|OPTIONS_GHC|OPTIONS_JHC|OPTIONS_YHC|OVERLAPPING|DEPRECATED|INCOHERENT|INLINEABLE|SPECIALISE|SPECIALIZE|GENERATED|INLINABLE|NOTINLINE|VECTORISE|VECTORIZE|CONTRACT|LANGUAGE|NOINLINE|NOUNPACK|OVERLAPS|INCLUDE|MINIMAL|OPTIONS|WARNING|CFILES|INLINE|SOURCE|UNPACK|CTYPE|RULES|CORE|LINE|ANN|SCC))(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+          scope: keyword.other.preprocessor.haskell
+  quasi_quotes:
+    - match: '(\[)((?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)(\|)'
+      captures:
+        1: punctuation.definition.quasiquotes.begin.haskell
+        2: entity.name.tag.haskell
+      push:
+        - meta_content_scope: quoted.quasiquotes.haskell
+        - match: '(\|)(\])'
+          captures:
+            2: punctuation.definition.quasiquotes.end.haskell
+          pop: true
+  quoted_character:
+    - match: '('')((?:[\ -\[\]-~]|\\(?:NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\"''\&])|(?:\\o[0-7]+)|(?:\\x[0-9A-Fa-f]+)|(?:\\\^[A-Z@\[\]\\^_])|(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))('')'
+      scope: string.quoted.single.haskell
+      captures:
+        1: punctuation.definition.string.begin.haskell
+        3: punctuation.definition.string.end.haskell
+  record_field_declaration:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:(?:((?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\)))(?:(?:\s*,\s*)(?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))))*)\s*((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))))'
+      captures:
+        2: keyword.other.double-colon.haskell
+      push:
+        - meta_scope: meta.record-field.type-declaration.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '(?=(?:(?:((?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\)))(?:(?:\s*,\s*)(?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))))*)\s*((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))))|})'
+          pop: true
+        - include: type_signature
+  regular_import:
+    - match: '^([ \t]*)(import)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.haskell
+      push:
+        - meta_scope: meta.import.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: module_name
+        - include: module_exports
+        - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(qualified|as|hiding)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+          captures:
+            1: keyword.other.haskell
+        - include: comments
+  scoped_type:
+    - match: '\(((?<paren>(?:(?!\(|\)).|\(\g<paren>\))*)(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))(?<paren2>(?:(?!\(|\)).|\(\g<paren2>\))*))\)'
+      captures:
+    - match: '((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))((?:(?!{-|(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:<-|=|--+)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))|$).|{-.*?-})*)'
+      captures:
+        1: keyword.other.double-colon.haskell
+        2: meta.type-signature.haskell
+  scoped_type_override:
+    - match: '^([ \t]*)(?:(?:((?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\)))(?:(?:\s*,\s*)(?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:\((?!--+\)|\.\.\))(?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+\))))*)\s*((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:::|∷)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))))((?:(?!{-|(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:--+)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))).|{-.*?-})*)((?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:<-|=)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))))'
+      captures:
+        3: keyword.other.double-colon.haskell
+        4: meta.type-signature.haskell
+  shebang:
+    - match: ^\#\!.*\brunhaskell\b.*$
+      scope: comment.line.shebang.haskell
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.haskell
+      push:
+        - meta_scope: string.quoted.double.haskell
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.haskell
+          pop: true
+        - include: characters
+        - match: \\\s
+          captures:
+            0: markup.other.escape.newline.begin.haskell
+          push:
+            - match: \\
+              captures:
+                0: markup.other.escape.newline.end.haskell
+              pop: true
+            - include: invalid
+  type_alias:
+    - match: '^([ \t]*)(type)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      captures:
+        2: keyword.other.type.haskell
+      push:
+        - meta_scope: meta.declaration.type.type.haskell
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: comments
+        - include: family_and_instance
+        - include: where
+        - include: assignment_op
+        - include: type_signature
+  type_ctor:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: entity.name.tag.haskell
+      captures:
+  type_ctor_alt:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)\s*'
+      push:
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!^[ \t]|[ \t]*$)|(?=\{|\}|\||(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))deriving(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])))'
+          pop: true
+        - include: comments
+        - include: type_signature
+  type_ctor_forall:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))forall(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      push:
+        - meta_content_scope: meta.type-signature.haskell
+        - match: '^(?!^[ \t]|[ \t]*$)|(?=\{|\}|\||(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))deriving(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])))'
+          pop: true
+        - include: comments
+        - match: '\G.*?(?:(?<!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"''])))(?:=>|⇒)(?!(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))))'
+          captures:
+        - match: \G.*?\.
+          captures:
+        - include: big_arrow
+        - include: type_variable
+        - match: \(
+          push:
+            - match: \)
+              pop: true
+            - include: type_signature
+        - include: type_ctor_alt
+  type_name:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: entity.name.type.haskell
+      captures:
+  type_signature:
+    - include: pragma
+    - include: comments
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))forall(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: keyword.other.forall.haskell
+    - match: '''(\(\))'
+      scope: constant.language.unit.promoted.haskell
+      captures:
+    - include: unit
+    - match: '''(\[\])'
+      scope: constant.language.empty-list.promoted.haskell
+      captures:
+    - include: empty_list
+    - include: string
+    - include: arrow
+    - include: big_arrow
+    - match: '''((?:(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?(?:[\p{S}\p{P}](?<![(),;\[\]`{}_"'']))+)'
+      scope: keyword.operator.promoted.haskell
+      captures:
+    - include: operator
+    - include: type_variable
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}''])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))''([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: entity.name.type.promoted.haskell
+      captures:
+    - include: type_name
+    - include: lit_num
+  type_variable:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: variable.other.generic-type.haskell
+  unit:
+    - match: \(\)
+      scope: constant.language.unit.haskell
+  via:
+    - include: via_list
+    - include: via_list_newline
+    - include: via_indent
+    - include: via_simple
+    - include: via_keyword
+  via_indent:
+    - match: '^([ \t]*)(via)\s*'
+      captures:
+        2: keyword.other.haskell
+      push:
+        - meta_scope: meta.via.haskell
+        - match: '^(?!\1|[ \t]*$)'
+          pop: true
+        - include: type_signature
+  via_keyword:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(via)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: meta.via.haskell
+      captures:
+        1: keyword.other.haskell
+  via_list:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(via)\s*\('
+      captures:
+        1: keyword.other.haskell
+      push:
+        - meta_scope: meta.via.haskell
+        - match: \)
+          pop: true
+        - include: type_signature
+  via_list_newline:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(via)\s*'
+      captures:
+        1: keyword.other.haskell
+      push:
+        - meta_scope: meta.via.haskell
+        - match: $
+          pop: true
+        - include: type_signature
+  via_simple:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))(via)\s*([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: meta.via.haskell
+      captures:
+        1: keyword.other.haskell
+  where:
+    - match: '(?:(?=[\p{Ll}_\p{Lu}\p{Lt}])(?<![\p{Ll}_\p{Lu}\p{Lt}'']))where(?:(?<=[\p{Ll}_\p{Lu}\p{Lt}\p{Nd}''])(?![\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']))'
+      scope: keyword.other.haskell

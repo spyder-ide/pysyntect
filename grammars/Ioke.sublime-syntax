@@ -1,0 +1,143 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ioke
+file_extensions:
+  - ik
+first_line_match: ^#!/.*\bioke\b
+scope: source.ioke
+contexts:
+  main:
+    - match: ;
+      push:
+        - meta_scope: comment.line.ioke
+        - match: $\n?
+          pop: true
+    - match: "#!"
+      push:
+        - meta_scope: comment.line.ioke
+        - match: $\n?
+          pop: true
+    - match: '((?<=fn\()|(?<=fnx\()|(?<=method\()|(?<=macro\()|(?<=lecro\()|(?<=syntax\()|(?<=dmacro\()|(?<=dlecro\()|(?<=dlecrox\()|(?<=dsyntax\())[[:space]]*"'
+      push:
+        - meta_scope: string.documentation.ioke
+        - match: '"'
+          pop: true
+        - include: text_literal_escapes
+        - include: embedded_source
+    - match: '((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))[[:alnum:]!?_]+:\s'
+      scope: string.literal.keyword-argument.ioke
+    - match: '[[:alnum:]_:][[:alnum:]!?_:]*(?=[[:space:]]*[+*/-]?=[^=].*($|\.))'
+      scope: variable.assignment.ioke
+    - include: assignments
+    - include: kinds
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))[[:alnum:]!?_:]+(?=[[:space:]]*=.*mimic[[:space]])"
+      scope: constant.object.mimic.ioke
+    - match: '(?<![[:alnum:]])[+-]?[[:digit:]][[:digit:]]*(\.[[:digit:]])?[[:digit:]]*([eE][+-]?[[:digit:]]+)?(?![[:alnum:]!?_:])'
+      scope: constant.numeric.ioke
+    - match: '((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))0[xX][[:xdigit:]]+\b'
+      scope: constant.numeric.hexadecimal.ioke
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!)):[[:alnum:]!?_:-]+"
+      scope: string.literal.symbol.ioke
+    - match: "#/"
+      push:
+        - meta_scope: string.regexp.ioke
+        - match: "/[oxpniums]*"
+          pop: true
+        - include: text_literal_escapes
+        - include: embedded_source
+    - match: '#r\['
+      push:
+        - meta_scope: string.regexp.ioke
+        - match: '\][oxpniums]*'
+          pop: true
+        - include: text_literal_escapes
+        - include: embedded_source
+    - match: ':"'
+      push:
+        - meta_scope: string.literal.symbol.ioke
+        - match: '"'
+          pop: true
+        - include: text_literal_escapes
+        - include: embedded_source
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.ioke
+        - match: '"'
+          pop: true
+        - include: text_literal_escapes
+        - include: embedded_source
+    - match: '#\['
+      push:
+        - meta_scope: string.quoted.double.ioke
+        - match: '\]'
+          pop: true
+        - include: text_literal_escapes
+        - include: embedded_source
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))it(?![[:alnum:]!?_:])"
+      scope: entity.standout-names.ioke
+    - match: "#{"
+      scope: punctuation.set-literal-start.ioke
+    - include: keywords
+    - match: '(\`\`|\`|''''|''|\.|\,|@|@@|\[|\]|\(|\))'
+      scope: punctuation.ioke
+    - match: "[[:alnum:]_][[:alnum:]!?_:$]*[[:alnum:]!?_:]"
+      scope: source.identifier.ioke
+  assignments:
+    - match: "(?<=[[:space:]])[^[:space:].]+=[[:space:]]*=[[:space:]](fn|fnx|method|macro|lecro|syntax|dmacro|dlecro|dlecrox|dsyntax)"
+      scope: variable.assignment.function.ioke
+  embedded_source:
+    - match: '#\{(\})'
+      scope: source.embedded.ioke
+      captures:
+        0: punctuation.section.embedded.ioke
+        1: source.embedded.empty.ioke
+    - match: '#\{'
+      captures:
+        0: punctuation.section.embedded.ioke
+      push:
+        - meta_scope: source.embedded.ioke
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.ioke
+          pop: true
+        - include: nest_curly_and_self
+        - include: main
+  keywords:
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))(mimic|self|use|true|false|nil)(?![[:alnum:]!?_:])"
+      scope: keyword.ioke
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))(return|break|continue|unless|true|false|nil)(?![[:alnum:]!?_:])"
+      scope: keyword.control.ioke
+    - match: (&&>>|\|\|>>|\*\*>>|\.\.\.|===|\*\*>|\*\*=|&&>|&&=|\|\|>|\|\|=|\->>|\+>>|!>>|<>>>|<>>|&>>|%>>|#>>|@>>|/>>|\*>>|\?>>|\|>>|\^>>|~>>|\$>>|=>>|<<=|>>=|<=>|<\->|=~|!~|=>|\+\+|\-\-|<=|>=|==|!=|&&|\.\.|\+=|\-=|\*=|\/=|%=|&=|\^=|\|=|<\-|\+>|!>|<>|&>|%>|#>|\@>|\/>|\*>|\?>|\|>|\^>|~>|\$>|<\->|\->|<<|>>|\*\*|\?\||\?&|\|\||>|<|\*|\/|%|\+|\-|&|\^|\||=|\$|!|~|\?|#)
+      scope: keyword.operator.ioke
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))(nand|and|nor|xor|or)(?![[:alnum:]!?_:])"
+      scope: keyword.operator.boolean.ioke
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))(Base|Call|Condition|DateTime|DefaultBehavior|DefaultMacro|DefaultMethod|DefaultSyntax|Dict|FileSystem|Ground|Handler|IO|JavaMethod|LexicalBlock|LexicalMacro|List|Message|Method|Mixins|Number|Number Decimal|Number Integer|Number Rational|Number Real|Origin|Pair|Range|Regexp|Rescue|Restart|Runtime|Set|Symbol|System|Text)(?![[:alnum:]!?_:])"
+      scope: keyword.prototype-names.ioke
+    - match: "((^)|(?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))(fn|fnx|method|macro|lecro|syntax|dmacro|dlecro|dlecrox|dsyntax)(?![[:alnum:]!?_:])"
+      scope: keyword.function.ioke
+    - match: '((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))(print|println|cell\?|cell|keyword|documentation|if|unless|while|until|loop|for|for:set|for:dict|bind|rescue|handle|restart|asText|inspect|notice|do|call|list|dict|set|with|kind)(?![[:alnum:]!?_:])'
+      scope: keyword.cell-names.ioke
+  kinds:
+    - match: "((?<![[:alnum:]!?_:])|(?<![[:alnum:]!?_:]!))[A-Z][[:alnum:]!?_:-]*(?![[:alnum:]!?_:])"
+      scope: constant.kind.ioke
+  meta_parens:
+    - match: \(
+      push:
+        - meta_scope: meta.parens.ioke
+        - match: \)
+          pop: true
+  nest_curly_and_self:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.ioke
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.ioke
+          pop: true
+        - include: nest_curly_and_self
+    - include: main
+  text_literal_escapes:
+    - match: '(\\b|\\e|\\t|\\n|\\f|\\r|\\"|\\\\|\\#|\\\Z|\\u[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]]|\\[0-3]?[0-7]?[0-7],[[:space:]]+\\[0-3]?[0-7]?[0-7],[[:space:]]+\\[0-3]?[0-7]?[0-7]|\\[0-3]?[0-7]?[0-7],[[:space:]]+\\[0-3]?[0-7]?[0-7]|\\[0-3]?[0-7]?[0-7])'
+      scope: constant.character.escape.ioke

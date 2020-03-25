@@ -1,0 +1,148 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: X Logical Font Description
+scope: source.xlfd
+contexts:
+  name:
+    - match: |-
+        (?x)
+        # XFontNameRegistry
+        (
+        	(
+        		(\+)             # XFNExtPrefix
+        		([0-9]+\.[0-9]+) # Version
+        	)?
+        	(-) # XFNDelim
+        )
+
+        # XFontNameSuffix
+        # (Scoped as `meta.fields', as `suffix' is misleading)
+        (
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # FOUNDRY
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # FAMILY_NAME
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # WEIGHT_NAME
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # SLANT
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # SETWIDTH_NAME
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # ADD_STYLE_NAME
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # PIXEL_SIZE
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # POINT_SIZE
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # RESOLUTION_X
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # RESOLUTION_Y
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # SPACING
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # AVERAGE_WIDTH
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*])) (-) # CHARSET_REGISTRY
+        	(?: ([!#-)+.->@-~\x20]*) | ([?*]))     # CHARSET_ENCODING
+        )
+      scope: meta.font-name.xlfd
+      captures:
+        1: meta.registry.xlfd
+        10: entity.family.name.xlfd
+        12: punctuation.delimiter.dash.xlfd
+        13: entity.weight.name.xlfd
+        15: punctuation.delimiter.dash.xlfd
+        18: punctuation.delimiter.dash.xlfd
+        2: meta.extension.xlfd
+        21: punctuation.delimiter.dash.xlfd
+        24: punctuation.delimiter.dash.xlfd
+        27: punctuation.delimiter.dash.xlfd
+        3: punctuation.definition.extension-prefix.xlfd
+        30: punctuation.delimiter.dash.xlfd
+        33: punctuation.delimiter.dash.xlfd
+        36: punctuation.delimiter.dash.xlfd
+        39: punctuation.delimiter.dash.xlfd
+        4: constant.numeric.decimal.float.version.xlfd
+        42: punctuation.delimiter.dash.xlfd
+        43: entity.charset-registry.name.xlfd
+        45: punctuation.delimiter.dash.xlfd
+        5: punctuation.delimiter.dash.xlfd
+        6: meta.fields.xlfd
+        7: entity.foundry.name.xlfd
+        9: punctuation.delimiter.dash.xlfd
+  main:
+    - include: name
+  fieldAddStyleName:
+    - match: (?:^|\G).+$
+      scope: entity.add-style.name.xlfd
+      captures:
+  fieldAverageWidth:
+    - match: "[+~]?[0-9]+"
+      scope: constant.numeric.integer.int.average-width.xlfd
+  fieldCharsetEncoding:
+    - match: '(?:^|\G)([^\[]+)((\[)([^\]]+)(\]))?$'
+      captures:
+        1: entity.charset-encoding.name.xlfd
+        2: meta.subsetting-hint.xlfd
+        3: punctuation.definition.square.bracket.begin.xlfd
+        5: punctuation.definition.square.bracket.end.xlfd
+  fieldPixelSize:
+    - match: '(?:^|\G)[0-9]+$'
+      scope: constant.numeric.int.integer.pixel-size.xlfd
+    - match: '(?:^|\G)(?=\[)'
+      push:
+        - meta_scope: meta.pixel-size.matrix.xlfd
+        - match: $
+          pop: true
+        - include: matrix
+  fieldPointSize:
+    - match: '(?:^|\G)[0-9]+$'
+      scope: constant.numeric.int.integer.point-size.xlfd
+    - match: '(?:^|\G)(?=\[)'
+      push:
+        - meta_scope: meta.point-size.matrix.xlfd
+        - match: $
+          pop: true
+        - include: matrix
+  fieldResX:
+    - match: '(?:^|\G)[0-9]+$'
+      scope: constant.numeric.unsigned.int.integer.resolution-x.xlfd
+  fieldResY:
+    - match: '(?:^|\G)[0-9]+$'
+      scope: constant.numeric.unsigned.int.integer.resolution-y.xlfd
+  fieldSetWidth:
+    - match: (?:^|\G)0$
+      scope: constant.numeric.polymorphic.set-width.xlfd
+    - match: (?:^|\G).+$
+      scope: entity.set-width.name.xlfd
+  fieldSlant:
+    - match: '(?:^|\G)[Rr]$'
+      scope: constant.language.slant.regular.xlfd
+    - match: '(?:^|\G)[Ii]$'
+      scope: constant.language.slant.italic.xlfd
+    - match: '(?:^|\G)[Oo]$'
+      scope: constant.language.slant.oblique.xlfd
+    - match: '(?:^|\G)[Rr][Ii]$'
+      scope: constant.language.slant.reverse-italic.xlfd
+    - match: '(?:^|\G)[Rr][Oo]$'
+      scope: constant.language.slant.reverse-oblique.xlfd
+    - match: '(?:^|\G)[Oo][Tt]$'
+      scope: constant.language.slang.other-type.xlfd
+    - match: '(?:^|\G)[0-9]+$'
+      scope: constant.numeric.int.integer.slant.xlfd
+    - match: (?:^|\G).+$
+      scope: invalid.illegal.unknown-type.slant.xlfd
+  fieldSpacing:
+    - match: '(?:^|\G)[Pp]$'
+      scope: constant.language.field-spacing.proportional.variable-pitch.xlfd
+    - match: '(?:^|\G)[Mm]$'
+      scope: constant.language.field-spacing.monospaced.fixed-pitch.xlfd
+    - match: '(?:^|\G)[Cc]$'
+      scope: constant.language.field-spacing.monospaced.char-celled.xlfd
+  matrix:
+    - match: '\['
+      captures:
+        0: punctuation.definition.square.bracket.begin.xlfd
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.square.bracket.end.xlfd
+          pop: true
+        - match: '[+~]?[0-9]*\.[0-9]+(?:[Ee][+~]?[0-9]+)?'
+          scope: constant.numeric.decimal.float.xlfd
+        - match: "[+~]?[0-9]+(?:[Ee][+~]?[0-9]+)?"
+          scope: constant.numeric.decimal.integer.int.xlfd
+  wildcards:
+    - match: \?
+      scope: keyword.operator.logical.wildcard.xlfd
+    - match: \*
+      scope: keyword.operator.logical.wildcard.xlfd

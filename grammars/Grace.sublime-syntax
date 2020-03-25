@@ -1,0 +1,324 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Grace
+file_extensions:
+  - grace
+scope: source.grace
+contexts:
+  main:
+    - include: comment
+    - include: comma
+    - match: '(import)\s*(".*")\s*(as)\s+([A-z][A-z\d'']*)'
+      scope: meta.import.grace
+      captures:
+        1: keyword.import.grace
+        2: string.path.grace
+        3: keyword.as.grace
+        4: entity.identifier.grace
+    - match: '(?:(?<![A-z\d''])(type)|(=))\s*\{'
+      captures:
+        1: keyword.type.grace
+        2: keyword.operator.grace
+      push:
+        - meta_scope: meta.type.literal.grace
+        - match: '\}'
+          pop: true
+        - include: comment
+        - include: signature
+        - include: bad_names
+        - match: '[A-z][A-z\d'']*|[-|@#!%$?&=:\.\*~+\</>\\\^]*'
+          scope: entity.function.grace
+    - match: '(?<![A-z\d''])(type)(?![A-z\d''])(?!\s*\{)'
+      captures:
+        1: keyword.type.grace
+      push:
+        - meta_scope: meta.type.grace
+        - match: (?==)
+          captures:
+            1: keyword.operator.grace
+          pop: true
+        - include: comment
+        - match: '([A-z][A-z\d'']*)(<)'
+          captures:
+            1: entity.type.grace
+            2: keyword.operator.grace
+          push:
+            - meta_scope: meta.type.generic.grace
+            - match: (>)
+              captures:
+                1: keyword.type.generic.grace
+              pop: true
+            - include: comment
+            - include: bad_names
+            - include: bad_operators
+            - include: comma
+            - match: '[A-z][A-z\d'']*'
+              scope: entity.type.generic.grace
+        - match: '(?<![A-z\d''])(is)(?![A-z\d''])'
+          captures:
+            1: keyword.grace
+          push:
+            - match: (?==)
+              pop: true
+            - include: main
+            - match: '[A-z][A-z\d'']*'
+              scope: support.type.annotation.grace
+        - include: bad_names
+        - match: '[A-z][A-z\d'']*'
+          scope: entity.type.grace
+        - include: main
+    - match: '(?<![A-z\d''])(method)(?![A-z\d''])'
+      captures:
+        1: keyword.grace
+      push:
+        - meta_scope: meta.method.grace
+        - match: '(?=\{)'
+          pop: true
+        - include: comment
+        - include: signature
+        - match: '[A-z][A-z\d'']*|[-|@#!%$?&=:\.\*~+\</>\\\^]*'
+          scope: entity.function.grace
+    - match: '\b(class)(?![A-z\d''])'
+      captures:
+        1: keyword.class.grace
+      push:
+        - meta_scope: meta.class.grace
+        - match: '(?=\{)'
+          pop: true
+        - include: comment
+        - include: signature
+        - match: \.
+          scope: keyword.operator.class.grace
+        - match: '(?<=class)\s*([A-z][A-z\d'']*)\s*(\.)'
+          scope: meta.name.class.grace
+          captures:
+            1: entity.class.grace
+            2: keyword.operator.grace
+        - match: '[A-z][A-z\d'']*|[-|@#!%$?&=:\.\*~+\</>\\\^]*'
+          scope: entity.class.grace
+    - match: '(?<![A-z\d''])(def)(?![A-z\d''])'
+      captures:
+        1: keyword.definition.grace
+      push:
+        - meta_scope: meta.definition.grace
+        - match: '(?<![^\w\d''\s])(?:(=)|(:=))(?![^\w\s])|$'
+          captures:
+            1: keyword.operator.grace
+            2: invalid.illegal.grace
+          pop: true
+        - include: comment
+        - include: signature_args
+        - match: '(?<![A-z\d''])(is)(?![A-z\d''])'
+          captures:
+            1: keyword.grace
+          push:
+            - match: '(?=(?<![^\w\d''\s])(?:(=)|(:=))(?![^\w\d''\s]))|$'
+              pop: true
+            - include: main
+            - match: '[A-z][A-z\d'']*'
+              scope: support.type.annotation.grace
+        - include: bad_names
+        - match: '\b_\b|[A-z][A-z\d'']*'
+          scope: entity.definition.grace
+    - match: '(?<![A-z\d''])(var)(?![A-z\d''])'
+      captures:
+        1: keyword.variable.grace
+      push:
+        - meta_scope: meta.variable.grace
+        - match: '(?<![^\w\d''\s])(?:(:=)|(=))(?![^\w\d''\s])|$'
+          captures:
+            1: keyword.operator.grace
+            2: invalid.illegal.grace
+          pop: true
+        - include: comment
+        - match: '(?<![^\w\d''\s\(,])(:)(?![^\w\d''\s\),])'
+          captures:
+            1: keyword.operator.grace
+          push:
+            - match: '(?=$|,|\)|(?<=[^-|@#!%$?&=:\.\*~+\</>\\\^]|^)(:|=|:=|->)(?=[^-|@#!%$?&=:\.\*~+\</>\\\^]|$))'
+              pop: true
+            - include: main
+            - include: type
+        - match: '(?<![A-z\d''])(is)(?![A-z\d''])'
+          captures:
+            1: keyword.grace
+          push:
+            - match: '(?=(?<![^\w\d''\s])(?:(=)|(:=))(?![^\w\d''\s]))|$'
+              pop: true
+            - include: main
+            - match: '[A-z][A-z\d'']*'
+              scope: support.type.annotation.grace
+        - include: bad_names
+        - include: bad_operators
+        - match: '\b_\b|[A-z][A-z\d'']*'
+          scope: entity.variable.grace
+    - match: '\{'
+      push:
+        - meta_scope: meta.block.grace
+        - match: '\}'
+          pop: true
+        - include: main
+    - match: '(?<=\{)(?=[^{}]*[^-|@#!%$?&=:\.\*~+\</>\\}]->[^-|@#!%$?&=:\.\*~+\</>\\\^])'
+      push:
+        - meta_scope: meta.parameters.block.grace
+        - match: (->)
+          captures:
+            1: keyword.operator.grace
+          pop: true
+        - include: comment
+        - include: signature_args
+        - include: comma
+        - include: number
+        - include: string
+        - include: bad_names
+        - include: bad_operators
+        - match: '[A-z][A-z\d'']*'
+          scope: entity.parameter.grace
+    - include: string
+    - include: generic
+    - match: '(?<![A-z\d''])(return)(?![A-z\d''])'
+      scope: keyword.control.grace
+    - match: '(?<=[^-|@#!%$?&=:\.\*~+\</>\\\^]|^)(:|=|:=|\.|->)(?=[^-|@#!%$?&=:\.\*~+\</>\\\^]|$)'
+      scope: keyword.operator.grace
+    - match: '[-|@#!%$?&=:\.\*~+\</>\\\^]*'
+      scope: support.function.operator.grace
+    - match: '(?<![A-z\d''])(dialect|import|as|object|method|class|type|def|var|where|is|inherits)(?![A-z\d''])'
+      scope: keyword.grace
+    - include: number
+    - match: '(?<![A-z\d''])(super|self|outer)(?![A-z\d''])'
+      scope: variable.language.self.grace
+    - match: '(?<![A-z\d''])true(?![A-z\d''])'
+      scope: constant.language.boolean.true.grace
+    - match: '(?<![A-z\d''])false(?![A-z\d''])'
+      scope: constant.language.boolean.false.grace
+    - match: '(?<![A-z\d''])[A-Z][A-z\d'']*(?![A-z\d'']|\s*\.\s*[A-z])'
+      scope: support.type.grace
+  comment:
+    - match: //.*$
+      scope: comment.line.grace
+  bad_names:
+    - match: '(?<![A-z\d''])(dialect|import|as|object|method|class|type|def|var|where|is|inherits|self|super|outer)(?![A-z\d''])'
+      scope: invalid.illegal.grace
+  bad_operators:
+    - match: '[-|@#!%$?&=:\.\*~+\</>\\\^]+'
+      scope: invalid.illegal.grace
+  comma:
+    - match: ","
+      scope: keyword.grace
+  generic:
+    - match: '(?:([A-Z][A-z\d'']*)|[a-z][A-z\d'']*)(<)(?![-|@#!%$?&=:\.\*~+\</>\\\^])'
+      captures:
+        1: support.type.grace
+        2: keyword.operator.grace
+      push:
+        - meta_scope: meta.type.generic.grace
+        - match: (>)
+          captures:
+            1: keyword.operator.grace
+          pop: true
+        - include: comment
+        - include: generic
+        - include: main
+        - include: type
+  number:
+    - match: '\b((0(x|X)[0-9a-fA-F]+)|([0-9]+(\.[0-9]+)?))\b'
+      scope: constant.numeric.grace
+  signature:
+    - include: comment
+    - match: '(?<=[^-|@#!%$?&=:\.\*~+\</>\\\^]|^)(->)(?=[^-|@#!%$?&=:\.\*~+\</>\\\^]|$)'
+      captures:
+        1: keyword.operator.grace
+      push:
+        - match: '(?=(?<![A-z\d''])is(?![A-z\d''])|\{|\}|(?<=[A-z\d''">)])(?<!->)\s+$)'
+          pop: true
+        - include: main
+        - include: type
+    - match: '(prefix)\s*(?:(:(?:=?)(?=[^-|@#!%$?&=:\.\*~+\</>\\\^]))|([-|@#!%$?&=:\.\*~+\</>\\\^]*))'
+      scope: meta.signature.prefix.grace
+      captures:
+        1: keyword.grace
+        2: invalid.illegal.grace
+        3: entity.function.grace
+    - match: '([A-z][A-z0-9'']*)\s*(:=)\s*(?=\()'
+      scope: meta.signature.assign.grace
+      captures:
+        1: entity.function.grace
+        2: keyword.operator.grace
+    - match: '(?:(:(?:=?))|([-|@#!%$?&=:\.\*~+\</>\\\^]+))\s*(?=\()'
+      scope: meta.signature.binary.grace
+      captures:
+        1: invalid.illegal.grace
+        2: entity.function.grace
+    - match: '(?<![A-z\d''])(is)(?![A-z\d''])'
+      captures:
+        1: keyword.grace
+      push:
+        - match: '(?=\{|\}|(?<=[A-z\d''">)])(?<!is)\s+$)'
+          pop: true
+        - include: main
+        - match: '[A-z][A-z\d'']*'
+          scope: support.annotation.grace
+    - match: \(
+      push:
+        - meta_scope: meta.signature.parameters.grace
+        - match: \)
+          pop: true
+        - include: signature_args
+    - match: (?<=\w)(<)
+      captures:
+        1: keyword.generic.grace
+      push:
+        - match: (>)
+          captures:
+            1: keyword.generic.grace
+          pop: true
+        - include: comment
+        - include: comma
+        - match: "[A-z][A-z0-9']*"
+          scope: support.type.grace
+    - include: bad_names
+    - include: bad_operators
+    - match: '[A-z][A-z\d'']*(?=\s*[,\:\)])'
+      scope: entity.function.grace
+  signature_args:
+    - include: comment
+    - match: \*
+      scope: keyword.variadic.grace
+    - match: '(?<![^\w\d''\s\(,])(:)(?![^\w\d''\s\),])'
+      captures:
+        1: keyword.operator.grace
+      push:
+        - match: '(?=,|\)|(?<=[^-|@#!%$?&=:\.\*~+\</>\\\^]|^)(:|=|:=|->)(?=[^-|@#!%$?&=:\.\*~+\</>\\\^]|$))'
+          pop: true
+        - include: main
+        - include: type
+    - match: '[A-z][A-z\d'']*(?=\s*[,\:\)])'
+      scope: entity.function.grace
+    - include: comma
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.grace
+      push:
+        - meta_scope: string.quoted.double.grace
+        - match: (")|(\n)
+          captures:
+            1: punctuation.definition.string.end.grace
+            2: invalid.illegal.grace
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.grace
+        - match: '\{'
+          captures:
+            0: keyword.interpolation.begin.grace
+          push:
+            - meta_scope: source.embedded.grace
+            - match: '\}'
+              captures:
+                0: keyword.interpolation.end.grace
+              pop: true
+            - include: main
+  type:
+    - match: '[A-z][A-z\d'']*(?![A-z\d'']|\s*\.\s*[A-z])'
+      scope: support.type.grace

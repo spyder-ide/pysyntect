@@ -1,0 +1,188 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JavaServer Pages
+file_extensions:
+  - jsp
+  - jspf
+  - tag
+scope: text.html.jsp
+contexts:
+  main:
+    - include: xml_tags
+    - include: scope:text.html.basic
+  comment:
+    - match: <%--
+      captures:
+        0: punctuation.definition.comment.jsp
+      push:
+        - meta_scope: comment.block.jsp
+        - match: "--%>"
+          captures:
+            0: punctuation.definition.comment.jsp
+          pop: true
+  declaration:
+    - match: <%!
+      captures:
+        0: punctuation.section.embedded.begin.jsp
+      push:
+        - meta_scope: meta.embedded.line.declaration.jsp
+        - meta_content_scope: source.java
+        - match: (%)>
+          captures:
+            0: punctuation.section.embedded.end.jsp
+            1: source.java
+          pop: true
+        - include: scope:source.java
+  el_expression:
+    - match: '\$\{'
+      captures:
+        0: punctuation.section.embedded.begin.jsp
+      push:
+        - meta_scope: meta.embedded.line.el_expression.jsp
+        - meta_content_scope: source.java
+        - match: '(\})'
+          captures:
+            0: punctuation.section.embedded.end.jsp
+            1: source.java
+          pop: true
+        - include: scope:source.java
+  expression:
+    - match: <%=
+      captures:
+        0: punctuation.section.embedded.begin.jsp
+      push:
+        - meta_scope: meta.embedded.line.expression.jsp
+        - meta_content_scope: source.java
+        - match: (%)>
+          captures:
+            0: punctuation.section.embedded.end.jsp
+            1: source.java
+          pop: true
+        - include: scope:source.java
+  scriptlet:
+    - match: <%
+      captures:
+        0: punctuation.section.embedded.begin.jsp
+      push:
+        - meta_scope: meta.embedded.block.scriptlet.jsp
+        - meta_content_scope: source.java
+        - match: (%)>
+          captures:
+            0: punctuation.section.embedded.end.jsp
+            1: source.java
+          pop: true
+        - match: '\{'
+          scope: punctuation.section.scope.begin.java
+        - match: '\}'
+          scope: punctuation.section.scope.end.java
+        - include: scope:source.java
+  tags:
+    - match: (<%@)\s*(?=(attribute|include|page|tag|taglib|variable)\s)
+      captures:
+        1: punctuation.definition.tag.begin.jsp
+      push:
+        - meta_scope: meta.tag.template.include.jsp
+        - match: "%>"
+          captures:
+            0: punctuation.definition.tag.end.jsp
+          pop: true
+        - match: \G(attribute)(?=\s)
+          captures:
+            1: keyword.control.attribute.jsp
+          push:
+            - match: (?=%>)
+              captures:
+                1: keyword.control.attribute.jsp
+              pop: true
+            - match: '(name|required|fragment|rtexprvalue|type|description)(=)((")[^"]*("))'
+              captures:
+                1: entity.other.attribute-name.jsp
+                2: punctuation.separator.key-value.jsp
+                3: string.quoted.double.jsp
+                4: punctuation.definition.string.begin.jsp
+                5: punctuation.definition.string.end.jsp
+        - match: \G(include)(?=\s)
+          captures:
+            1: keyword.control.include.jsp
+          push:
+            - match: (?=%>)
+              captures:
+                1: keyword.control.include.jsp
+              pop: true
+            - match: '(file)(=)((")[^"]*("))'
+              captures:
+                1: entity.other.attribute-name.jsp
+                2: punctuation.separator.key-value.jsp
+                3: string.quoted.double.jsp
+                4: punctuation.definition.string.begin.jsp
+                5: punctuation.definition.string.end.jsp
+        - match: \G(page)(?=\s)
+          captures:
+            1: keyword.control.page.jsp
+          push:
+            - match: (?=%>)
+              captures:
+                1: keyword.control.page.jsp
+              pop: true
+            - match: '(language|extends|import|session|buffer|autoFlush|isThreadSafe|info|errorPage|isErrorPage|contentType|pageEncoding|isElIgnored)(=)((")[^"]*("))'
+              captures:
+                1: entity.other.attribute-name.jsp
+                2: punctuation.separator.key-value.jsp
+                3: string.quoted.double.jsp
+                4: punctuation.definition.string.begin.jsp
+                5: punctuation.definition.string.end.jsp
+        - match: \G(tag)(?=\s)
+          captures:
+            1: keyword.control.tag.jsp
+          push:
+            - match: (?=%>)
+              captures:
+                1: keyword.control.tag.jsp
+              pop: true
+            - match: '(display-name|body-content|dynamic-attributes|small-icon|large-icon|description|example|language|import|pageEncoding|isELIgnored)(=)((")[^"]*("))'
+              captures:
+                1: entity.other.attribute-name.jsp
+                2: punctuation.separator.key-value.jsp
+                3: string.quoted.double.jsp
+                4: punctuation.definition.string.begin.jsp
+                5: punctuation.definition.string.end.jsp
+        - match: \G(taglib)(?=\s)
+          captures:
+            1: keyword.control.taglib.jsp
+          push:
+            - match: (?=%>)
+              captures:
+                1: keyword.control.taglib.jsp
+              pop: true
+            - match: '(uri|tagdir|prefix)(=)((")[^"]*("))'
+              captures:
+                1: entity.other.attribute-name.jsp
+                2: punctuation.separator.key-value.jsp
+                3: string.quoted.double.jsp
+                4: punctuation.definition.string.begin.jsp
+                5: punctuation.definition.string.end.jsp
+        - match: \G(variable)(?=\s)
+          captures:
+            1: keyword.control.variable.jsp
+          push:
+            - match: (?=%>)
+              captures:
+                1: keyword.control.variable.jsp
+              pop: true
+            - match: '(name-given|alias|variable-class|declare|scope|description)(=)((")[^"]*("))'
+              captures:
+                1: entity.other.attribute-name.jsp
+                2: punctuation.separator.key-value.jsp
+                3: string.quoted.double.jsp
+                4: punctuation.definition.string.begin.jsp
+                5: punctuation.definition.string.end.jsp
+  xml_tags:
+    - match: (^\s*)(?=<jsp:(declaration|expression|scriptlet)>)
+      captures:
+        0: punctuation.whitespace.embedded.leading.erb
+      push:
+        - match: (?!\G)(\s*$\n)?
+          captures:
+            0: punctuation.whitespace.embedded.trailing.erb
+          pop: true

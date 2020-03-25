@@ -1,0 +1,154 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Chapel
+file_extensions:
+  - chpl
+scope: source.chapel
+contexts:
+  main:
+    - include: comments
+    - match: \b(align|as|atomic|begin|borrowed|break|by|catch|class|cobegin|coforall|continue|delete|dmapped|do|else|enum|except|export|extern|for|forall|if|index|inline|in|inout|iter|label|lambda|let|lifetime|local|module|new|noinit|on|only|otherwise|out|override|owned|pragma|private|proc|prototype|public|record|reduce|require|return|scan|select|serial|shared|sync|then|throw|throws|try|union|unmanaged|use|when|where|while|with|yield|zip)\b
+      scope: keyword.control.chapel
+    - match: \b(bool|bytes|complex|dmap|domain|imag|int|nothing|opaque|range|real|string|subdomain|tuple|uint|void)\b
+      scope: storage.type.chapel
+    - match: \b(borrowed|config|const|enum|owned|param|private|public|ref|single|shared|sparse|sync|type|unmanaged|var)\b
+      scope: storage.modifier.chapel
+    - match: \b(true|false|nil)\b
+      scope: constant.language.chapel
+    - match: '\b((0(b|B)[0-1]([0-1]|_)*)|(0(o|O)[0-7]([0-7]|_)*)|(0(x|X)((([0-9a-fA-F]([0-9a-fA-F]|_)*\.?([0-9a-fA-F]([0-9a-fA-F]|_)*)?)|(\.[0-9a-fA-F]([0-9a-fA-F]|_)*))((p|P)(\+|-)?[0-9]([0-9]|_)*)?))|(0(x|X)[0-9a-fA-F]([0-9a-fA-F]|_)*)|((([0-9]([0-9]|_)*\.?([0-9]([0-9]|_)*)?)|(\.[0-9]([0-9]|_)*))((e|E)(\+|-)?[0-9]([0-9]|_)*)?))\b'
+      scope: constant.numeric.chapel
+    - match: \b(FileAccessMode|here|LocaleSpace|Locales|locale|numLocales|super|these|this)\b
+      scope: variable.language.chapel
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.chapel
+      push:
+        - meta_scope: string.quoted.double.chapel
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.chapel
+          pop: true
+        - include: string_escaped_char
+        - include: string_placeholder
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.chapel
+      push:
+        - meta_scope: string.quoted.single.chapel
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.chapel
+          pop: true
+        - include: string_escaped_char
+    - match: <\=|>\=|\=\=|<|>|\!\=
+      scope: keyword.operator.comparison.chapel
+    - match: \+\=|-\=|\*\=|/\=|//\=|%\=|&\=|\|\=|\^\=|>>\=|<<\=|\*\*\=
+      scope: keyword.operator.assignment.augmented.chapel
+    - match: \+|\-|\*|\*\*|/|//|%|<<|>>|&|\||\^|~|<\=>\\.\.\.
+      scope: keyword.operator.arithmetic.chapel
+    - match: \=
+      scope: keyword.operator.assignment.chapel
+    - match: ":"
+      scope: keyword.operator.others.chapel
+    - match: '\[|\]'
+      scope: keyword.operator.domain.chapel
+    - match: '^\s*(proc)\s+(?=[A-Za-z_][A-Za-z0-9_]*)'
+      captures:
+        1: keyword.control.chapel
+      push:
+        - meta_scope: meta.function.chapel
+        - match: (\()|\s*($\n?|#.*$\n?)
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.chapel
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+        - match: proc
+        - match: (\()
+          push:
+            - meta_content_scope: meta.function.parameters.chapel
+            - match: '(?=\)).*\{'
+              pop: true
+            - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)'
+              captures:
+                1: variable.parameter.function.chapel
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*\s*\()'
+      push:
+        - meta_scope: meta.function-call.chapel
+        - match: (\))
+          pop: true
+        - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*\()'
+          push:
+            - match: (?=\s*\()
+              pop: true
+            - include: builtin_functions
+        - match: (\()
+          captures:
+            1: punctuation.definition.arguments.begin.chapel
+          push:
+            - meta_content_scope: meta.function-call.arguments.chapel
+            - match: (?=\))
+              pop: true
+            - include: main
+  builtin_functions:
+    - match: |-
+        (?x)\b(
+                      	 abs | close | exit| max | min | open | read | readln | sqrt | write | writeln
+
+        			)\b
+      scope: support.function.builtin.chapel
+  comments:
+    - match: ^/\* =(\s*.*?)\s*= \*/$\n?
+      scope: comment.block.chapel
+      captures:
+        1: meta.toc-list.banner.block.c
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.c
+      push:
+        - meta_scope: comment.block.chapel
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.c
+          pop: true
+    - match: \*/.*\n
+      scope: invalid.illegal.stray-comment-end.c
+    - match: ^// =(\s*.*?)\s*=\s*$\n?
+      scope: comment.line.banner.c++
+      captures:
+        1: meta.toc-list.banner.line.c
+    - match: //
+      captures:
+        0: punctuation.definition.comment.c
+      push:
+        - meta_scope: comment.line.double-slash.c++
+        - match: $\n?
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.c++
+  entity_name_function:
+    - include: illegal_names
+    - include: generic_names
+  generic_names:
+    - match: "[A-Za-z_][A-Za-z0-9_]*"
+  illegal_names:
+    - match: \b(align|as|atomic|begin|borrowed|break|by|bytes|catch|class|cobegin|coforall|continue|delete|dmapped|do|else|enum|except|export|extern|for|forall|if|index|inline|in|inout|iter|label|lambda|let|lifetime|local|module|new|noinit|nothing|on|only|otherwise|out|override|owned|pragma|private|proc|public|record|reduce|ref|require|return|scan|select|serial|shared|single|sync|then|throw|throws|try|union|unmanaged|use|var|void|when|where|while|with|yield|zip)\b
+      scope: invalid.illegal.name.chapel
+  string_escaped_char:
+    - match: '\\(\\|[abefnprtv''"?]|[0-3]\d{0,2}|[4-7]\d?|x[a-fA-F0-9]{0,2}|u[a-fA-F0-9]{0,4}|U[a-fA-F0-9]{0,8})'
+      scope: constant.character.escape.c
+    - match: \\.
+      scope: invalid.illegal.unknown-escape.c
+  string_placeholder:
+    - match: |-
+        (?x)%
+        	(\d+\$)?                             # field (argument #)
+        	[#0\- +']*                           # flags
+        	[,;:_]?                              # separator character (AltiVec)
+        	((-?\d+)|\*(-?\d+\$)?)?              # minimum field width
+        	(\.((-?\d+)|\*(-?\d+\$)?)?)?         # precision
+        	(hh|h|ll|l|j|t|z|q|L|vh|vl|v|hv|hl)? # length modifier
+        	[diouxXDOUeEfFgGaACcSspn%]           # conversion type
+      scope: constant.other.placeholder.c

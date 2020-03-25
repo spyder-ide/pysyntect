@@ -1,0 +1,498 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Wavefront Object
+file_extensions:
+  - obj
+scope: source.wavefront.obj
+contexts:
+  main:
+    - include: comment
+    - include: line-continuation
+    - include: general
+    - include: vertex
+    - include: elements
+    - include: attributes
+    - include: body-statements
+    - include: connect
+    - include: grouping
+    - include: display
+    - include: superseded
+    - include: number
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.wavefront.obj
+      push:
+        - meta_scope: comment.line.number-sign.wavefront.obj
+        - match: $
+          pop: true
+  args:
+    - match: \G
+      push:
+        - meta_scope: meta.arguments.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: global
+        - match: '\$[1-9]+'
+          scope: variable.language.substituted.wavefront.obj
+  attributes:
+    - match: ^\s*(cstype)(?:\s+(rat(?=\s|$))?\s*(?:(bmatrix|bezier|bspline|cardinal|taylor))?)?(?=\s|$)
+      scope: meta.free-form.attribute.type.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.rational-form.wavefront.obj
+        3: entity.value.wavefront.obj
+    - match: ^\s*(deg)(?:\s+(\d+)(?=\s|$))?(?:\s+(\d+))?(?=\s|$)
+      scope: meta.free-form.attribute.polynomial-degree.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.numeric.u-degree.wavefront.obj
+        3: constant.numeric.v-degree.wavefront.obj
+    - match: ^\s*(bmat)(?:\s+(u|v)(?=\s|$)\s*)?
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.type.wavefront.obj
+      push:
+        - meta_scope: meta.free-form.attribute.$2.basis-matrix.wavefront.obj
+        - meta_content_scope: meta.matrix.wavefront.obj
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - include: global
+    - match: ^\s*(step)(?:\s+(\d+))?(?:\s+(\d+))?(?=\s|$)
+      scope: meta.free-form.attribute.step-size.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.numeric.u-size.wavefront.obj
+        3: constant.numeric.v-size.wavefront.obj
+  body-statements:
+    - match: ^\s*(parm)\s+(u|v)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.direction.wavefront.obj
+      push:
+        - meta_scope: meta.body-statement.parameter.$2-direction.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: global
+    - match: ^\s*(trim)(?:\s+|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.body-statement.trimming-loop.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: curveref
+        - include: global
+    - match: ^\s*(scrv)(?:\s+|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.body-statement.special-curve.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: curveref
+        - include: global
+    - match: ^\s*(sp)(?:\s+|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.body-statement.special-point.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref-single
+        - include: global
+    - match: ^\s*end(?=\s|$|#)
+      scope: keyword.control.body-statement.end.wavefront.obj
+  connect:
+    - match: |-
+        (?x)
+        ^\s*
+
+        (con)           # 1: keyword.function.$1.wavefront.obj
+
+        \s+(\d+)      # 2: entity.value.first-surface.index.wavefront.obj
+        \s+([-\d.]+)  # 3: entity.value.first-surface.start.wavefront.obj
+        \s+([-\d.]+)  # 4: entity.value.first-surface.end.wavefront.obj
+        \s+(\d+)      # 5: entity.value.first-surface.curve.wavefront.obj
+
+        \s+(\d+)      # 6: entity.value.second-surface.index.wavefront.obj
+        \s+([-\d.]+)  # 7: entity.value.second-surface.start.wavefront.obj
+        \s+([-\d.]+)  # 8: entity.value.second-surface.end.wavefront.obj
+        \s+(\d+)      # 9: entity.value.second-surface.curve.wavefront.obj
+      scope: meta.free-form.connectivity.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.value.first-surface.index.wavefront.obj
+        3: entity.value.first-surface.start.wavefront.obj
+        4: entity.value.first-surface.end.wavefront.obj
+        5: entity.value.first-surface.curve.wavefront.obj
+        6: entity.value.first-surface.index.wavefront.obj
+        7: entity.value.first-surface.start.wavefront.obj
+        8: entity.value.first-surface.end.wavefront.obj
+        9: entity.value.first-surface.curve.wavefront.obj
+  curveref:
+    - match: '([-\d.]+)\s+([-\d.]+)\s+(\d+)'
+      scope: meta.curve-reference.wavefront.obj
+      captures:
+        1: constant.numeric.start-value.wavefront.obj
+        2: constant.numeric.end-value.wavefront.obj
+        3: constant.numeric.curve-index.wavefront.obj
+  display:
+    - match: ^\s*(bevel)\s+(on|off)(?=\s|$|#)
+      scope: meta.display.polygonal.attribute.bevel.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.boolean.$2.wavefront.obj
+    - match: ^\s*(c_interp)\s+(on|off)(?=\s|$|#)
+      scope: meta.display.polygonal.attribute.colour-interpolation.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.boolean.$2.wavefront.obj
+    - match: ^\s*(d_interp)\s+(on|off)(?=\s|$|#)
+      scope: meta.display.polygonal.attribute.dissolve-interpolation.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.boolean.$2.wavefront.obj
+    - match: '^\s*(lod)\s+([-\d.]+)'
+      scope: meta.display.attribute.level-of-detail.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.value.wavefront.obj
+    - match: ^\s*(maplib)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.display.attribute.map-library.wavefront.obj
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - match: (?!#)\S+(?<!#)
+          scope: string.filename.wavefront.obj
+        - include: global
+    - match: ^\s*(usemap)\s+(?:(off)|(?!#)(\S+)(?<!#))
+      scope: meta.display.attribute.use-map.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.boolean.off.wavefront.obj
+        3: variable.parameter.map-name.wavefront.obj
+    - match: ^\s*(usemtl)\s+(?!#)(\S+)(?<!#)
+      scope: meta.display.attribute.use-material.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: variable.parameter.material-name.wavefront.obj
+    - match: ^\s*(mtllib)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.display.attribute.material-library.wavefront.obj
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - match: (?!#)\S+(?<!#)
+          scope: string.filename.wavefront.obj
+        - include: global
+    - match: ^\s*(shadow_obj)\s+(?!#)(\S+)(?<!#)
+      scope: meta.display.attribute.shadow-object.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: string.filename.wavefront.obj
+    - match: ^\s*(trace_obj)\s+(?!#)(\S+)(?<!#)
+      scope: meta.display.attribute.trace-object.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: string.filename.wavefront.obj
+    - match: ^\s*(ctech)\s+(cparm|cspace|curv)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.$2.wavefront.obj
+      push:
+        - meta_scope: meta.display.free-form.attribute.curve-technique.wavefront.obj
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - match: '\G(?<=cparm)\s+([-\d.]+)'
+          scope: entity.value.resolution.wavefront.obj
+          captures:
+        - match: '\G(?<=cspace)\s+([-\d.]+)'
+          scope: entity.value.max-length.wavefront.obj
+          captures:
+        - match: '\G(?<=curv)\s+([-\d.]+)\s+([-\d.]+)'
+          captures:
+            1: entity.value.max-distance.wavefront.obj
+            2: entity.value.max-angle.wavefront.obj
+        - include: global
+    - match: ^\s*(stech)\s+(cparma|cparmb|cspace|curv)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.$2.wavefront.obj
+      push:
+        - meta_scope: meta.display.free-form.attribute.surface-technique.wavefront.obj
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - match: '\G(?<=cparma)\s+([-\d.]+)\s+([-\d.]+)'
+          captures:
+            1: entity.value.u-resolution.wavefront.obj
+            2: entity.value.v-resolution.wavefront.obj
+        - match: '\G(?<=cparmb)\s+([-\d.]+)'
+          scope: entity.value.uv-resolution.wavefront.obj
+          captures:
+        - match: '\G(?<=cspace)\s+([-\d.]+)'
+          scope: entity.value.max-length.wavefront.obj
+          captures:
+        - match: '\G(?<=curv)\s+([-\d.]+)\s+([-\d.]+)'
+          captures:
+            1: entity.value.max-distance.wavefront.obj
+            2: entity.value.max-angle.wavefront.obj
+        - include: global
+  elements:
+    - match: ^\s*(p)(?:\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.polygonal.element.point.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref-single
+        - include: global
+    - match: ^\s*(l)(?:\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.polygonal.element.line.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref-double
+        - include: vertref-single
+        - include: global
+    - match: ^\s*(?:(f)|(fo))(?:\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: invalid.deprecated.wavefront.obj
+      push:
+        - meta_scope: meta.polygonal.element.face.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref
+        - include: global
+    - match: '^\s*(curv)\s+([-\d.]+)\s+([-\d.]+)'
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.value.start-value.wavefront.obj
+        3: entity.value.end-value.wavefront.obj
+      push:
+        - meta_scope: meta.free-form.element.curve.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref-single
+        - include: global
+    - match: ^\s*(curv2)(?:\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.free-form.element.curve-2d.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref-single
+        - include: global
+    - match: '^\s*(surf)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)'
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.value.u-start.wavefront.obj
+        3: entity.value.u-end.wavefront.obj
+        4: entity.value.v-start.wavefront.obj
+        5: entity.value.v-end.wavefront.obj
+      push:
+        - meta_scope: meta.free-form.element.surface.wavefront.obj
+        - match: (?<!\\)$
+          pop: true
+        - include: vertref
+        - include: global
+  general:
+    - match: ^\s*(call)(?:\s+(?!#)(\S+)?)?
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: string.filename.wavefront.obj
+      push:
+        - meta_scope: meta.function-call.$1.wavefront.obj
+        - match: $
+          pop: true
+        - include: args
+    - match: ^\s*(csh)(?:\s+(-)(\w*))
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: punctuation.definition.dash.wavefront.obj
+        3: string.command-name.wavefront.obj
+      push:
+        - meta_scope: meta.function-call.$1.ignore-errors.wavefront.obj
+        - match: $
+          pop: true
+        - include: args
+    - match: ^\s*(csh)(?:\s+(\w+))?
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: string.command-name.wavefront.obj
+      push:
+        - meta_scope: meta.function-call.$1.wavefront.obj
+        - match: $
+          pop: true
+        - include: args
+  global:
+    - include: comment
+    - include: number
+    - include: line-continuation
+  grouping:
+    - match: ^\s*(g)(?:\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.grouping-statement.group.wavefront.obj
+        - meta_content_scope: meta.group-names.wavefront.obj
+        - match: (?<!\\)$|(?=#)
+          pop: true
+        - match: (?!#)\S+(?<!#)
+          scope: variable.parameter.group-name.wavefront.obj
+        - include: global
+    - match: ^\s*(s)\s+(?:(\d+)|(off))(?=\s|$|#)
+      scope: meta.grouping-statement.smoothing-group.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.numeric.wavefront.obj
+        3: constant.language.boolean.off.wavefront.obj
+    - match: '^\s*(mg)\s+(?:(off)(?=\s|$|#)|(\d+)\s+([-\d.]+))'
+      scope: meta.free-form.grouping-statement.merge-group.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: constant.language.boolean.off.wavefront.obj
+        3: entity.group-number.wavefront.obj
+        4: entity.max-distance.wavefront.obj
+    - match: ^\s*(o)\s+(?!#)(\S+)(?<!#)
+      scope: meta.grouping-statement.user-defined.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: variable.parameter.object-name.wavefront.obj
+  ijk:
+    - match: \G\s*(?!#)(\S+)(?<!#)\s+(?!#)(\S+)(?<!#)\s+(?!#)(\S+)(?<!#)
+      scope: meta.vector.ijk.wavefront.obj
+      captures:
+        1: entity.i.coordinate.wavefront.obj
+        2: entity.j.coordinate.wavefront.obj
+        3: entity.k.coordinate.wavefront.obj
+  line-continuation:
+    - match: \\
+      scope: constant.character.escape.newline.wavefront.obj
+  number:
+    - match: '(?<=[\s,]|^)-?\d+(?![-\d.])'
+      scope: constant.numeric.integer.wavefront.obj
+    - match: '(?<=[\s,]|^)-?(\d+)(?:(\.)(\d+))?\b'
+      scope: constant.numeric.float.wavefront.obj
+      captures:
+        1: leading.decimal
+        2: decimal.separator
+        3: trailing.decimal
+    - match: '(?<=[\s,]|^)-?(\.)(\d+)\b'
+      scope: constant.numeric.float.no-leading-digits.wavefront.obj
+      captures:
+        1: decimal.separator
+        2: trailing.decimal
+  superseded:
+    - match: '^\s*(bsp)(?:$|((?:\s+\d+(?=\s)){0,16}))'
+      scope: invalid.deprecated.b-spline-patch.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: meta.arguments.wavefront.obj
+    - match: '^\s*(bzp)(?:$|((?:\s+\d+(?=\s)){0,16}))'
+      scope: invalid.deprecated.bezier-patch.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: meta.arguments.wavefront.obj
+    - match: ^\s*(cdc)(?:$|((?:\s+\d+(?=\s))*))
+      scope: invalid.deprecated.cardinal-curve.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: meta.arguments.wavefront.obj
+    - match: '^\s*(cdp)(?:$|((?:\s+\d+(?=\s)){0,16}))'
+      scope: invalid.deprecated.cardinal-patch.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: meta.arguments.wavefront.obj
+    - match: '^\s*(res)\s+([-\d.]+)\s+([-\d.]+)'
+      scope: invalid.deprecated.display.attribute.segment-resolution.wavefront.obj
+      captures:
+        1: keyword.function.$1.wavefront.obj
+        2: entity.value.u-segments.wavefront.obj
+        3: entity.value.v-segments.wavefront.obj
+  uvw:
+    - match: \G\s*(?!#)(\S+)(?<!#)\s+(?!#)(\S+)(?<!#)\s+(?!#)(\S+)(?<!#)
+      scope: meta.vector.uvw.wavefront.obj
+      captures:
+        1: entity.u.coordinate.wavefront.obj
+        2: entity.v.coordinate.wavefront.obj
+        3: entity.w.coordinate.wavefront.obj
+  vertex:
+    - match: ^\s*(v)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.vertex.geometric.wavefront.obj
+        - match: (?=$|#)
+          pop: true
+        - include: xyzw
+        - include: global
+    - match: ^\s*(vp)(?=\s|$)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.vertex.parameter-space.wavefront.obj
+        - match: $
+          pop: true
+        - include: uvw
+        - include: global
+    - match: ^\s*(vn)(?=\s|$)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.vertex.normal.wavefront.obj
+        - match: $
+          pop: true
+        - include: ijk
+        - include: global
+    - match: ^\s*(vt)(?=\s|$)
+      captures:
+        1: keyword.function.$1.wavefront.obj
+      push:
+        - meta_scope: meta.vertex.texture.wavefront.obj
+        - match: $
+          pop: true
+        - include: uvw
+        - include: global
+  vertref:
+    - include: vertref-triple
+    - include: vertref-double
+    - include: vertref-single
+  vertref-double:
+    - match: (?<=\s)(-?\d+)(\/)(-?\d+)(?=\s|$)
+      scope: meta.vertex-reference.double.wavefront.obj
+      captures:
+        1: meta.first.wavefront.obj
+        2: punctuation.separator.slash.wavefront.obj
+        3: meta.second.wavefront.obj
+  vertref-single:
+    - match: '-\d+'
+      scope: constant.numeric.vertex-reference.relative.wavefront.obj
+    - match: \d+
+      scope: constant.numeric.vertex-reference.absolute.wavefront.obj
+  vertref-triple:
+    - match: (?<=\s)(-?\d+)(\/)(-?\d+)?(\/)(-?\d+)(?=\s|$)
+      scope: meta.vertex-reference.triple.wavefront.obj
+      captures:
+        1: meta.first.wavefront.obj
+        2: punctuation.separator.slash.wavefront.obj
+        3: meta.second.wavefront.obj
+        4: punctuation.separator.slash.wavefront.obj
+        5: meta.third.wavefront.obj
+  xyzw:
+    - match: \G\s*(?!#)(\S+)(?<!#)\s+(?!#)(\S+)(?<!#)\s+(?!#)(\S+)(?<!#)(?:\s+(?!#)(\S+)(?<!#))?
+      scope: meta.vector.xyzw.wavefront.obj
+      captures:
+        1: entity.x.coordinate.wavefront.obj
+        2: entity.y.coordinate.wavefront.obj
+        3: entity.z.coordinate.wavefront.obj
+        4: entity.w.weight.wavefront.obj

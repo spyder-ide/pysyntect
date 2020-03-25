@@ -1,0 +1,350 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Xtend
+file_extensions:
+  - xtend
+scope: source.xtend
+contexts:
+  main:
+    - match: '^\s*(package)\b(?:\s*([^ ;$]+)\s*(;)?)?'
+      scope: meta.package.xtend
+      captures:
+        1: keyword.other.package.xtend
+        2: entity.name.package.xtend
+        3: punctuation.terminator.xtend
+    - match: '^\s*(import)\s+(?:\s*([^ ;$]+)\s*(;)?)?$'
+      scope: meta.import.xtend
+      captures:
+        1: keyword.other.import.xtend
+        2: entity.name.package.xtend
+        3: punctuation.terminator.xtend
+    - match: '^\s*(import)\s+(static)\s+(?:\s*([^ ;$]+)\s*(;)?)?$'
+      scope: meta.import.static.xtend
+      captures:
+        1: keyword.other.import.xtend
+        2: keyword.other.static.xtend
+        3: entity.name.package.xtend
+        4: punctuation.terminator.xtend
+    - match: '^\s*(import)\s+(static)\s+(extension)\s+(?:\s*([^ ;$]+)\s*(;)?)?$'
+      scope: meta.import.static.extension.xtend
+      captures:
+        1: keyword.other.import.xtend
+        2: keyword.other.static.xtend
+        3: variable.language.extension.xtend
+        4: entity.name.package.xtend
+        5: punctuation.terminator.xtend
+    - include: code
+  all-types:
+    - include: primitive-arrays
+    - include: primitive-types
+    - include: object-types
+  annotations:
+    - match: '(@[^ (]+)(\()'
+      captures:
+        1: meta.tag.annotation.name.xtend
+        2: meta.tag.annotation-arguments.begin.xtend
+      push:
+        - meta_scope: meta.tag.annotation.xtend
+        - match: (\))
+          captures:
+            1: meta.tag.annotation-arguments.end.xtend
+          pop: true
+        - match: (\w*)\s*(=)
+          captures:
+            1: constant.other.key.xtend
+            2: keyword.operator.assignment.xtend
+        - include: code
+        - match: ","
+          scope: punctuation.seperator.property.xtend
+    - match: '@\w*'
+      scope: meta.tag.annotation.xtend
+  assertions:
+    - match: \b(assert)\s
+      captures:
+        1: keyword.control.assert.xtend
+      push:
+        - meta_scope: meta.declaration.assertion.xtend
+        - match: $
+          pop: true
+        - match: ":"
+          scope: keyword.operator.assert.expression-seperator.xtend
+        - include: code
+  class:
+    - match: '(?=\w?[\w\s]*(?:class|(?:@)?interface|enum)\s+\w+)'
+      push:
+        - meta_scope: meta.class.xtend
+        - match: "}"
+          captures:
+            0: punctuation.section.class.end.xtend
+          pop: true
+        - include: storage-modifiers
+        - include: comments
+        - match: (class|(?:@)?interface|enum)\s+(\w+)
+          scope: meta.class.identifier.xtend
+          captures:
+            1: storage.modifier.xtend
+            2: entity.name.type.class.xtend
+        - match: extends
+          captures:
+            0: storage.modifier.extends.xtend
+          push:
+            - meta_scope: meta.definition.class.inherited.classes.xtend
+            - match: "(?={|implements)"
+              pop: true
+            - include: object-types-inherited
+            - include: comments
+        - match: (implements)\s
+          captures:
+            1: storage.modifier.implements.xtend
+          push:
+            - meta_scope: meta.definition.class.implemented.interfaces.xtend
+            - match: '(?=\s*extends|\{)'
+              pop: true
+            - include: object-types-inherited
+            - include: comments
+        - match: "{"
+          push:
+            - meta_scope: meta.class.body.xtend
+            - match: "(?=})"
+              pop: true
+            - include: class-body
+  class-body:
+    - include: comments
+    - include: class
+    - include: enums
+    - include: methods
+    - include: annotations
+    - include: storage-modifiers
+    - include: code
+  code:
+    - include: comments
+    - include: class
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: code
+    - include: assertions
+    - include: parens
+    - include: constants-and-special-vars
+    - include: keywords
+    - include: storage-modifiers
+    - include: strings
+    - include: all-types
+  comments:
+    - match: /\*\*/
+      scope: comment.block.empty.xtend
+      captures:
+        0: punctuation.definition.comment.xtend
+    - include: scope:text.html.javadoc
+    - include: comments-inline
+  comments-inline:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.xtend
+      push:
+        - meta_scope: comment.block.xtend
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.xtend
+          pop: true
+    - match: \s*((//).*$\n?)
+      captures:
+        1: comment.line.double-slash.xtend
+        2: punctuation.definition.comment.xtend
+  constants-and-special-vars:
+    - match: \b(true|false|null)\b
+      scope: constant.language.xtend
+    - match: \b(this|new|super|it)\b
+      scope: variable.language.xtend
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDd]|UL|ul)?\b'
+      scope: constant.numeric.xtend
+    - match: '(\.)?\b([A-Z][A-Z0-9_]+)(?!<|\.class|\s*\w+\s*=)\b'
+      scope: constant.other.xtend
+      captures:
+        1: keyword.operator.dereference.xtend
+  enums:
+    - match: '^(?=\s*[A-Z0-9_]+\s*({|\(|,))'
+      push:
+        - match: "(?=;|})"
+          pop: true
+        - match: \w+
+          captures:
+            0: constant.other.enum.xtend
+          push:
+            - meta_scope: meta.enum.xtend
+            - match: "(?=,|;|})"
+              pop: true
+            - include: parens
+            - match: "{"
+              push:
+                - match: "}"
+                  pop: true
+                - include: class-body
+  keywords:
+    - match: \b(try|catch|finally|throw)\b
+      scope: keyword.control.catch-exception.xtend
+    - match: '\?|:'
+      scope: keyword.control.xtend
+    - match: \b(return|break|case|continue|default|do|while|for|switch|if|else)\b
+      scope: keyword.control.xtend
+    - match: \b(instanceof)\b
+      scope: keyword.operator.xtend
+    - match: (==|===|!==|!=|<=|>=|<>|<|>)
+      scope: keyword.operator.comparison.xtend
+    - match: (=)
+      scope: keyword.operator.assignment.xtend
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.xtend
+    - match: (\-|\+|\*|\/|%)
+      scope: keyword.operator.arithmetic.xtend
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.xtend
+    - match: (?<=\S)\.(?=\S)
+      scope: keyword.operator.dereference.xtend
+    - match: ;
+      scope: punctuation.terminator.xtend
+  lambdas:
+    - match: '(\[)(?:\s)'
+      scope: meta.tag.lambda-start.xtend
+    - match: '(?:\s)(\[)'
+      scope: meta.tag.lambda-end.xtend
+  methods:
+    - match: '(def|override)\s+(?!new)(?=\w.*\s+)(?=[^=]+\()'
+      captures:
+        1: entity.name.function.keyword.xtend
+      push:
+        - meta_scope: meta.method.xtend
+        - match: "}|(?=;)"
+          pop: true
+        - include: storage-modifiers
+        - match: (\w+)\s*\(
+          captures:
+            1: entity.name.function.xtend
+          push:
+            - meta_scope: meta.method.identifier.xtend
+            - match: \)
+              pop: true
+            - include: parameters
+        - match: (?=\w.*\s+\w+\s*\()
+          push:
+            - meta_scope: meta.method.return-type.xtend
+            - match: (?=\w+\s*\()
+              pop: true
+            - include: all-types
+        - include: throws
+        - match: "{"
+          push:
+            - meta_scope: meta.method.body.xtend
+            - match: "(?=})"
+              pop: true
+            - include: code
+  object-types:
+    - match: '\b((?:[a-z]\w*\.)*[A-Z]+\w*)<'
+      push:
+        - meta_scope: storage.type.generic.xtend
+        - match: '>|[^\w\s,\?<\[\]]'
+          pop: true
+        - include: object-types
+        - match: <
+          comment: This is just to support <>'s with no actual type prefix
+          push:
+            - meta_scope: storage.type.generic.xtend
+            - match: '>|[^\w\s,\[\]<]'
+              pop: true
+    - match: '\b((?:[a-z]\w*\.)*[A-Z]+\w*)(?=\[)'
+      push:
+        - meta_scope: storage.type.object.array.xtend
+        - match: '(?=[^\]\s])'
+          pop: true
+        - match: '\['
+          push:
+            - match: '\]'
+              pop: true
+            - include: code
+    - match: '\b(?:[a-z]\w*(\.))*[A-Z]+\w*\b'
+      scope: entity.name.type.class.xtend
+      captures:
+        1: keyword.operator.dereference.xtend
+    - match: ^\s*(\.)(?=\w+\b)
+      scope: storage.type.xtend
+      captures:
+        1: keyword.operator.dereference.xtend
+  object-types-inherited:
+    - match: '\b((?:[a-z]\w*\.)*[A-Z]+\w*)<'
+      push:
+        - meta_scope: entity.other.inherited-class.xtend
+        - match: '>|[^\w\s,<]'
+          pop: true
+        - include: object-types
+        - match: <
+          comment: This is just to support <>'s with no actual type prefix
+          push:
+            - meta_scope: storage.type.generic.xtend
+            - match: '>|[^\w\s,<]'
+              pop: true
+    - match: '\b(?:[a-z]\w*(\.))*[A-Z]+\w*'
+      scope: entity.other.inherited-class.xtend
+      captures:
+        1: keyword.operator.dereference.xtend
+  parameters:
+    - match: (final|var|val)
+      scope: storage.modifier.xtend
+    - include: primitive-arrays
+    - include: primitive-types
+    - include: object-types
+    - match: \w+
+      scope: variable.parameter.xtend
+  parens:
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: code
+  primitive-arrays:
+    - match: '\b(?:void|boolean|byte|char|short|int|float|long|double)(\[\])*\b'
+      scope: storage.type.primitive.array.xtend
+  primitive-types:
+    - match: \b(?:void|boolean|byte|char|short|int|float|long|double)\b
+      scope: storage.type.primitive.xtend
+  storage-modifiers:
+    - match: \b(public|private|protected|package|static|var|val|final|native|synchronized|abstract|threadsafe|transient)\b
+      captures:
+        1: storage.modifier.xtend
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.xtend
+      push:
+        - meta_scope: string.quoted.double.xtend
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.xtend
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.xtend
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.xtend
+      push:
+        - meta_scope: string.quoted.single.xtend
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.xtend
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.xtend
+  throws:
+    - match: throws
+      captures:
+        0: storage.modifier.xtend
+      push:
+        - meta_scope: meta.throwables.xtend
+        - match: "(?={|;)"
+          pop: true
+        - include: object-types
+  values:
+    - include: strings
+    - include: object-types
+    - include: constants-and-special-vars

@@ -1,0 +1,1668 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Reason
+file_extensions:
+  - re
+  - rei
+scope: source.reason
+contexts:
+  main:
+    - include: structure-expression-block-item
+    - include: value-expression
+  comment:
+    - include: comment-line
+    - include: comment-block-doc
+    - include: comment-block
+  attribute:
+    - match: '(?=\[(@{1,3})[[:space:]]*[[:alpha:]])'
+      push:
+        - match: '\]'
+          pop: true
+        - match: '\[(@{1,3})'
+          captures:
+            1: keyword.control.less
+          push:
+            - match: '(?=[^_\.''[:word:]])'
+              pop: true
+            - include: attribute-identifier
+        - include: attribute-payload
+  attribute-identifier:
+    - match: '\b([[:alpha:]][[:word:]]*)\b[[:space:]]*(?:(\.))'
+      captures:
+        1: support.class entity.name.class
+        2: keyword.control.less
+    - match: '\b([[:alpha:]][[:word:]]*)\b'
+      scope: entity.other.attribute-name.css constant.language constant.numeric
+  attribute-payload:
+    - match: (:)
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=\])'
+          pop: true
+        - include: structure-expression
+        - include: module-item-type
+        - include: type-expression
+    - match: '([\?])'
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=\])'
+          pop: true
+        - include: pattern-guard
+        - include: pattern
+    - include: structure-expression-block-item
+    - include: value-expression
+  class-item-inherit:
+    - match: \b(inherit)\b
+      captures:
+        1: keyword.other
+      push:
+        - match: '(;)|(?=}|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: value-expression
+  class-item-method:
+    - match: \b(method)\b
+      captures:
+        1: storage.type
+      push:
+        - match: '(;)|(?=}|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-item-let-value-bind-name-params-type-body
+  comment-block:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin
+      push:
+        - meta_scope: comment.block
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end
+          pop: true
+  comment-block-doc:
+    - match: /\*\*(?!/)
+      captures:
+        0: punctuation.definition.comment.begin
+      push:
+        - meta_scope: comment.block.documentation
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end
+          pop: true
+  comment-line:
+    - match: '(^[ \t]+)?(//)'
+      captures:
+        1: punctuation.whitespace.leading
+        2: punctuation.definition.comment
+      push:
+        - meta_scope: comment.line.double-slash
+        - match: $
+          pop: true
+  condition-lhs:
+    - match: '(?<![#\-:!?.@*/&%^+<=>|~$\\])([\?])(?![#\-:!?.@*/&%^+<=>|~$\\])'
+      captures:
+        1: keyword.control message.error variable.interpolation
+      push:
+        - match: '(?=[\)])'
+          pop: true
+        - match: '(?:\b|[[:space:]]+)([?])(?:\b|[[:space:]]+)'
+          scope: keyword.control message.error variable.interpolation
+        - include: value-expression
+  extension-node:
+    - match: '(?=\[(%{1,3})[[:space:]]*[[:alpha:]])'
+      push:
+        - match: '\]'
+          pop: true
+        - match: '\[(%{1,3})'
+          captures:
+            1: keyword.control.less
+          push:
+            - match: '(?=[^_\.''[:word:]])'
+              pop: true
+            - include: attribute-identifier
+        - include: attribute-payload
+  jsx:
+    - include: jsx-head
+    - include: jsx-tail
+  jsx-attributes:
+    - match: '\b([[:lower:]][[:word:]]*)\b[[:space:]]*(=)'
+      comment: meta.separator
+      captures:
+        1: markup.inserted constant.language support.property-value entity.name.filename
+        2: keyword.control.less
+      push:
+        - match: "(?<![=])(?=[/>[:lower:]])"
+          pop: true
+        - include: value-expression-atomic-with-paths
+    - match: '(\b([[:lower:]][[:word:]]*)\b[[:space:]]*+)'
+      captures:
+        2: markup.inserted constant.language support.property-value entity.name.filename
+  jsx-body:
+    - match: ((>))
+      captures:
+        2: punctuation.definition.tag.end.js
+      push:
+        - match: (?=</)
+          pop: true
+        - match: "[[:lower:]][[:word:]]*"
+          comment: "FIXME: seems necessary in order to properly tokenize `[[:word:]]</` boundary"
+        - include: value-expression
+  jsx-head:
+    - match: "((<))(?=[_[:alpha:]])"
+      captures:
+        2: punctuation.definition.tag.begin.js
+      push:
+        - match: \G
+          comment: meta.separator
+          push:
+            - match: "(?=[[:space:]/>])[[:space:]]*+"
+              pop: true
+            - include: module-path-simple
+            - match: '\b[[:lower:]][[:word:]]*\b'
+              scope: entity.name.tag.inline.any.html
+        - include: jsx-attributes
+        - include: jsx-body
+        - include: comment
+        - match: ((/>))|(?=</)
+          captures:
+            2: punctuation.definition.tag.end.js
+          pop: true
+  jsx-tail:
+    - match: \G(/>)|(</)
+      comment: meta.separator
+      captures:
+        1: punctuation.definition.tag.end.js
+        2: punctuation.definition.tag.begin.js
+      push:
+        - include: module-path-simple
+        - match: '\b[[:lower:]][[:word:]]*\b'
+          scope: entity.name.tag.inline.any.html
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.js
+          pop: true
+  module-item-class-type:
+    - match: \b(class)\b
+      comment: "FIXME: proper parsing"
+      captures:
+        1: keyword.other
+      push:
+        - match: '(;)|(?=}|\b(and|class|constraint|exception|external|include|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - match: '(?:\G|^)[[:space:]]*\b(type)\b'
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          push:
+            - match: (?==)
+              pop: true
+            - include: module-item-type-bind-name-tyvars
+        - match: (=)
+          captures:
+            1: keyword.control.less
+          push:
+            - match: (?=;)
+              pop: true
+            - include: attribute
+            - include: comment
+            - include: class-item-inherit
+            - include: class-item-method
+  module-item-exception:
+    - match: \b(exception)\b
+      captures:
+        1: keyword.other
+      push:
+        - match: '(;)|(?=}|\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-item-type-bind-body-item
+  module-item-external:
+    - match: \b(external)\b
+      captures:
+        1: storage.type
+      push:
+        - match: '(;)|(?=}|\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-item-let-value-bind-name-or-pattern
+        - include: module-item-let-value-bind-type
+        - match: (=)
+          captures:
+            1: keyword.control.less
+          push:
+            - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+              pop: true
+            - include: attribute
+            - match: '"'
+              push:
+                - meta_scope: string.double string.regexp
+                - match: '"'
+                  pop: true
+                - match: '(?:(%)(.*?)|(caml.*?))(?="|(?:[^\\\n]$))'
+                  captures:
+                    1: entity.other.attribute-name.css constant.language constant.numeric
+                    2: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+                    3: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+  module-item-include:
+    - match: \b(include)\b
+      captures:
+        1: keyword.control.include
+      push:
+        - match: '(;)|(?=}|\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: signature-expression
+  module-item-let:
+    - match: \b(let)\b
+      captures:
+        1: storage.type
+      push:
+        - match: '(;)|(?=}|\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-item-let-module
+        - include: module-item-let-value
+  module-item-let-module:
+    - match: '(?:\G|^)[[:space:]]*\b(module)\b'
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.control storage.type message.error
+      push:
+        - match: '(?=[;}]|\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: module-item-let-module-and
+        - include: module-item-let-module-rec
+        - include: module-item-let-module-bind-name-params-type-body
+  module-item-let-module-and:
+    - match: \b(and)\b
+      captures:
+        1: storage.type
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: module-item-let-module-bind-name-params-type-body
+  module-item-let-module-bind-body:
+    - match: (=>?)
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: structure-expression
+  module-item-let-module-bind-name-params:
+    - match: '\b([[:upper:]][[:word:]]*)\b'
+      captures:
+        1: support.class entity.name.class
+      push:
+        - match: '(?=[;:}=]|\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: module-item-let-module-param
+  module-item-let-module-bind-name-params-type-body:
+    - match: (?:\G|^)
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: module-item-let-module-bind-name-params
+        - include: module-item-let-module-bind-type
+        - include: module-item-let-module-bind-body
+  module-item-let-module-bind-type:
+    - match: (:)
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=[;}=]|\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val)\b)'
+          pop: true
+        - include: signature-expression
+  module-item-let-module-param:
+    - match: (?=\()
+      push:
+        - match: \)
+          pop: true
+        - match: \(
+          push:
+            - match: "(?=[:])"
+              pop: true
+            - include: comment
+            - include: module-name-simple
+        - match: (:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: (?=\))
+              pop: true
+            - include: signature-expression
+  module-item-let-module-rec:
+    - match: '(?:\G|^)[[:space:]]*\b(rec)\b'
+      captures:
+        1: keyword.control storage.modifier.rec
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: module-item-let-module-bind-name-params-type-body
+  module-item-let-value:
+    - include: module-item-let-value-and
+    - include: module-item-let-value-rec
+    - include: module-item-let-value-bind-name-params-type-body
+  module-item-let-value-and:
+    - match: \b(and)\b
+      captures:
+        1: storage.type
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: module-item-let-value-bind-name-params-type-body
+  module-item-let-value-bind-body:
+    - match: (=>?)
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: value-expression
+  module-item-let-value-bind-name-or-pattern:
+    - match: "(?<=[^[:word:]]and|^and|[^[:word:]]external|^external|[^[:word:]]let|^let|[^[:word:]]method|^method|[^[:word:]]rec|^rec)[[:space:]]*"
+      push:
+        - match: '(?<=[^[:space:]])|(?=[[:space:]]|[;:}=]|\b(and|as|class|constraint|exception|external|for|include|inherit|let|method|module|nonrec|open|private|rec|switch|try|type|val|while|with)\b)'
+          pop: true
+        - include: comment
+        - match: '\b(?:([_][[:word:]]+)|([[:lower:]][[:word:]]*))\b'
+          captures:
+            1: comment
+            2: entity.name.function
+        - include: module-item-let-value-bind-parens-params
+        - include: pattern
+  module-item-let-value-bind-name-params-type-body:
+    - match: "(?<=[^[:word:]]and|^and|[^[:word:]]external|^external|[^[:word:]]let|^let|[^[:word:]]method|^method|[^[:word:]]rec|^rec)"
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - match: (::)
+          comment: FIXME; hack for punned arguments
+          captures:
+            1: keyword.control
+          push:
+            - match: "(?<=[[:space:]])"
+              pop: true
+            - include: pattern
+            - match: (=)
+              captures:
+                1: markup.inserted keyword.control.less message.error
+              push:
+                - match: '(\?)|(?<=[^[:space:]=][[:space:]])(?=[[:space:]]*+[^\.])'
+                  captures:
+                    1: storage.type
+                  pop: true
+                - include: value-expression-atomic-with-paths
+        - include: module-item-let-value-bind-name-or-pattern
+        - include: module-item-let-value-bind-params-type
+        - include: module-item-let-value-bind-type
+        - include: module-item-let-value-bind-body
+  module-item-let-value-bind-params-type:
+    - match: "(?=[^[:space:]:=])"
+      push:
+        - match: '(?=[;}=]|\b(class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: module-item-let-value-param
+        - match: '(?<![:])(:)[[:space:]]*(?![[:space:]]*[:\)])'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: '(?=[;}=]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\b)'
+              pop: true
+            - include: type-expression-atomic
+  module-item-let-value-bind-parens-params:
+    - match: '\((?![\)])'
+      push:
+        - match: \)
+          pop: true
+        - include: operator
+        - include: pattern-parens-lhs
+        - include: type-annotation-rhs
+        - include: pattern
+  module-item-let-value-bind-pattern:
+    - match: "(?<=[^[:word:]]and|^and|[^[:word:]]external|^external|[^[:word:]]let|^let|[^[:word:]]method|^method|[^[:word:]]rec|^rec)"
+      push:
+        - match: '(?=[;:}=]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: module-item-let-value-bind-parens-params
+        - include: pattern
+  module-item-let-value-bind-type:
+    - match: '(?<![:])(:)(?![[:space:]]*[:\)])'
+      comment: "FIXME: lookahead"
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?==[^>]|[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\b)'
+          pop: true
+        - match: \b(type)\b
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          push:
+            - match: '([\.])'
+              captures:
+                1: entity.name.function
+              pop: true
+            - include: pattern-variable
+        - include: type-expression
+  module-item-let-value-param:
+    - include: module-item-let-value-param-label
+    - include: module-item-let-value-param-type
+    - include: module-item-let-value-param-module
+    - include: pattern
+  module-item-let-value-param-label:
+    - match: '(\b[[:lower:]][[:word:]]*\b)?[[:space:]]*(::)'
+      captures:
+        1: markup.inserted constant.language support.property-value entity.name.filename
+        2: keyword.control
+      push:
+        - match: "(?<=[[:space:]])"
+          pop: true
+        - include: pattern
+        - match: (=)
+          captures:
+            1: markup.inserted keyword.control.less message.error
+          push:
+            - match: '(\?)|(?<=[^[:space:]=][[:space:]])(?=[[:space:]]*+[^\.])'
+              captures:
+                1: storage.type
+              pop: true
+            - include: value-expression-atomic-with-paths
+  module-item-let-value-param-module:
+    - match: '\([[:space:]]*(?=\b(module)\b)'
+      comment: "FIXME: merge with pattern-parens"
+      push:
+        - match: \)
+          pop: true
+        - match: \b(module)\b
+          captures:
+            1: keyword.other message.error
+          push:
+            - match: (?=\))
+              pop: true
+            - match: '\b[[:upper:]][[:word:]]*\b'
+              scope: support.class entity.name.class
+  module-item-let-value-param-type:
+    - match: \((?=\b(type)\b)
+      comment: "FIXME: merge with pattern-parens"
+      push:
+        - match: \)
+          pop: true
+        - match: \b(type)\b
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          push:
+            - match: (?=\))
+              pop: true
+            - include: pattern-variable
+  module-item-let-value-rec:
+    - match: '(?:\G|^)[[:space:]]*\b(rec)\b'
+      captures:
+        1: keyword.control storage.modifier message.error
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: module-item-let-value-bind-name-params-type-body
+  module-item-module:
+    - match: '\b(module)\b[[:space:]]*(?!\b(type)\b|$)'
+      comment: "NOTE: this is to support the let-module case without the let prefix"
+      captures:
+        1: storage.type message.error
+      push:
+        - match: '(;)|(?=}|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-item-let-module-and
+        - include: module-item-let-module-rec
+        - include: module-item-let-module-bind-name-params-type-body
+  module-item-module-type:
+    - match: '\b(module)\b[[:space:]]*(?=\b(type)\b|$)'
+      captures:
+        1: keyword.control message.error
+      push:
+        - match: '(;)|(?=}|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - match: '(?:\G|^)[[:space:]]*\b(type)\b'
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          push:
+            - match: (?==)
+              pop: true
+            - include: comment
+            - match: "([[:upper:]][[:word:]]*)"
+              captures:
+                1: support.class entity.name.class
+        - match: (=)
+          captures:
+            1: keyword.control.less
+          push:
+            - match: (?=;)
+              pop: true
+            - include: comment
+            - include: signature-expression
+  module-item-open:
+    - match: \b(open)\b
+      captures:
+        1: keyword.control.open
+      push:
+        - match: '(;)|(?=}|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: comment
+        - include: module-path-simple
+  module-item-type:
+    - match: \b(type)\b
+      comment: "FIXME: the semi-colon is optional so we can re-use this for hover, which does not print the trailing ;"
+      captures:
+        1: keyword.other
+      push:
+        - match: '(;)|(?=[\)}]|\b(class|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-item-type-and
+        - include: module-item-type-constraint
+        - include: module-item-type-bind
+  module-item-type-and:
+    - match: '\b(and)\b([[:space:]]*type)?'
+      comment: "FIXME: the optional `type` is for module constraints"
+      captures:
+        1: keyword.other
+        2: entity.other.attribute-name.css constant.language constant.numeric
+      push:
+        - match: '(?=[;\)}]|\b(class|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+          pop: true
+        - include: module-item-type-bind-name-tyvars-body
+  module-item-type-bind: []
+  module-item-type-bind-body:
+    - match: (\+?=)
+      comment: "FIXME: parsing"
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|rec|type|val|with)\b)'
+          pop: true
+        - include: module-item-type-bind-body-item
+  module-item-type-bind-body-item:
+    - match: (=)(?!>)|\b(private)\b
+      captures:
+        1: keyword.control.less
+        2: variable.other.class.js variable.interpolation storage.modifier message.error
+    - match: '\b([[:upper:]][[:word:]]*)\b(?![[:space:]]*[\.\(])'
+      comment: "FIXME: specialized version of variant rule that also scans for ("
+      captures:
+        1: entity.other.attribute-name.css constant.language constant.numeric
+    - match: (\.\.)
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+    - match: '(\|)(?![#\-:!?.@*/&%^+<=>|~$\\])[[:space:]]*'
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=[;\)}]|\|(?![#\-:!?.@*/&%^+<=>|~$\\])|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: value-expression-constructor
+        - match: '([:])|\b(of)\b'
+          captures:
+            1: keyword.control.less
+            2: keyword.other
+        - include: type-expression
+    - match: '(:)|(\|(?![#\-:!?.@*/&%^+<=>|~$\\]))|\b(of)\b'
+      comment: "FIXME: remove this once the pretty printer no longer outputs 'of'"
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+        2: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+        3: keyword.other
+    - include: type-expression
+  module-item-type-bind-name-tyvars:
+    - match: '(?<=\G|^|\.)[[:space:]]*\b([[:lower:]][[:word:]]*)\b'
+      captures:
+        1: entity.name.function
+      push:
+        - match: '(?=\+?=|[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: attribute
+        - match: _
+          scope: comment
+        - match: '([+\-])?(?:(_)|('')([[:lower:]][[:word:]]*)\b)(?!\.[[:upper:]])'
+          comment: "FIXME: add separate type-variable rule"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+            2: comment
+            3: comment
+            4: variable.parameter string.other.link variable.language
+  module-item-type-bind-name-tyvars-body:
+    - match: '(?=(\G|^)[[:space:]]*\b[[:alpha:]])'
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: module-path-simple-prefix
+        - include: module-item-type-bind-name-tyvars
+        - include: module-item-type-bind-body
+  module-item-type-bind-nonrec:
+    - match: '(?:\G|^)[[:space:]]*\b(nonrec)\b'
+      captures:
+        1: keyword.control storage.modifier message.error
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: module-item-type-bind-name-tyvars-body
+  module-item-type-constraint:
+    - match: \b(constraint)\b
+      comment: "FIXME: proper parsing"
+      captures:
+        1: variable.other.class.js variable.interpolation storage.modifier message.error
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - match: '([+\-])?('')([_[:lower:]][[:word:]]*)\b(?!\.[[:upper:]])'
+          comment: "FIXME: add separate type-variable rule"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+            2: comment
+            3: variable.parameter string.other.link variable.language
+        - match: "="
+          scope: keyword.control.less
+        - include: type-expression
+  module-name-extended:
+    - include: module-name-simple
+    - match: '([\(])'
+      captures:
+        1: entity.other.attribute-name.css constant.language constant.numeric
+      push:
+        - match: '([\)])'
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          pop: true
+        - include: module-path-extended
+  module-name-simple:
+    - match: '\b[[:upper:]][[:word:]]*\b'
+      scope: support.class entity.name.class
+  module-path-extended:
+    - include: module-name-extended
+    - include: comment
+    - match: '([\.])'
+      comment: "NOTE: end early to avoid too much reparsing"
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?<=[[:word:]\)])|(?=[^\.[:upper:]/])'
+          pop: true
+        - match: '(?<=[\.])'
+          push:
+            - match: '(?<=[[:word:]\)])|(?=[^\.[:upper:]/])'
+              pop: true
+            - include: comment
+            - include: module-name-extended
+  module-path-extended-prefix:
+    - match: '(?=\b[[:upper:]])'
+      push:
+        - match: '([\.])|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-path-extended
+  module-path-simple:
+    - include: module-name-simple
+    - include: comment
+    - match: '([\.])'
+      comment: "NOTE: end early to avoid too much reparsing"
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?<=[[:word:]\)])|(?=[^\.[:upper:]/])'
+          pop: true
+        - match: '(?<=[\.])'
+          push:
+            - match: '(?<=[[:word:]\)])|(?=[^\.[:upper:]/])'
+              pop: true
+            - include: comment
+            - include: module-name-simple
+  module-path-simple-prefix:
+    - match: '(?=\b[[:upper:]])'
+      push:
+        - match: '([\.])|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-path-simple
+  object-item:
+    - match: \G|(;)
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=[;}]|\b(class|constraint|exception|external|include|let|module|nonrec|open|private|type|val|with)\b)'
+          pop: true
+        - include: class-item-method
+  operator:
+    - include: operator-infix
+    - include: operator-prefix
+  operator-infix:
+    - match: ;
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+    - include: operator-infix-assign
+    - include: operator-infix-builtin
+    - include: operator-infix-custom
+  operator-infix-assign:
+    - match: '(?<![#\-:!?.@*/&%^+<=>|~$\\])(=)(?![#\-:!?.@*/&%^+<=>|~$\\])'
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control.less message.error
+  operator-infix-builtin:
+    - match: ":="
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control.less message.error
+  operator-infix-custom:
+    - match: '(?:(?<![#\-:!?.@*/&%^+<=>|~$\\])((<>))(?![#\-:!?.@*/&%^+<=>|~$\\]))|([#\-@*/&%^+<=>$\\][#\-:!?.@*/&%^+<=>|~$\\]*|[|][#\-:!?.@*/&%^+<=>|~$\\]+)'
+      captures:
+        2: punctuation.definition.tag.begin.js
+        3: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+  operator-infix-custom-hash:
+    - match: '#[\-:!?.@*/&%^+<=>|~$]+'
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+  operator-prefix:
+    - include: operator-prefix-bang
+    - include: operator-prefix-label-token
+  operator-prefix-bang:
+    - match: '![\-:!?.@*/&%^+<=>|~$]*'
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+  operator-prefix-label-token:
+    - match: '[?~][\-:!?.@*/&%^+<=>|~$]+'
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+  pattern:
+    - include: attribute
+    - include: comment
+    - include: pattern-atomic
+    - match: '[[:space:]]*+(?:(\|(?![#\-:!?.@*/&%^+<=>|~$\\]))|\b(as)\b|(\.\.\.?))[[:space:]]*+'
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+        2: keyword.other
+        3: keyword.control
+  pattern-atomic:
+    - match: \b(exception)\b
+      scope: keyword.other
+    - include: value-expression-literal
+    - include: module-path-simple-prefix
+    - include: pattern-list-or-array
+    - include: pattern-record
+    - include: pattern-variable
+    - include: pattern-parens
+  pattern-guard:
+    - match: \b(when)\b
+      captures:
+        1: keyword.other
+      push:
+        - match: (?==>)
+          pop: true
+        - include: value-expression
+  pattern-list-or-array:
+    - match: '(\[\|?)(?![@%])'
+      captures:
+        1: entity.other.attribute-name.css constant.language constant.numeric
+      push:
+        - match: '(\|?\])'
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          pop: true
+        - include: value-expression-literal-list-or-array-separator
+        - include: pattern
+  pattern-parens:
+    - match: (?=\()
+      push:
+        - match: '\)|(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: pattern-parens-lhs
+        - include: type-annotation-rhs
+  pattern-parens-lhs:
+    - match: \(|(,)
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=(?:[,:\)]))|(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: pattern
+  pattern-record:
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: comment
+        - include: pattern-record-item
+  pattern-record-field:
+    - match: '\b([_][[:word:]]*)\b|\b([[:lower:]][[:word:]]*)\b'
+      captures:
+        1: comment
+        2: markup.inserted constant.language support.property-value entity.name.filename
+      push:
+        - match: "(,)|(?=})"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: comment
+        - match: \G(:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: "(?=[,}])"
+              pop: true
+            - include: pattern
+  pattern-record-item:
+    - include: module-path-simple-prefix
+    - include: pattern-record-field
+  pattern-variable:
+    - match: '\b(_(?:[[:lower:]][[:word:]]*)?)\b(?!\.[[:upper:]])'
+      captures:
+        1: comment
+    - match: '\b([[:lower:]][[:word:]]*)\b(?!\.[[:upper:]])'
+      captures:
+        1: variable.language string.other.link
+  record-path:
+    - match: '\b[[:lower:]][[:word:]]*\b'
+      push:
+        - match: '(?=[^[:space:]\.])(?!/\*)'
+          pop: true
+        - include: comment
+        - include: record-path-suffix
+  record-path-suffix:
+    - match: (\.)
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(\))|\b([[:upper:]][[:word:]]*)\b|\b([[:lower:]][[:word:]]*)\b|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\b)'
+          captures:
+            1: keyword.control
+            2: support.class entity.name.class
+            3: markup.inserted constant.language support.property-value entity.name.filename
+          pop: true
+        - include: comment
+        - match: '([\(])'
+          captures:
+            1: keyword.control
+          push:
+            - match: '(?=[\)])'
+              pop: true
+            - include: comment
+            - match: '\b([[:lower:]][[:word:]]*)\b(?=[^\)]*([\.]))'
+              captures:
+                1: markup.inserted constant.language support.property-value entity.name.filename
+                2: keyword.other
+            - match: '([\.])'
+              scope: keyword.control.less
+            - match: '\b([[:lower:]][[:word:]]*)\b[[:space:]]*'
+              captures:
+                1: variable.parameter string.other.link variable.language
+            - include: value-expression
+  signature-expression:
+    - match: '(?=\([[:space:]]*[[:upper:]][[:word:]]*[[:space:]]*:)'
+      comment: "FIXME: scan for :upper: to disambiguate type/signature in hover"
+      push:
+        - match: "(?=[;])"
+          pop: true
+        - match: (?=\()
+          push:
+            - match: "(?=[;]|=>)"
+              pop: true
+            - include: module-item-let-module-param
+        - match: (=>)
+          captures:
+            1: markup.inserted keyword.control.less
+          push:
+            - match: '(?=[;\(])'
+              pop: true
+            - include: structure-expression
+    - match: '\b(module)\b[[:space:]]*\b(type)\b([[:space:]]*\b(of)\b)?'
+      captures:
+        1: markup.inserted keyword.other variable.other.readwrite.instance
+        2: entity.other.attribute-name.css constant.language constant.numeric
+        3: markup.inserted keyword.other variable.other.readwrite.instance
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: module-path-simple
+        - match: '\b([[:upper:]][[:word:]]*)\b'
+          scope: support.class entity.name.class
+    - include: signature-expression-constraints
+    - include: structure-expression
+  signature-expression-constraints:
+    - match: (?=\b(with))
+      push:
+        - match: '(?=[;\)}]|\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val)\b)'
+          pop: true
+        - match: \b(and|with)\b
+          captures:
+            1: variable.other.class.js variable.interpolation storage.modifier message.error
+          push:
+            - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\b)'
+              pop: true
+            - include: comment
+            - match: \b(type)\b
+              comment: "FIXME: special version of #module-item-type with non-consuming `;`. Atom seems to need this to work."
+              captures:
+                1: entity.other.attribute-name.css constant.language constant.numeric
+              push:
+                - match: '(?=[;\)}]|\b(class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\b)'
+                  pop: true
+                - include: module-item-type-and
+                - include: module-item-type-constraint
+                - include: module-item-type-bind
+            - match: (?=\b(module)\b)
+              push:
+                - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|val|with)\b)'
+                  pop: true
+                - match: \b(module)\b
+                  captures:
+                    1: markup.inserted keyword.control storage.type variable.other.readwrite.instance
+                  push:
+                    - match: '(?=:?=|[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+                      pop: true
+                    - include: comment
+                    - include: module-path-simple
+                    - match: "[[:upper:]][[:word:]]*"
+                      scope: support.class entity.name.class
+                - match: (:=)|(=)
+                  captures:
+                    1: markup.inserted keyword.control.less message.error
+                    2: markup.inserted keyword.control.less
+                  push:
+                    - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|type|val|with)\b)'
+                      pop: true
+                    - include: structure-expression
+  structure-expression:
+    - include: comment
+    - match: '\((?=[[:space:]]*(\b(val)\b|[^''\[<[:lower:]]))'
+      comment: "FIXME: scan for :upper: or `val` to disambiguate types from signatures for hover"
+      push:
+        - match: '\)|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|with)\b)'
+          pop: true
+        - include: comment
+        - include: structure-expression-block
+        - match: \b(val)\b
+          captures:
+            1: keyword.other
+          push:
+            - match: '(?=\))|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+              pop: true
+            - include: comment
+            - match: '\b([[:lower:]][[:word:]]*)\b'
+              scope: support.class entity.name.class
+        - include: module-path-simple
+        - match: (:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: '(?=[\)])|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val)\b)'
+              pop: true
+            - include: signature-expression
+    - include: module-path-simple
+    - include: structure-expression-block
+  structure-expression-block:
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: structure-expression-block-item
+  structure-expression-block-item:
+    - include: attribute
+    - include: comment
+    - include: module-item-exception
+    - include: module-item-external
+    - include: module-item-include
+    - include: module-item-let
+    - include: module-item-class-type
+    - include: module-item-module-type
+    - include: module-item-module
+    - include: module-item-open
+    - include: module-item-type
+  type-annotation-rhs:
+    - match: '(?<![#\-:!?.@*/&%^+<=>|~$\\])([:])(?![#\-:!?.@*/&%^+<=>|~$\\])'
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=\))|(?=[,;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: type-expression
+  type-expression:
+    - match: '([\.])'
+      scope: entity.name.function
+    - include: type-expression-atomic
+    - include: type-expression-arrow
+  type-expression-arrow:
+    - match: "=>"
+      scope: markup.inserted keyword.control.less
+  type-expression-atomic:
+    - include: attribute
+    - include: comment
+    - include: module-path-extended-prefix
+    - include: type-expression-label
+    - match: \b(as)\b
+      scope: variable.other.class.js variable.interpolation storage.modifier message.error
+    - include: type-expression-constructor
+    - include: type-expression-object
+    - include: type-expression-parens
+    - include: type-expression-polymorphic-variant
+    - include: type-expression-record
+    - include: type-expression-variable
+  type-expression-constructor:
+    - match: '(_)(?![[:alnum:]])|\b([_[:lower:]][[:word:]]*)\b(?!\.[[:upper:]])'
+      captures:
+        1: comment
+        2: support.type string.regexp
+  type-expression-label:
+    - match: '\b([_[:lower:]][[:word:]]*)\b(::)'
+      captures:
+        1: markup.inserted constant.language support.property-value entity.name.filename
+        2: keyword.control
+      push:
+        - match: (?<==>)
+          pop: true
+        - include: type-expression
+        - match: (\?)
+          captures:
+            1: keyword.control.less
+  type-expression-object:
+    - match: (<)
+      comment: "FIXME: separate sub-rules"
+      captures:
+        1: entity.name.function
+      push:
+        - match: (>)
+          captures:
+            1: entity.name.function
+          pop: true
+        - match: (\.\.)
+          captures:
+            1: entity.other.attribute-name.css constant.language constant.numeric
+          push:
+            - match: (?=>)
+              pop: true
+        - match: "(?=[_[:lower:]])"
+          comment: "FIXME: method item"
+          push:
+            - match: (,)|(?=>)
+              captures:
+                1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+              pop: true
+            - match: "(?=[_[:lower:]])"
+              comment: "FIXME: method name"
+              push:
+                - match: (?=:)
+                  pop: true
+                - match: '\b([_[:lower:]][[:word:]]*)\b'
+                  captures:
+                    1: markup.inserted constant.language support.property-value entity.name.filename
+            - match: (:)
+              comment: "FIXME: method type"
+              captures:
+                1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+              push:
+                - match: "(?=[,>])"
+                  pop: true
+                - include: type-expression
+  type-expression-parens:
+    - match: \(
+      comment: "FIXME: proper tuple types"
+      push:
+        - match: \)
+          pop: true
+        - match: \b(module)\b
+          captures:
+            1: keyword.other message.error
+          push:
+            - match: '(?=[\)])'
+              pop: true
+            - include: module-path-extended
+            - include: signature-expression-constraints
+        - match: ","
+          scope: keyword.control.less
+        - include: type-expression
+  type-expression-polymorphic-variant:
+    - match: '(\[)([<>])?'
+      comment: "FIXME: proper parsing"
+      captures:
+        1: entity.name.function
+        2: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(\])'
+          captures:
+            1: entity.name.function
+            2: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - match: '(\|)?(?![#\-:!?.@*/&%^+<=>|~$\\])[[:space:]]*'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: '(?=[;)}\]]|\|(?![#\-:!?.@*/&%^+<=>|~$\\])|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+              pop: true
+            - include: value-expression-constructor
+            - match: '([:])|\b(of)\b|([&])'
+              captures:
+                1: keyword.control.less
+                2: keyword.other
+                3: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+            - include: value-expression-constructor-polymorphic
+            - include: type-expression
+  type-expression-record:
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: type-expression-record-item
+  type-expression-record-field:
+    - match: \b(mutable)\b
+      captures:
+        1: variable.other.class.js variable.interpolation storage.modifier message.error
+      push:
+        - match: "(?<=[,])|(?=})"
+          pop: true
+        - include: type-expression-record-field-sans-modifier
+    - include: type-expression-record-field-sans-modifier
+  type-expression-record-field-sans-modifier:
+    - match: '\b([_[:lower:]][[:word:]]*)\b'
+      captures:
+        1: markup.inserted constant.language support.property-value entity.name.filename
+      push:
+        - match: "(,)|(?=[,}])"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: comment
+        - match: (:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: "(?=[,}])"
+              pop: true
+            - include: type-expression
+  type-expression-record-item:
+    - include: comment
+    - include: module-path-simple-prefix
+    - include: type-expression-record-field
+  type-expression-variable:
+    - match: '('')([_[:lower:]][[:word:]]*)\b(?!\.[[:upper:]])'
+      captures:
+        1: comment
+        2: variable.parameter string.other.link variable.language
+  value-expression:
+    - include: attribute
+    - include: comment
+    - include: extension-node
+    - include: jsx
+    - include: operator
+    - include: value-expression-builtin
+    - include: value-expression-if-then-else
+    - include: value-expression-atomic
+    - include: module-path-simple-prefix
+    - match: "[:?]"
+      scope: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+    - include: record-path
+  value-expression-atomic:
+    - include: value-expression-literal
+    - include: value-expression-literal-list-or-array
+    - include: value-expression-for
+    - include: value-expression-fun
+    - include: value-expression-block-or-record-or-object
+    - include: value-expression-label
+    - include: value-expression-parens
+    - include: value-expression-switch
+    - include: value-expression-try
+    - include: value-expression-while
+  value-expression-atomic-with-paths:
+    - include: value-expression-atomic
+    - include: module-path-simple-prefix
+    - include: record-path-suffix
+  value-expression-block:
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: value-expression-block-item
+  value-expression-block-item:
+    - include: module-item-let
+    - include: module-item-open
+    - include: value-expression
+  value-expression-block-look:
+    - match: '(?![[:space:]]*($|\.\.\.|([[:upper:]][[:word:]]*\.)*([[:lower:]][[:word:]]*)[[:space:]]*(?:,|:(?![=]))))'
+      push:
+        - match: "(?=})"
+          pop: true
+        - include: value-expression-block-item
+  value-expression-block-or-record-or-object:
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: comment
+        - include: module-path-simple-prefix
+        - include: value-expression-object-look
+        - include: value-expression-record-look
+        - include: value-expression-block-look
+  value-expression-builtin:
+    - match: \b(assert|decr|failwith|fprintf|ignore|incr|land|lazy|lor|lsl|lsr|lxor|mod|new|not|printf|ref)\b|\b(raise)\b
+      captures:
+        1: keyword.control message.error
+        2: keyword.control.trycatch
+  value-expression-constructor:
+    - match: '\b([[:upper:]][[:word:]]*)\b(?![[:space:]]*[\.])'
+      captures:
+        1: entity.other.attribute-name.css constant.language constant.numeric
+  value-expression-constructor-polymorphic:
+    - match: '(`)([[:alpha:]][[:word:]]*)\b(?!\.)'
+      captures:
+        1: constant.other.symbol keyword.control.less variable.parameter
+        2: entity.other.attribute-name.css constant.language constant.numeric
+  value-expression-for:
+    - match: (?=\b(for)\b)
+      push:
+        - match: '(?<=})|(?=[;]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: value-expression-for-head
+        - include: value-expression-block
+  value-expression-for-head:
+    - match: (?=\b(for)\b)
+      push:
+        - match: '(?={)|(?=[;]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - match: \b(for)\b
+          captures:
+            1: keyword.control.loop
+          push:
+            - match: '(?=\b(in)\b)|(?=[;]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+              pop: true
+            - include: comment
+            - include: pattern-variable
+        - match: \b(in)\b
+          captures:
+            1: keyword.control.loop
+          push:
+            - match: '(?=\b(to)\b)|(?=[;]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+              pop: true
+            - include: comment
+            - include: value-expression-atomic-with-paths
+        - match: \b(to)\b
+          captures:
+            1: keyword.control.loop
+          push:
+            - match: '(?={)|(?=[;]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+              pop: true
+            - include: comment
+            - include: value-expression-atomic-with-paths
+        - include: value-expression-block
+  value-expression-fun:
+    - match: \b(fun)\b
+      captures:
+        1: keyword.control
+      push:
+        - match: '(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: value-expression-fun-pattern-match-rule-lhs
+        - include: value-expression-fun-pattern-match-rule-rhs
+  value-expression-fun-pattern-match-rule-lhs:
+    - match: '(?=\|(?![#\-:!?.@*/&%^+<=>|~$\\]))|(?<=fun)'
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - include: module-item-let-value-param
+        - match: '(\|(?![#\-:!?.@*/&%^+<=>|~$\\]))|(?==>)|(?=[;\)}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+  value-expression-fun-pattern-match-rule-rhs:
+    - match: (=>)
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=[;\)}]|\|(?![#\-:!?.@*/&%^+<=>|~$\\])|\b(and)\b)'
+          pop: true
+        - include: value-expression
+  value-expression-if-then-else:
+    - match: \b(if)\b
+      captures:
+        1: keyword.control.conditional
+      push:
+        - include: comment
+        - match: \b(else)\b
+          captures:
+            1: keyword.control.conditional
+          push:
+            - match: '(?=[;\)\]}])'
+              pop: true
+            - include: value-expression
+        - include: value-expression-atomic-with-paths
+        - match: '(?=[;\)\]}])'
+          pop: true
+  value-expression-label:
+    - match: '\b([_[:lower:]][[:word:]]*)\b[[:space:]]*(::)(\?)?'
+      captures:
+        1: markup.inserted constant.language support.property-value entity.name.filename
+        2: keyword.control
+        3: storage.type
+      push:
+        - match: "(?![[:space:]])"
+          pop: true
+        - include: value-expression
+  value-expression-lazy:
+    - match: \b(lazy)\b
+      comment: FIXME
+      captures:
+        1: keyword.other
+  value-expression-literal:
+    - include: value-expression-literal-boolean
+    - include: value-expression-literal-character
+    - include: value-expression-constructor
+    - include: value-expression-constructor-polymorphic
+    - include: value-expression-lazy
+    - include: value-expression-literal-numeric
+    - include: value-expression-literal-string
+    - include: value-expression-literal-unit
+  value-expression-literal-boolean:
+    - match: \b(false|true)\b
+      scope: entity.other.attribute-name.css constant.language constant.numeric
+  value-expression-literal-character:
+    - match: '('')([[:space:]]|[[:graph:]]|\\[\\"''ntbr]|\\[[:digit:]][[:digit:]][[:digit:]]|\\x[[:xdigit:]][[:xdigit:]]|\\o[0-3][0-7][0-7])('')'
+      scope: constant.character
+  value-expression-literal-list-or-array:
+    - match: '(\[\|?)(?![@%])'
+      captures:
+        1: constant.language.list
+      push:
+        - match: '(\|?\])'
+          captures:
+            1: constant.language.list
+          pop: true
+        - include: value-expression-literal-list-or-array-separator
+        - include: value-expression
+        - include: value-expression-literal-list-or-array
+  value-expression-literal-list-or-array-separator:
+    - match: (,)|(\.\.\.)
+      captures:
+        1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+        2: keyword.control
+  value-expression-literal-numeric:
+    - match: '([-])?([[:digit:]][_[:digit:]]*)(?:(\.)([_[:digit:]]*))?(?:([eE])([\-\+])?([[:digit:]][_[:digit:]]*))?(?![bBoOxX])'
+      captures:
+        1: keyword.control.less
+        2: constant.numeric
+        3: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+        4: constant.numeric
+        5: keyword.control.less
+        6: keyword.control.less
+        7: constant.numeric
+    - match: '([-])?(0[xX])([[:xdigit:]][_[:xdigit:]]*)(?:(\.)([_[:xdigit:]]*))?(?:([pP])([\-\+])?([[:digit:]][_[:digit:]]*))?'
+      captures:
+        1: keyword.control.less
+        2: keyword.control.less
+        3: constant.numeric
+        4: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+        5: constant.numeric
+        6: keyword.control.less
+        7: keyword.control.less
+        8: constant.numeric
+    - match: "([-])?(0[oO])([0-7][_0-7]*)"
+      captures:
+        1: keyword.control.less
+        2: keyword.control.less
+        3: constant.numeric
+    - match: "([-])?(0[bB])([0-1][_0-1]*)"
+      captures:
+        1: keyword.control.less
+        2: keyword.control.less
+        3: constant.numeric
+  value-expression-literal-string:
+    - match: "(?<![[:alpha:]])js_expr(?!=[[:word:]])"
+      push:
+        - match: '(?<=")|(\|)([_[:lower:]]*)?(})|(?=[^[:space:]"{])'
+          captures:
+            1: keyword.control.flow message.error
+            2: entity.other.attribute-name.css constant.language constant.numeric
+            3: keyword.control.flow message.error
+          pop: true
+        - match: '({)([_[:lower:]]*)?(\|)'
+          comment: meta.separator
+          captures:
+            1: keyword.control.flow message.error
+            2: entity.other.attribute-name.css constant.language constant.numeric
+            3: keyword.control.flow message.error
+          push:
+            - match: '(?=\|\2})'
+              pop: true
+            - include: scope:source.js
+        - match: '"'
+          comment: meta.separator
+          push:
+            - match: '"'
+              pop: true
+            - include: scope:source.js
+    - match: '({)([_[:lower:]]*)?(\|)'
+      captures:
+        1: keyword.control.flow message.error
+        2: entity.other.attribute-name.css constant.language constant.numeric
+        3: keyword.control.flow message.error
+      push:
+        - meta_scope: string.double string.regexp
+        - match: '(\|)(\2)(})'
+          captures:
+            1: keyword.control.flow message.error
+            2: entity.other.attribute-name.css constant.language constant.numeric
+            3: keyword.control.flow message.error
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.double string.regexp
+        - match: '"'
+          pop: true
+        - include: value-expression-literal-string-escape
+  value-expression-literal-string-escape:
+    - match: '\\[\\"''ntbr ]|\\[[:digit:]][[:digit:]][[:digit:]]|\\x[[:xdigit:]][[:xdigit:]]|\\o[0-3][0-7][0-7]'
+      comment: "FIXME: make escapes into separate rule"
+      scope: constant.character
+    - match: '(@)([ \[\],.]|\\n)'
+      captures:
+        1: keyword.control.less
+        2: entity.other.attribute-name.css constant.language constant.numeric
+    - match: "(%)([ads])?"
+      comment: "FIXME: don't highlight in external strings"
+      captures:
+        1: entity.other.attribute-name.css constant.language constant.numeric
+        2: variable.other.readwrite.instance string.other.link variable.language
+  value-expression-literal-unit:
+    - match: \(\)
+      scope: constant.language.unit
+  value-expression-object-look:
+    - match: '(?:\G|^)[[:space:]]*(?=method)'
+      comment: "FIXME: is there a better way than listing all the keywords?"
+      push:
+        - match: "(?=})"
+          pop: true
+        - include: object-item
+  value-expression-parens:
+    - match: (?=\()
+      push:
+        - match: '(\))|(?=[;}]|\b(and|class|constraint|exception|external|include|inherit|let|method|module|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: condition-lhs
+        - include: value-expression-parens-lhs
+        - include: type-annotation-rhs
+  value-expression-parens-lhs:
+    - match: (\()|(,)
+      captures:
+        2: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+      push:
+        - match: '(?=[?,:\)]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - match: \b(module)\b
+          captures:
+            1: keyword.other message.error
+          push:
+            - match: (?=\))
+              pop: true
+            - include: module-path-simple
+        - include: value-expression
+  value-expression-record-field:
+    - match: (\.\.\.)
+      captures:
+        1: keyword.control
+      push:
+        - match: "(,)|(?=})"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: comment
+        - include: module-path-simple-prefix
+        - match: '(?=[\.])'
+          push:
+            - match: "(?=[:,])"
+              pop: true
+            - match: '\b[[:lower:]][[:word:]]*\b'
+              scope: markup.inserted constant.language support.property-value entity.name.filename
+        - match: (:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: "(?=[,}])"
+              pop: true
+            - include: value-expression
+    - match: '\b[[:upper:]][[:word:]]*\b'
+      captures:
+        1: support.class entity.name.class
+      push:
+        - match: "(,)|(?=})"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - include: module-path-simple-prefix
+        - match: (:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: "(?=[,}])"
+              pop: true
+            - include: value-expression
+    - match: '\b([[:lower:]][[:word:]]*)\b'
+      captures:
+        1: markup.inserted constant.language support.property-value entity.name.filename
+      push:
+        - match: "(,)|(?=})"
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          pop: true
+        - match: (:)
+          captures:
+            1: variable.other.class.js variable.interpolation keyword.operator keyword.control message.error
+          push:
+            - match: "(?=[,}])"
+              pop: true
+            - include: value-expression
+  value-expression-record-item:
+    - include: comment
+    - include: module-path-simple-prefix
+    - include: value-expression-record-field
+  value-expression-record-look:
+    - match: '(?=\.\.\.|([[:upper:]][[:word:]]*\.)*([[:lower:]][[:word:]]*)[[:space:]]*[,:}])'
+      push:
+        - match: "(?=})"
+          pop: true
+        - include: value-expression-record-item
+  value-expression-switch:
+    - match: \b(switch)\b
+      captures:
+        1: keyword.control.switch
+      push:
+        - match: "(?<=})"
+          pop: true
+        - include: value-expression-switch-head
+        - include: value-expression-switch-body
+  value-expression-switch-body:
+    - match: "{"
+      push:
+        - match: "}"
+          pop: true
+        - include: comment
+        - include: value-expression-switch-pattern-match-rule
+  value-expression-switch-head:
+    - match: (?<=switch)
+      push:
+        - match: '(?<!switch)(?={)|(?=[;\)]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - match: '\G[[:space:]]*+{'
+          push:
+            - match: "}[[:space:]]*+"
+              pop: true
+            - include: value-expression-block-item
+        - include: value-expression-atomic-with-paths
+  value-expression-switch-pattern-match-rule:
+    - include: value-expression-switch-pattern-match-rule-lhs
+    - include: value-expression-switch-pattern-match-rule-rhs
+  value-expression-switch-pattern-match-rule-lhs:
+    - match: '(?=\|(?![#\-:!?.@*/&%^+<=>|~$\\]))'
+      push:
+        - match: '(?==>|[;\)}])'
+          pop: true
+        - include: pattern-guard
+        - include: pattern
+  value-expression-switch-pattern-match-rule-rhs:
+    - match: (=>)
+      captures:
+        1: keyword.control.less
+      push:
+        - match: '(?=}|\|(?![#\-:!?.@*/&%^+<=>|~$\\]))'
+          pop: true
+        - include: value-expression-block-item
+  value-expression-try:
+    - match: \b(try)\b
+      captures:
+        1: keyword.control.trycatch
+      push:
+        - match: '(?<=})|(?=[;\)]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: value-expression-try-head
+        - include: value-expression-switch-body
+  value-expression-try-head:
+    - match: (?<=try)
+      captures:
+        1: keyword.control
+      push:
+        - match: '(?<!try)(?={)|(?=[;\)]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - match: '\G[[:space:]]*+{'
+          push:
+            - match: "}[[:space:]]*+"
+              pop: true
+            - include: value-expression-block-item
+        - include: value-expression-atomic-with-paths
+  value-expression-while:
+    - match: \b(while)\b
+      captures:
+        1: keyword.control.loop
+      push:
+        - match: '(?<=})|(?=[;\)]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: value-expression-while-head
+        - include: value-expression-block
+  value-expression-while-head:
+    - match: "(?<=while)[[:space:]]*+"
+      push:
+        - match: '(?={)|(?=[;\)]|\b(and|as|class|constraint|exception|external|include|inherit|let|method|nonrec|open|private|rec|type|val|with)\b)'
+          pop: true
+        - include: comment
+        - include: value-expression-atomic-with-paths

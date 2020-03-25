@@ -1,0 +1,54 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML (Ruby - ERB)
+file_extensions:
+  - rhtml
+  - html.erb
+scope: text.html.erb
+contexts:
+  main:
+    - include: scope:text.html.basic
+  comment:
+    - match: "<%+#"
+      captures:
+        0: punctuation.definition.comment.begin.erb
+      push:
+        - meta_scope: comment.block.erb
+        - match: "%>"
+          captures:
+            0: punctuation.definition.comment.end.erb
+          pop: true
+  tags:
+    - match: "<%+(?!>)[-=]?(?![^%]*%>)"
+      captures:
+        0: punctuation.section.embedded.begin.erb
+      push:
+        - meta_scope: meta.embedded.block.erb
+        - meta_content_scope: source.ruby.embedded.erb
+        - match: "-?%>"
+          captures:
+            0: punctuation.section.embedded.end.erb
+            1: source.ruby
+          pop: true
+        - match: (#).*?(?=-?%>)
+          scope: comment.line.number-sign.erb
+          captures:
+            1: punctuation.definition.comment.erb
+        - include: scope:source.ruby
+    - match: "<%+(?!>)[-=]?"
+      captures:
+        0: punctuation.section.embedded.begin.erb
+      push:
+        - meta_scope: meta.embedded.line.erb
+        - meta_content_scope: source.ruby.embedded.erb
+        - match: "-?%>"
+          captures:
+            0: punctuation.section.embedded.end.erb
+            1: source.ruby
+          pop: true
+        - match: (#).*?(?=-?%>)
+          scope: comment.line.number-sign.erb
+          captures:
+            1: punctuation.definition.comment.erb
+        - include: scope:source.ruby

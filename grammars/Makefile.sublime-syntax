@@ -1,0 +1,242 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Makefile
+file_extensions:
+  - Makefile
+  - makefile
+  - GNUmakefile
+  - OCamlMakefile
+  - mk
+scope: source.makefile
+contexts:
+  main:
+    - include: comment
+    - include: variable-assignment
+    - include: recipe
+    - include: directives
+  comment:
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.makefile
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.makefile
+          push:
+            - meta_scope: comment.line.number-sign.makefile
+            - match: \n
+              pop: true
+            - match: \\\n
+              scope: constant.character.escape.continuation.makefile
+  directives:
+    - match: '^[ ]*([s\-]?include)\b'
+      captures:
+        1: keyword.control.include.makefile
+      push:
+        - match: ^
+          pop: true
+        - include: comment
+        - include: variables
+        - match: "%"
+          scope: constant.other.placeholder.makefile
+    - match: '^[ ]*(vpath)\b'
+      captures:
+        1: keyword.control.vpath.makefile
+      push:
+        - match: ^
+          pop: true
+        - include: comment
+        - include: variables
+        - match: "%"
+          scope: constant.other.placeholder.makefile
+    - match: '^(?:(override)\s*)?(define)\s*([^\s]+)\s*(=|\?=|:=|\+=)?(?=\s)'
+      captures:
+        1: keyword.control.override.makefile
+        2: keyword.control.define.makefile
+        3: variable.other.makefile
+        4: punctuation.separator.key-value.makefile
+      push:
+        - meta_scope: meta.scope.conditional.makefile
+        - match: ^(endef)\b
+          captures:
+            1: keyword.control.override.makefile
+            2: keyword.control.define.makefile
+            3: variable.other.makefile
+            4: punctuation.separator.key-value.makefile
+          pop: true
+        - match: \G(?!\n)
+          push:
+            - match: ^
+              pop: true
+            - include: comment
+        - include: variables
+        - include: comment
+    - match: '^[ ]*(export)\b'
+      captures:
+        1: keyword.control.$1.makefile
+      push:
+        - match: ^
+          pop: true
+        - include: comment
+        - include: variable-assignment
+        - match: '[^\s]+'
+          scope: variable.other.makefile
+    - match: '^[ ]*(override|private)\b'
+      captures:
+        1: keyword.control.$1.makefile
+      push:
+        - match: ^
+          pop: true
+        - include: comment
+        - include: variable-assignment
+    - match: '^[ ]*(unexport|undefine)\b'
+      captures:
+        1: keyword.control.$1.makefile
+      push:
+        - match: ^
+          pop: true
+        - include: comment
+        - match: '[^\s]+'
+          scope: variable.other.makefile
+    - match: '^(ifdef|ifndef)\s*([^\s]+)(?=\s)'
+      captures:
+        1: keyword.control.$1.makefile
+        2: variable.other.makefile
+        3: punctuation.separator.key-value.makefile
+      push:
+        - meta_scope: meta.scope.conditional.makefile
+        - match: ^(endif)\b
+          captures:
+            1: keyword.control.$1.makefile
+            2: variable.other.makefile
+            3: punctuation.separator.key-value.makefile
+          pop: true
+        - match: \G(?!\n)
+          push:
+            - match: ^
+              pop: true
+            - include: comment
+        - include: main
+    - match: ^(ifeq|ifneq)(?=\s)
+      captures:
+        1: keyword.control.$1.makefile
+      push:
+        - meta_scope: meta.scope.conditional.makefile
+        - match: ^(endif)\b
+          captures:
+            1: keyword.control.$1.makefile
+          pop: true
+        - match: \G
+          push:
+            - meta_scope: meta.scope.condition.makefile
+            - match: ^
+              pop: true
+            - include: variables
+            - include: comment
+        - match: ^else(?=\s)
+          captures:
+            0: keyword.control.else.makefile
+          push:
+            - match: ^
+              pop: true
+        - include: main
+  interpolation:
+    - match: (?=`)
+      push:
+        - meta_scope: meta.embedded.line.shell
+        - match: (?!\G)
+          pop: true
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.makefile
+          push:
+            - meta_scope: string.interpolated.backtick.makefile
+            - meta_content_scope: source.shell
+            - match: (`)
+              captures:
+                0: punctuation.definition.string.makefile
+                1: source.shell
+              pop: true
+            - include: scope:source.shell
+  recipe:
+    - match: '^(?!\t)([^:]*)(:)(?!\=)'
+      captures:
+        2: punctuation.separator.key-value.makefile
+      push:
+        - meta_scope: meta.scope.target.makefile
+        - match: ^(?!\t)
+          pop: true
+        - match: \G
+          push:
+            - meta_scope: meta.scope.prerequisites.makefile
+            - match: ^
+              pop: true
+            - match: \\\n
+              scope: constant.character.escape.continuation.makefile
+            - match: '%|\*'
+              scope: constant.other.placeholder.makefile
+            - include: comment
+            - include: variables
+        - match: ^\t
+          push:
+            - meta_scope: meta.scope.recipe.makefile
+            - match: ""
+              pop: true
+            - match: .+\n?
+              captures:
+  variable-assignment:
+    - match: '(^[ ]*|\G\s*)([^\s]+)\s*(=|\?=|:=|\+=)'
+      captures:
+        2: variable.other.makefile
+        3: punctuation.separator.key-value.makefile
+      push:
+        - match: \n
+          pop: true
+        - match: \\\n
+          scope: constant.character.escape.continuation.makefile
+        - include: comment
+        - include: variables
+        - include: interpolation
+  variables:
+    - match: '(\$?\$)[@%<?^+*]'
+      scope: variable.language.makefile
+      captures:
+        1: punctuation.definition.variable.makefile
+    - match: \$?\$\(
+      captures:
+        0: punctuation.definition.variable.makefile
+      push:
+        - meta_scope: string.interpolated.makefile
+        - match: \)
+          captures:
+            0: punctuation.definition.variable.makefile
+          pop: true
+        - include: variables
+        - match: \G(MAKEFILES|VPATH|SHELL|MAKESHELL|MAKE|MAKELEVEL|MAKEFLAGS|MAKECMDGOALS|CURDIR|SUFFIXES|\.LIBPATTERNS)(?=\s*\))
+          scope: variable.language.makefile
+        - match: \G(subst|patsubst|strip|findstring|filter(-out)?|sort|word(list)?|firstword|lastword|dir|notdir|suffix|basename|addsuffix|addprefix|join|wildcard|realpath|abspath|info|error|warning|shell|foreach|if|or|and|call|eval|value|file|guile)\s
+          captures:
+            1: support.function.$1.makefile
+          push:
+            - meta_scope: meta.scope.function-call.makefile
+            - match: (?=\))
+              pop: true
+            - include: variables
+            - match: '%|\*'
+              scope: constant.other.placeholder.makefile
+        - match: '\G(origin|flavor)\s(?=[^\s)]+\s*\))'
+          push:
+            - meta_scope: meta.scope.function-call.makefile
+            - meta_content_scope: variable.other.makefile
+            - match: (?=\))
+              pop: true
+            - include: variables
+        - match: \G(?!\))
+          push:
+            - meta_scope: variable.other.makefile
+            - match: (?=\))
+              pop: true
+            - include: variables

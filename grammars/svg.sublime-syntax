@@ -1,0 +1,271 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SVG
+file_extensions:
+  - svg
+first_line_match: |-
+  (?xi)
+
+  	# Comment inserted by Illustrator when saving SVG files
+  	<!--\s+Generator:\s+Adobe\s+Illustrator.*?SVG\s+Export\s+Plug-In.*?-->
+  	|
+
+  	# Opening <svg> tag
+  	\A(<?xml[^>]*\?>(?:$|[\r\n]*))?\s*<svg(?=\s|$)
+  	|
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		svg
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s*set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		svg
+  	(?=\s|:|$)
+scope: text.xml.svg
+contexts:
+  main:
+    - include: comment
+    - include: cdata
+    - include: scope:text.xml#EntityDecl
+    - include: scope:text.xml#parameterEntity
+    - include: entity
+    - include: preprocessor
+    - include: scriptTag
+    - include: styleTag
+    - include: tag
+    - include: unmatchedTag
+  comment:
+    - match: <!--
+      captures:
+        0: punctuation.definition.comment.begin.xml.svg
+      push:
+        - meta_scope: comment.block.xml.svg
+        - match: "-->"
+          captures:
+            0: punctuation.definition.comment.end.xml.svg
+          pop: true
+        - match: "--(?!>)"
+          scope: invalid.illegal.bad-comment.xml.svg
+  attr:
+    - match: '[A-Za-z_:][-\w.:]*'
+      push:
+        - meta_scope: "meta.attribute.${0:/downcase}.xml.svg"
+        - match: '(?=\s*(?:/?>|[^\s=]))|(?<=["''])'
+          pop: true
+        - include: attrValueCSS
+        - include: attrValuePlain
+  attrName:
+    - match: '(?:^|\G)([-\w.]+)(:)(?=[-\w.:])'
+      captures:
+        1: entity.other.attribute-name.namespace.xml.svg
+        2: punctuation.separator.namespace.xml.svg
+    - match: '[A-Za-z_:][-\w.:]*'
+      scope: entity.other.attribute-name.localname.xml.svg
+  attrValueCSS:
+    - match: (?i)(?<=style)\G\s*(=)
+      captures:
+        1: punctuation.separator.key-value.xml.svg
+      push:
+        - match: '(?=\s*(?:[%?/]?>))|([^\s"''>]+)|(?<=["''])'
+          captures:
+            1: string.unquoted.xml.svg
+          pop: true
+        - match: (?:\G|^)\s+(?!/?>)
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.xml.svg
+          push:
+            - meta_scope: string.quoted.double.xml.svg
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.xml.svg
+              pop: true
+            - match: '[^"]+'
+              scope: source.css.style.xml.svg
+              captures:
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.xml.svg
+          push:
+            - meta_scope: string.quoted.single.xml.svg
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.xml.svg
+              pop: true
+            - match: "[^']+"
+              scope: source.css.style.xml.svg
+              captures:
+  attrValuePlain:
+    - match: \s*(=)
+      captures:
+        1: punctuation.separator.key-value.xml.svg
+      push:
+        - match: '(?=\s*(?:[%?/]?>))|([^\s"''>]+)|(?<=["''])'
+          captures:
+            1: string.unquoted.xml.svg
+          pop: true
+        - match: (?:\G|^)\s+(?!/?>)
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.xml.svg
+          push:
+            - meta_scope: string.quoted.double.xml.svg
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.xml.svg
+              pop: true
+            - include: entity
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.xml.svg
+          push:
+            - meta_scope: string.quoted.single.xml.svg
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.xml.svg
+              pop: true
+            - include: entity
+  cdata:
+    - match: '<!\[CDATA\['
+      captures:
+        0: punctuation.definition.string.begin.xml.svg
+      push:
+        - meta_scope: string.unquoted.cdata.xml.svg
+        - match: '\]\]>'
+          captures:
+            0: punctuation.definition.string.end.xml.svg
+          pop: true
+  entity:
+    - include: scope:text.xml#entity
+    - include: scope:text.xml#bare-ampersand
+  preprocessor:
+    - match: (<\?)\s*
+      captures:
+        1: punctuation.definition.tag.begin.xml.svg
+      push:
+        - meta_scope: meta.tag.preprocessor.xml.svg
+        - match: \?>
+          captures:
+            0: punctuation.definition.tag.end.xml.svg
+          pop: true
+        - match: \G
+          push:
+            - match: '([-\w]+)|(?=\s*\?>)'
+              captures:
+                1: entity.name.tag.xml.svg
+              pop: true
+        - include: attr
+  scriptTag:
+    - include: scriptTagPlain
+    - include: scriptTagJS
+  scriptTagJS:
+    - match: (?i)(<)(script)(?=$|\s|/?>)
+      captures:
+        1: punctuation.definition.tag.opening.begin.xml.svg
+      push:
+        - meta_scope: meta.tag.script.xml.svg
+        - match: (?i)(</)(script)\s*(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.closing.begin.xml.svg
+            3: punctuation.definition.tag.closing.end.xml.svg
+            4: punctuation.definition.tag.self-closing.end.xml.svg
+          pop: true
+        - include: tagAttr
+        - match: (?<=>)
+          push:
+            - meta_content_scope: source.js.embedded.xml.svg
+            - match: (?i)(?=\s*</script\s*>)
+              pop: true
+            - include: scope:source.js
+            - include: entity
+  scriptTagPlain:
+    - match: |-
+        (?x)
+        (<)((?i)script)
+        (
+        	\s+[^>]*?
+        	(?<=\s)(?i:type)\s*=\s*
+        	(["'])?
+        	(?! module
+        	|   application/(?:x-)?(?:ecma|java)script
+        	|   text/
+        		(?: javascript(?:1.[0-5])?
+        		|   (?:j|ecma|live)script
+        		|   x-(?:ecma|java)script
+        		)
+        	)
+        	(?: (?<=")(?:[^">]+)"
+        	|   (?<=')(?:[^'>]+)'
+        	|   [^\s"'>]+
+        	)
+        	(?=\s|/?>)
+        )
+      captures:
+        1: punctuation.definition.tag.opening.begin.xml.svg
+      push:
+        - meta_scope: meta.tag.script.xml.svg
+        - match: (?i)(</)(script)\s*(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.closing.begin.xml.svg
+            3: punctuation.definition.tag.closing.end.xml.svg
+            4: punctuation.definition.tag.self-closing.end.xml.svg
+          pop: true
+        - include: tagAttr
+        - include: main
+  styleTag:
+    - match: (?i)(<)(style)(?=$|\s|/?>)
+      captures:
+        1: punctuation.definition.tag.opening.begin.xml.svg
+      push:
+        - meta_scope: meta.tag.style.xml.svg
+        - match: (?i)(</)(style)\s*(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.closing.begin.xml.svg
+            3: punctuation.definition.tag.closing.end.xml.svg
+            4: punctuation.definition.tag.self-closing.end.xml.svg
+          pop: true
+        - include: tagAttr
+        - match: (?<=>)
+          push:
+            - meta_content_scope: source.css.embedded.xml.svg
+            - match: (?i)(?=\s*</style\s*>)
+              pop: true
+            - include: scope:source.css
+            - include: entity
+  tag:
+    - match: '(?i)(<)([A-Za-z_:][-\w.:]*)(?=$|\s|/?>)'
+      captures:
+        1: punctuation.definition.tag.opening.begin.xml.svg
+      push:
+        - meta_scope: "meta.tag.${2:/downcase}.xml.svg"
+        - match: (?i)(</)(\2)\s*(>)|(/>)
+          captures:
+            1: punctuation.definition.tag.closing.begin.xml.svg
+            3: punctuation.definition.tag.closing.end.xml.svg
+            4: punctuation.definition.tag.self-closing.end.xml.svg
+          pop: true
+        - include: tagAttr
+        - include: main
+  tagAttr:
+    - match: \G
+      push:
+        - match: '>|(?=\s*/>)'
+          captures:
+            0: punctuation.definition.tag.opening.end.xml.svg
+          pop: true
+        - include: attr
+  tagName:
+    - match: '(?:^|\G)([A-Za-z_][-\w.]*)(:)(?=[-\w.:])'
+      captures:
+        1: entity.name.tag.namespace.xml.svg
+        2: punctuation.separator.namespace.xml.svg
+    - match: '[A-Za-z_:][-\w.:]*'
+      scope: entity.name.tag.localname.xml.svg
+  unmatchedTag:
+    - match: '(</)([A-Za-z_:][-\w.:]*)\s*(>)'
+      scope: invalid.illegal.unmatched-tag.xml.svg

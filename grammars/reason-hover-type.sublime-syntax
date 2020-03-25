@@ -1,0 +1,9 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.reason.hover.type
+contexts:
+  main:
+    - include: scope:source.reason#signature-expression
+    - include: scope:source.reason#module-item-type
+    - include: scope:source.reason#type-expression

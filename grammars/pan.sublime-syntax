@@ -1,0 +1,353 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Pan Template
+file_extensions:
+  - pan
+first_line_match: ^s*(declaration|object|structure|unique)?s+templates
+scope: source.pan
+contexts:
+  main:
+    - include: comment
+    - include: pipeline
+    - include: list
+    - include: compound-command
+    - include: loop
+    - include: function-definition
+    - include: string
+    - include: variable
+    - include: heredoc
+    - include: redirection
+    - include: pathname
+    - include: keyword
+    - include: support
+    - include: annotation
+  comment:
+    - match: '(^\s+)?(?<!\S)(?=#)(?!#\{)'
+      captures:
+        1: punctuation.whitespace.comment.leading.pan
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#!"
+          captures:
+            0: punctuation.definition.comment.shebang.pan
+          push:
+            - meta_scope: comment.line.number-sign.shebang.pan
+            - match: \n
+              pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.pan
+          push:
+            - meta_scope: comment.line.number-sign.pan
+            - match: \n
+              pop: true
+  annotation:
+    - match: '@(\w*){'
+      captures:
+        0: keyword.operator.comment.annotation.token.pan
+        1: keyword.operator.comment.annotation.name.pan
+      push:
+        - meta_scope: comment.block.documentation.annotation.pan
+        - match: "(})"
+          captures:
+            1: keyword.control.annotation-token.pan
+          pop: true
+  case-clause:
+    - match: (?=\S)
+      push:
+        - meta_scope: meta.scope.case-clause.pan
+        - match: ;;
+          captures:
+            0: punctuation.terminator.case-clause.pan
+          pop: true
+        - match: (\(|(?=\S))
+          captures:
+            0: punctuation.definition.case-pattern.pan
+          push:
+            - meta_scope: meta.scope.case-pattern.pan
+            - match: \)
+              captures:
+                0: punctuation.definition.case-pattern.pan
+              pop: true
+            - match: \|
+              scope: punctuation.separator.pipe-sign.pan
+            - include: string
+            - include: variable
+            - include: pathname
+        - match: (?<=\))
+          push:
+            - meta_scope: meta.scope.case-clause-body.pan
+            - match: (?=;;)
+              pop: true
+            - include: main
+  compound-command:
+    - match: '(\[{1,2})'
+      captures:
+        1: punctuation.definition.logical-expression.pan
+      push:
+        - meta_scope: meta.scope.logical-expression.pan
+        - match: '(\]{1,2})'
+          captures:
+            1: punctuation.definition.logical-expression.pan
+          pop: true
+        - include: logical-expression
+        - include: main
+    - match: '(\({2})'
+      captures:
+        0: punctuation.definition.string.begin.pan
+      push:
+        - meta_scope: string.other.math.pan
+        - match: '(\){2})'
+          captures:
+            0: punctuation.definition.string.end.pan
+          pop: true
+        - include: math
+    - match: (\()
+      captures:
+        1: punctuation.definition.subpan.pan
+      push:
+        - meta_scope: meta.scope.subpan.pan
+        - match: (\))
+          captures:
+            1: punctuation.definition.subpan.pan
+          pop: true
+        - include: main
+    - match: '(?<=\s|^)(\{)(?=\s|$)'
+      captures:
+        1: punctuation.definition.group.pan
+      push:
+        - meta_scope: meta.scope.group.pan
+        - match: '(?<=^|;)\s*(\})'
+          captures:
+            1: punctuation.definition.group.pan
+          pop: true
+        - include: main
+  function-definition:
+    - match: '\b(function)\s+([^\s\\]+)(?:\s*(\(\)))?'
+      captures:
+        1: storage.type.function.pan
+        2: entity.name.function.pan
+        3: punctuation.definition.arguments.pan
+      push:
+        - meta_scope: meta.function.pan
+        - match: ;|&|$
+          captures:
+            0: punctuation.definition.function.pan
+          pop: true
+        - include: main
+  heredoc:
+    - match: (<<)("|'|)\\?(\w+)\2
+      captures:
+        1: keyword.operator.heredoc.pan
+        3: keyword.control.heredoc-token.pan
+      push:
+        - meta_scope: string.unquoted.heredoc.pan
+        - match: ^(\3)\b
+          captures:
+            1: keyword.control.heredoc-token.pan
+          pop: true
+  keyword:
+    - match: (?<!-)\b(if|else|for|foreach|while|return)\b(?!-)
+      scope: keyword.control.pan
+    - match: \b(include)\b
+      scope: keyword.control.import.include.pan
+    - match: \b(final)\b
+      scope: storage.modifier.final.pan
+    - match: \b(bind)\b
+      scope: storage.modifier.bind.pan
+  list:
+    - match: ;|&&|&|\|\|
+      scope: keyword.operator.list.pan
+  logical-expression:
+    - match: '&&|\|\||==|!=|>|>=|<|<='
+      scope: keyword.operator.logical.pan
+    - match: '&|\|^'
+      scope: keyword.operator.bitwise.pan
+  loop:
+    - match: '\b(for)\s+(?=\({2})'
+      captures:
+        1: keyword.control.pan
+      push:
+        - meta_scope: meta.scope.for-loop.pan
+        - match: \b(done)\b
+          captures:
+            1: keyword.control.pan
+          pop: true
+        - include: main
+    - match: \b(for)\b\s+(.+)\s+\b(in)\b
+      captures:
+        1: keyword.control.pan
+        2: variable.other.loop.pan
+        3: keyword.control.pan
+      push:
+        - meta_scope: meta.scope.for-in-loop.pan
+        - match: '(?<![-/])\bdone\b(?![-/])'
+          captures:
+            0: keyword.control.pan
+          pop: true
+        - include: main
+    - match: \b(while|until)\b
+      captures:
+        1: keyword.control.pan
+      push:
+        - meta_scope: meta.scope.while-loop.pan
+        - match: \b(done)\b
+          captures:
+            1: keyword.control.pan
+          pop: true
+        - include: main
+    - match: '\b(select)\s+((?:[^\s\\]|\\.)+)\b'
+      captures:
+        1: keyword.control.pan
+        2: variable.other.loop.pan
+      push:
+        - meta_scope: meta.scope.select-block.pan
+        - match: \b(done)\b
+          captures:
+            1: keyword.control.pan
+          pop: true
+        - include: main
+    - match: (?<!-)\b(case)\b(?!-)
+      captures:
+        1: keyword.control.pan
+      push:
+        - meta_scope: meta.scope.case-block.pan
+        - match: \b(esac)\b
+          captures:
+            1: keyword.control.pan
+          pop: true
+        - match: \b(?:in)\b
+          captures:
+            1: keyword.control.pan
+          push:
+            - meta_scope: meta.scope.case-body.pan
+            - match: (?=\b(?:esac)\b)
+              pop: true
+            - include: comment
+            - include: case-clause
+            - include: main
+        - include: main
+    - match: (?<!-)\b(if)\b(?!-|\s*=)
+      captures:
+        1: keyword.control.pan
+      push:
+        - meta_scope: meta.scope.if-block.pan
+        - match: \b(fi)\b
+          captures:
+            1: keyword.control.pan
+          pop: true
+        - include: main
+  math:
+    - include: variable
+    - match: "[-+*/%]"
+      scope: keyword.operator.arithmetic.pan
+    - match: '0[xX]\h+'
+      scope: constant.numeric.hex.pan
+    - match: '0\d+'
+      scope: constant.numeric.octal.pan
+    - match: '\d{1,2}#[0-9a-zA-Z@_]+'
+      scope: constant.numeric.other.pan
+    - match: \d+
+      scope: constant.numeric.integer.pan
+  pathname:
+    - match: (?<=\s|:|=|^)~
+      scope: keyword.operator.tilde.pan
+    - match: \*|\?
+      scope: keyword.operator.glob.pan
+    - match: '([?*+@!])(\()'
+      captures:
+        1: keyword.operator.extglob.pan
+        2: punctuation.definition.extglob.pan
+      push:
+        - meta_scope: meta.structure.extglob.pan
+        - match: (\))
+          captures:
+            1: punctuation.definition.extglob.pan
+          pop: true
+        - include: main
+  pipeline:
+    - match: \b(time)\b
+      scope: keyword.other.pan
+    - match: "[|!]"
+      scope: keyword.operator.pipe.pan
+  redirection:
+    - match: '[><]\('
+      captures:
+        0: punctuation.definition.string.begin.pan
+      push:
+        - meta_scope: string.interpolated.process-substitution.pan
+        - match: \)
+          captures:
+            0: punctuation.definition.string.end.pan
+          pop: true
+        - include: main
+    - match: '&>|\d*>&\d*|\d*(>>|>|<)|\d*<&|\d*<>'
+      comment: "valid: &>word >&word >word [n]>&[n] [n]<word [n]>word [n]>>word [n]<&word (last one is duplicate)"
+      scope: keyword.operator.redirect.pan
+  string:
+    - match: \\.
+      scope: constant.character.escape.pan
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.pan
+      push:
+        - meta_scope: string.quoted.single.pan
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.pan
+          pop: true
+    - match: \$?"
+      captures:
+        0: punctuation.definition.string.begin.pan
+      push:
+        - meta_scope: string.quoted.double.pan
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.pan
+          pop: true
+        - match: '\\[\$`"\\\n]'
+          scope: constant.character.escape.pan
+        - include: variable
+    - match: \$'
+      captures:
+        0: punctuation.definition.string.begin.pan
+      push:
+        - meta_scope: string.quoted.single.dollar.pan
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.pan
+          pop: true
+        - match: \\(a|b|e|f|n|r|t|v|\\|')
+          scope: constant.character.escape.ansi-c.pan
+        - match: '\\[0-9]{3}'
+          scope: constant.character.escape.octal.pan
+        - match: '\\x[0-9a-fA-F]{2}'
+          scope: constant.character.escape.hex.pan
+        - match: \\c.
+          scope: constant.character.escape.control-char.pan
+  support:
+    - match: \b(file_contents|file_exists|format|index|length|match|matches|replace|splice|split|substitute|substr|to_lowercase|to_uppercase)\b
+      scope: support.function.pan.string
+    - match: \b(debug|error|traceback|deprecated)\b
+      scope: support.function.pan.debugging
+    - match: \b(base64_decode|base64_encode|digest|escape|unescape)\b
+      scope: support.function.pan.codec
+    - match: \b(append|create|first|dict|key|length|list|merge|next|prepend|splice)\b
+      scope: support.function.pan.resource
+    - match: \b(is_boolean|is_defined|is_double|is_list|is_long|is_dict|is_null|is_number|is_property|is_resource|is_string)\b
+      scope: support.function.pan.type.checking
+    - match: \b(to_boolean|to_double|to_long|to_string|ip4_to_long|long_to_ip4)\b
+      scope: support.function.pan.type.conversion
+    - match: \b(clone|delete|exists|path_exists|if_exists|return|value)\b
+      scope: support.function.pan.misc
+  variable:
+    - match: \b(variable)\s+(\w+)\b
+      scope: variable.other.pan
+      captures:
+        1: storage.type.var.pan
+    - match: \b(type)\s+(\w+)\b
+      scope: storage.type.class.pan
+      captures:
+        2: entity.name.type.pan

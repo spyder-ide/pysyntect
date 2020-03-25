@@ -1,0 +1,38 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Cirru
+file_extensions:
+  - cirru
+  - cr
+scope: source.cirru
+contexts:
+  main:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.cirru
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.cirru
+    - match: \b\d\S*\b
+      scope: constant.numeric.cirru
+    - match: (?=^)\s*\,
+      scope: keyword.operator.cirru
+    - match: '(?=^)\s*[^\(\)\s\$][^\(\)\s]*'
+      scope: support.function.cirru
+    - match: '(?<=\()[^\(\)\s\$][^\(\)\s]*'
+      scope: support.function.cirru
+    - match: '(?=\$\s+)[^\(\)\s\$][^\(\)\s]*'
+      scope: support.function.cirru
+    - match: \s\$\s*$
+      scope: keyword.operator.cirru
+    - match: '\s+((\$\s+)+)([^\(\)\s\$][^\(\)\s]*)'
+      scope: entity.cirru
+      captures:
+        1: keyword.operator.cirru
+        3: support.function.cirru
+    - match: '[\)\(]'
+      scope: keyword.operator.cirru
+    - match: '(?!=($\s+))[^\(\)\s\$][^\(\)\s]*'
+      scope: variable.parameter.cirru

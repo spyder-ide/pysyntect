@@ -1,0 +1,93 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Eiffel
+file_extensions:
+  - e
+scope: source.eiffel
+contexts:
+  main:
+    - match: '(^[ \t]+)?(?=--)'
+      captures:
+        1: punctuation.whitespace.comment.leading.eiffel
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "--"
+          captures:
+            0: punctuation.definition.comment.eiffel
+          push:
+            - meta_scope: comment.line.double-dash.eiffel
+            - match: \n
+              pop: true
+    - match: \b(Indexing|indexing|deferred|expanded|class|inherit|rename|as|export|undefine|redefine|select|all|create|creation|feature|prefix|infix|separate|frozen|obsolete|local|is|unique|do|once|external|alias|require|ensure|invariant|variant|rescue|retry|like|check|if|else|elseif|then|inspect|when|from|loop|until|debug|not|or|and|xor|implies|old|end)\b
+      scope: keyword.control.eiffel
+    - match: "[a-zA-Z_]+"
+      scope: variable.other.eiffel
+    - match: \b(True|true|False|false|Void|void|Result|result)\b
+      scope: constant.language.eiffel
+    - match: feature
+      push:
+        - meta_scope: meta.features.eiffel
+        - match: end
+          pop: true
+    - match: (do|once)
+      push:
+        - meta_scope: meta.effective_routine_body.eiffel
+        - match: (ensure|end)
+          pop: true
+    - match: rescue
+      push:
+        - meta_scope: meta.rescue.eiffel
+        - match: end
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.eiffel
+      push:
+        - meta_scope: string.quoted.double.eiffel
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.eiffel
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.eiffel
+    - match: "[0-9]+"
+      scope: constant.numeric.eiffel
+    - match: \b(deferred|expanded)\b
+      scope: storage.modifier.eiffel
+    - match: |-
+        ^\s*
+        ((?:\b(deferred|expanded)\b\s*)*) # modifier
+        (class)\s+
+        (\w+)\s* # identifier
+      captures:
+        1: storage.modifier.eiffel
+      push:
+        - meta_scope: meta.definition.class.eiffel
+        - match: (?=end)
+          captures:
+            1: storage.modifier.eiffel
+          pop: true
+        - match: \b(extends)\b\s+
+          captures:
+            1: storage.modifier.java
+          push:
+            - meta_scope: meta.definition.class.extends.java
+            - match: "(?={|implements)"
+              captures:
+                1: storage.modifier.java
+              pop: true
+        - match: \b(implements)\b\s+
+          captures:
+            1: storage.modifier.java
+          push:
+            - meta_scope: meta.definition.class.implements.java
+            - match: "(?={|extends)"
+              captures:
+                1: storage.modifier.java
+              pop: true
+  number:
+    - match: "[0-9]+"
+  variable:
+    - match: "[a-zA-Z0-9_]+"

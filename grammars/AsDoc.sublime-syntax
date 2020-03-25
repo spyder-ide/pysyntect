@@ -1,0 +1,252 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: AsDoc
+file_extensions:
+  - asdoc
+scope: text.html.asdoc
+contexts:
+  main:
+    - match: (/\*\*)\s*$
+      captures:
+        1: punctuation.definition.comment.begin.asdoc
+      push:
+        - meta_scope: comment.block.documentation.asdoc
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.asdoc
+          pop: true
+        - include: invalid
+        - include: left-margin
+        - match: \*\s*\w
+          push:
+            - meta_scope: meta.documentation.comment.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)param)
+          captures:
+            1: keyword.other.documentation.param.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.param.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)return)
+          captures:
+            1: keyword.other.documentation.return.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.return.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)throws)
+          captures:
+            1: keyword.other.documentation.throws.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.throws.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)see)
+          captures:
+            1: keyword.other.documentation.see.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.see.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)author)
+          captures:
+            1: keyword.other.documentation.author.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.author.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)version)
+          captures:
+            1: keyword.other.documentation.version.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.version.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)see)
+          captures:
+            1: keyword.other.documentation.see.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.see.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)since)
+          captures:
+            1: keyword.other.documentation.since.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.since.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)inheritDoc)
+          captures:
+            1: keyword.other.documentation.inheritDoc.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.inheritDoc.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)example)
+          captures:
+            1: keyword.other.documentation.example.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.example.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)exampleText)
+          captures:
+            1: keyword.other.documentation.exampleText.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.exampleText.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)eventType)
+          captures:
+            1: keyword.other.documentation.eventType.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.eventType.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)internal)
+          captures:
+            1: keyword.other.documentation.internal.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.internal.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)deprecated)
+          captures:
+            1: keyword.other.documentation.deprecated.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.deprecated.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)playerversion)
+          captures:
+            1: keyword.other.documentation.playerversion.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.playerversion.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)langversion)
+          captures:
+            1: keyword.other.documentation.langversion.asdoc
+            2: punctuation.definition.keyword.asdoc
+          push:
+            - meta_scope: meta.documentation.tag.langversion.asdoc
+            - match: (?=\s*\*\s*@)|(?=\s*\*\s*/)
+              pop: true
+            - include: inline
+        - match: \*\s*((\@)\w+)\s
+          captures:
+            1: keyword.other.documentation.custom.asdoc
+            2: punctuation.definition.keyword.asdoc
+  inline:
+    - include: left-margin
+    - include: invalid
+    - include: inline-formatting
+    - include: scope:text.html.basic
+    - match: "((https?|s?ftp|ftps|file|smb|afp|nfs|(x-)?man|gopher|txmt)://|mailto:)[-:@a-zA-Z0-9_.~%+/?=&#]+(?<![.?:])"
+      scope: markup.underline.link
+  inline-formatting:
+    - match: '(\{)((\@)code)'
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.code.asdoc
+        3: punctuation.definition.keyword.asdoc
+      push:
+        - meta_scope: meta.directive.code.asdoc
+        - meta_content_scope: markup.raw.code.asdoc
+        - match: '\}'
+          captures:
+            0: punctuation.definition.directive.end.asdoc
+          pop: true
+    - match: '(\{)((\@)literal)'
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.literal.asdoc
+        3: punctuation.definition.keyword.asdoc
+      push:
+        - meta_scope: meta.directive.literal.asdoc
+        - meta_content_scope: markup.raw.literal.asdoc
+        - match: '\}'
+          captures:
+            0: punctuation.definition.directive.end.asdoc
+          pop: true
+    - match: '(\{)((\@)docRoot)(\})'
+      scope: meta.directive.docRoot.asdoc
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.docRoot.asdoc
+        3: punctuation.definition.keyword.asdoc
+        4: punctuation.definition.directive.end.asdoc
+    - match: '(\{)((\@)inheritDoc)(\})'
+      scope: meta.directive.inheritDoc.asdoc
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.inheritDoc.asdoc
+        3: punctuation.definition.keyword.asdoc
+        4: punctuation.definition.directive.end.asdoc
+    - match: '(\{)((\@)link)(?:\s+(\S+?))?(?:\s+(.+?))?\s*(\})'
+      scope: meta.directive.link.asdoc
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.link.asdoc
+        3: punctuation.definition.keyword.asdoc
+        4: markup.underline.link.asdoc
+        5: entity.other.link-label.asdoc
+        6: punctuation.definition.directive.end.asdoc
+    - match: '(\{)((\@)linkplain)(?:\s+(\S+?))?(?:\s+(.+?))?\s*(\})'
+      scope: meta.directive.linkplain.asdoc
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.linkplain.asdoc
+        3: punctuation.definition.keyword.asdoc
+        4: markup.underline.linkplain.asdoc
+        5: entity.other.linkplain-label.asdoc
+        6: punctuation.definition.directive.end.asdoc
+    - match: '(\{)((\@)value)\s*(\S+?)?\s*(\})'
+      scope: meta.directive.value.asdoc
+      captures:
+        1: punctuation.definition.directive.begin.asdoc
+        2: keyword.other.documentation.directive.value.asdoc
+        3: punctuation.definition.keyword.asdoc
+        4: entity.other.source-constant.asdoc
+        5: punctuation.definition.directive.end.asdoc
+  invalid:
+    - match: ^(?!\s*\*).*$\n?
+      scope: invalid.illegal.missing-asterisk.asdoc
+  left-margin:
+    - match: ^\s*(?=\*)
+      scope: comment.block.documentation.left-margin.asdoc

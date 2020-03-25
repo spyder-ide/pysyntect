@@ -1,0 +1,182 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Extended Backus-Naur Form
+file_extensions:
+  - ebnf
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		ebnf
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		ebnf
+  	(?=\s|:|$)
+scope: source.ebnf
+contexts:
+  main:
+    - include: comment
+    - include: semicolon
+    - include: lhs
+    - include: rhs
+    - include: special
+  comment:
+    - match: \(\*
+      captures:
+        0: punctuation.definition.comment.begin.ebnf
+      push:
+        - meta_scope: comment.block.ebnf
+        - match: \*\)
+          captures:
+            0: punctuation.definition.comment.end.ebnf
+          pop: true
+  lhs:
+    - match: |-
+        (?x)
+        (?:    \s++
+        |      ^|\G
+        | (?=  ^|\G    )
+        | (?<= ;|\*\) )
+        )
+
+        # Exclude leading whitespace
+        \s*
+
+        ([A-Za-z][A-Za-z0-9_]*+)
+      scope: meta.lhs.ebnf
+      captures:
+        1: entity.name.rule.identifier.ebnf
+    - match: |-
+        (?x)
+        (?:    \s++
+        |      ^|\G
+        | (?=  ^|\G  )
+        | (?<= \*\) )
+        )
+
+        # Exclude leading whitespace
+        \s*
+
+        # Check for at least one “invalid” character
+        (?=
+        	# Starts with a digit
+        	[0-9]
+        	|
+
+        	# Contains at least one non-“word” character
+        	[A-Za-z0-9_]*   # Skip any legal characters
+        	(?: [^:;=()]    # Don't swallow symbols for comments, terminators, or assignments
+        	|   \((?!\*)  # Permit open brackets if they don't introduce a comment
+        	)
+        )
+      push:
+        - meta_scope: meta.lhs.non-standard.ebnf
+        - meta_content_scope: entity.name.rule.identifier.non-standard.ebnf
+        - match: |-
+            (?x)
+            # Exclude trailing whitespace
+            \s*
+
+            # Stop before an...
+            (?= :*=      # Assignment operator separating `#lhs` from `#rhs`
+            |   ;        # Unexpected terminator
+            |   \(\*   # Embedded comment
+            )
+          pop: true
+        - include: comment
+    - include: comment
+  rhs:
+    - match: (::=)|(:=)|(=)
+      captures:
+        1: keyword.operator.assignment.non-standard.double-colon.ebnf
+        2: keyword.operator.assignment.non-standard.single-colon.ebnf
+        3: keyword.operator.assignment.ebnf
+      push:
+        - meta_scope: meta.rhs.ebnf
+        - match: '(?=;|^\s*(?:<?[A-Za-z][A-Za-z0-9_]*>?\s*)?:*=)'
+          pop: true
+        - include: rhs-innards
+  rhs-innards:
+    - match: ","
+      scope: punctuation.delimiter.comma.ebnf
+    - match: \|
+      scope: keyword.operator.logical.or.alternation.pipe.ebnf
+    - match: "-"
+      scope: keyword.operator.logical.minus.hyphen.exception.ebnf
+    - match: \*
+      scope: keyword.operator.logical.repetition.asterisk.star.ebnf
+    - include: special
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ebnf
+      push:
+        - meta_scope: string.quoted.double.ebnf
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ebnf
+          pop: true
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.ebnf
+      push:
+        - meta_scope: string.quoted.single.ebnf
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.ebnf
+          pop: true
+    - match: '\['
+      captures:
+        0: punctuation.definition.square.bracket.begin.ebnf
+      push:
+        - meta_scope: meta.optional.ebnf
+        - match: '\]'
+          captures:
+            0: punctuation.definition.square.bracket.end.ebnf
+          pop: true
+        - include: rhs-innards
+    - match: "{"
+      captures:
+        0: punctuation.definition.curly.bracket.begin.ebnf
+      push:
+        - meta_scope: meta.repetition.ebnf
+        - match: "}"
+          captures:
+            0: punctuation.definition.curly.bracket.end.ebnf
+          pop: true
+        - include: rhs-innards
+    - match: \(
+      captures:
+        0: punctuation.definition.round.bracket.begin.ebnf
+      push:
+        - meta_scope: meta.group.ebnf
+        - match: \)
+          captures:
+            0: punctuation.definition.round.bracket.end.ebnf
+          pop: true
+        - include: rhs-innards
+    - include: comment
+    - match: "[A-Za-z][A-Za-z0-9_]*"
+      scope: variable.parameter.argument.identifier.reference.ebnf
+    - match: "!"
+      scope: keyword.operator.logical.not.negation.non-standard.ebnf
+    - include: scope:source.lex.regexp#quantifier
+  semicolon:
+    - match: ;
+      scope: punctuation.terminator.statement.ebnf
+  special:
+    - match: \?
+      captures:
+        0: keyword.operator.pragma.begin.ebnf
+      push:
+        - meta_scope: meta.pragma.directive.special.ebnf
+        - meta_content_scope: support.constant.language.pragma.ebnf
+        - match: \?
+          captures:
+            0: keyword.operator.pragma.end.ebnf
+          pop: true

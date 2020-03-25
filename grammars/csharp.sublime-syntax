@@ -1,0 +1,2459 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: "C#"
+file_extensions:
+  - cs
+scope: source.cs
+contexts:
+  main:
+    - include: preprocessor
+    - include: comment
+    - include: directives
+    - include: declarations
+    - include: script-top-level
+  comment:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.cs
+      push:
+        - meta_scope: comment.block.cs
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.cs
+          pop: true
+    - match: (^\s+)?(?=//)
+      captures:
+        1: punctuation.whitespace.comment.leading.cs
+      push:
+        - match: (?=$)
+          pop: true
+        - match: (?<!/)///(?!/)
+          captures:
+            0: punctuation.definition.comment.cs
+          push:
+            - meta_scope: comment.block.documentation.cs
+            - match: (?=$)
+              pop: true
+            - include: xml-doc-comment
+        - match: (?<!/)//(?:(?!/)|(?=//))
+          captures:
+            0: punctuation.definition.comment.cs
+          push:
+            - meta_scope: comment.line.double-slash.cs
+            - match: (?=$)
+              pop: true
+  anonymous-method-expression:
+    - match: |-
+        (?x)
+        (?:\b(async)\b\s*)?
+        (@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+        (=>)
+      captures:
+        1: storage.modifier.cs
+        2: variable.parameter.function.cs
+        3: keyword.operator.arrow.cs
+      push:
+        - match: '(?=\)|;|}|,)'
+          pop: true
+        - include: block
+        - include: ref-modifier
+        - include: expression
+    - match: |-
+        (?x)
+        (?:\b(async)\b\s*)?
+        (\(.*?\))\s*
+        (=>)
+      captures:
+        1: storage.modifier.cs
+        3: keyword.operator.arrow.cs
+      push:
+        - match: '(?=\)|;|}|,)'
+          pop: true
+        - include: block
+        - include: ref-modifier
+        - include: expression
+    - match: |-
+        (?x)
+        (?:\b(async)\b\s*)?
+        (?:\b(delegate)\b\s*)
+      captures:
+        1: storage.modifier.cs
+        2: keyword.other.delegate.cs
+      push:
+        - match: '(?=\)|;|}|,)'
+          pop: true
+        - include: parenthesized-parameter-list
+        - include: block
+        - include: expression
+  anonymous-object-creation-expression:
+    - match: '\b(new)\b\s*(?=\{|$)'
+      captures:
+        1: keyword.other.new.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: initializer-expression
+  argument:
+    - match: \b(ref|out|in)\b
+      scope: storage.modifier.cs
+    - include: declaration-expression-local
+    - include: expression
+  argument-list:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: named-argument
+        - include: argument
+        - include: punctuation-comma
+  array-creation-expression:
+    - match: |-
+        (?x)
+        \b(new|stackalloc)\b\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )?\s*
+        (?=\[)
+      captures:
+        1: keyword.other.new.cs
+      push:
+        - match: '(?<=\])'
+          pop: true
+        - include: bracketed-argument-list
+  as-expression:
+    - match: |-
+        (?x)
+        (?<!\.)\b(as)\b\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )?
+      captures:
+        1: keyword.other.as.cs
+  attribute:
+    - include: type-name
+    - include: attribute-arguments
+  attribute-arguments:
+    - match: (\()
+      captures:
+        1: punctuation.parenthesis.open.cs
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.parenthesis.close.cs
+          pop: true
+        - include: attribute-named-argument
+        - include: expression
+        - include: punctuation-comma
+  attribute-named-argument:
+    - match: '(@?[_[:alpha:]][_[:alnum:]]*)\s*(?==)'
+      captures:
+        1: entity.name.variable.property.cs
+      push:
+        - match: (?=(,|\)))
+          pop: true
+        - include: operator-assignment
+        - include: expression
+  attribute-section:
+    - match: '(\[)(assembly|module|field|event|method|param|property|return|type)?(\:)?'
+      captures:
+        1: punctuation.squarebracket.open.cs
+        2: keyword.other.attribute-specifier.cs
+        3: punctuation.separator.colon.cs
+      push:
+        - match: '(\])'
+          captures:
+            1: punctuation.squarebracket.close.cs
+          pop: true
+        - include: comment
+        - include: attribute
+        - include: punctuation-comma
+  await-expression:
+    - match: (?!\.)\b(await)\b
+      scope: keyword.other.await.cs
+  await-statement:
+    - match: (?<!\.)\b(await)\b
+      captures:
+        1: keyword.other.await.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: expression
+  base-types:
+    - match: ":"
+      captures:
+        0: punctuation.separator.colon.cs
+      push:
+        - match: '(?=\{|where)'
+          pop: true
+        - include: type
+        - include: punctuation-comma
+        - include: preprocessor
+  block:
+    - match: '\{'
+      captures:
+        0: punctuation.curlybrace.open.cs
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.curlybrace.close.cs
+          pop: true
+        - include: statement
+  boolean-literal:
+    - match: (?<!\.)\btrue\b
+      scope: constant.language.boolean.true.cs
+    - match: (?<!\.)\bfalse\b
+      scope: constant.language.boolean.false.cs
+  bracketed-argument-list:
+    - match: '\['
+      captures:
+        0: punctuation.squarebracket.open.cs
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.squarebracket.close.cs
+          pop: true
+        - include: named-argument
+        - include: argument
+        - include: punctuation-comma
+  bracketed-parameter-list:
+    - match: '(?=(\[))'
+      captures:
+        1: punctuation.squarebracket.open.cs
+      push:
+        - match: '(?=(\]))'
+          captures:
+            1: punctuation.squarebracket.close.cs
+          pop: true
+        - match: '(?<=\[)'
+          push:
+            - match: '(?=\])'
+              pop: true
+            - include: comment
+            - include: attribute-section
+            - include: parameter
+            - include: punctuation-comma
+            - include: variable-initializer
+  break-or-continue-statement:
+    - match: (?<!\.)\b(?:(break)|(continue))\b
+      captures:
+        1: keyword.control.flow.break.cs
+        2: keyword.control.flow.continue.cs
+  cast-expression:
+    - match: |-
+        (?x)
+        (\()\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s*
+        (\))(?=\s*@?[_[:alnum:]\(])
+      captures:
+        1: punctuation.parenthesis.open.cs
+        7: punctuation.parenthesis.close.cs
+  catch-clause:
+    - match: (?<!\.)\b(catch)\b
+      captures:
+        1: keyword.control.try.catch.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - match: |-
+                (?x)
+                (?<typename>
+                  (?:
+                    (?:
+                      (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                      (?<nameandtypeargs> # identifier + type arguments (if any)
+                        \g<identifier>\s*
+                        (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                      )
+                      (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                      (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+                    )
+                    (?:\s*\?\s*)? # nullable suffix?
+                    (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+                  )
+                )\s*
+                (?:(\g<identifier>)\b)?
+              captures:
+                6: variable.other.cs
+        - include: when-clause
+        - include: comment
+        - include: block
+  char-literal:
+    - match: "'"
+      captures:
+        0: punctuation.definition.char.begin.cs
+      push:
+        - meta_scope: string.quoted.single.cs
+        - match: '(\'')|((?:[^\\\n])$)'
+          captures:
+            1: punctuation.definition.char.end.cs
+            2: invalid.illegal.newline.cs
+          pop: true
+        - include: string-character-escape
+  checked-unchecked-expression:
+    - match: (?<!\.)\b(?:(checked)|(unchecked))\b\s*(\()
+      captures:
+        1: keyword.other.checked.cs
+        2: keyword.other.unchecked.cs
+        3: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: expression
+  checked-unchecked-statement:
+    - match: (?<!\.)\b(?:(checked)|(unchecked))\b\s*(?!\()
+      captures:
+        1: keyword.other.checked.cs
+        2: keyword.other.unchecked.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: block
+        - include: comment
+  class-declaration:
+    - match: (?=\bclass\b)
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - match: |-
+            (?x)
+            \b(class)\b\s+
+            (@?[_[:alpha:]][_[:alnum:]]*)\s*
+          captures:
+            1: keyword.other.class.cs
+            2: entity.name.type.class.cs
+          push:
+            - match: '(?=\{)'
+              pop: true
+            - include: comment
+            - include: type-parameter-list
+            - include: base-types
+            - include: generic-constraints
+        - match: '\{'
+          captures:
+            0: punctuation.curlybrace.open.cs
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.curlybrace.close.cs
+              pop: true
+            - include: class-or-struct-members
+        - include: preprocessor
+        - include: comment
+  class-or-struct-members:
+    - include: preprocessor
+    - include: comment
+    - include: storage-modifier
+    - include: type-declarations
+    - include: property-declaration
+    - include: field-declaration
+    - include: event-declaration
+    - include: indexer-declaration
+    - include: variable-initializer
+    - include: constructor-declaration
+    - include: destructor-declaration
+    - include: operator-declaration
+    - include: conversion-operator-declaration
+    - include: method-declaration
+    - include: attribute-section
+    - include: punctuation-semicolon
+  conditional-operator:
+    - match: '(?<!\?)\?(?!\?|\.|\[)'
+      captures:
+        0: keyword.operator.conditional.question-mark.cs
+      push:
+        - match: ":"
+          captures:
+            0: keyword.operator.conditional.colon.cs
+          pop: true
+        - include: expression
+  constructor-declaration:
+    - match: '(?=@?[_[:alpha:]][_[:alnum:]]*\s*\()'
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - match: '(@?[_[:alpha:]][_[:alnum:]]*)\b'
+          captures:
+            1: entity.name.function.cs
+        - match: (:)
+          captures:
+            1: punctuation.separator.colon.cs
+          push:
+            - match: '(?=\{|=>)'
+              pop: true
+            - include: constructor-initializer
+        - include: parenthesized-parameter-list
+        - include: preprocessor
+        - include: comment
+        - include: expression-body
+        - include: block
+  constructor-initializer:
+    - match: \b(?:(base)|(this))\b\s*(?=\()
+      captures:
+        1: keyword.other.base.cs
+        2: keyword.other.this.cs
+      push:
+        - match: (?<=\))
+          pop: true
+        - include: argument-list
+  conversion-operator-declaration:
+    - match: |-
+        (?x)
+        (?<explicitorimplicitkeyword>(?:\b(?:explicit|implicit)))\s*
+        (?<operatorkeyword>(?:\b(?:operator)))\s*
+        (?<typename>
+          (?:
+            (?:ref\s+(?:readonly\s+)?)?   # ref return
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s*
+        (?=\()
+      captures:
+        2: keyword.other.operator-decl.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: parenthesized-parameter-list
+        - include: expression-body
+        - include: block
+  declaration-expression-local:
+    - match: |-
+        (?x) # e.g. int x OR var x
+        (?:
+          \b(var)\b|
+          (?<typename>
+            (?:
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )
+        )\s+
+        (\g<identifier>)\b\s*
+        (?=[,)\]])
+      captures:
+        1: keyword.other.var.cs
+        7: variable.other.cs
+  declaration-expression-tuple:
+    - match: |-
+        (?x) # e.g. int x OR var x
+        (?:
+          \b(var)\b|
+          (?<typename>
+            (?:
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )
+        )\s+
+        (\g<identifier>)\b\s*
+        (?=[,)])
+      captures:
+        1: keyword.other.var.cs
+        7: entity.name.variable.tuple-element.cs
+  declarations:
+    - include: namespace-declaration
+    - include: type-declarations
+    - include: punctuation-semicolon
+  delegate-declaration:
+    - match: |-
+        (?x)
+        (?:\b(delegate)\b)\s+
+        (?<typename>
+          (?:
+            (?:ref\s+(?:readonly\s+)?)?   # ref return
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s+
+        (\g<identifier>)\s*
+        (<([^<>]+)>)?\s*
+        (?=\()
+      captures:
+        1: keyword.other.delegate.cs
+        7: entity.name.type.delegate.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: comment
+        - include: parenthesized-parameter-list
+        - include: generic-constraints
+  destructor-declaration:
+    - match: '(~)(@?[_[:alpha:]][_[:alnum:]]*)\s*(?=\()'
+      captures:
+        1: punctuation.tilde.cs
+        2: entity.name.function.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: parenthesized-parameter-list
+        - include: expression-body
+        - include: block
+  directives:
+    - include: extern-alias-directive
+    - include: using-directive
+    - include: attribute-section
+    - include: punctuation-semicolon
+  do-statement:
+    - match: (?<!\.)\b(do)\b
+      captures:
+        1: keyword.control.loop.do.cs
+      push:
+        - match: "(?=;|})"
+          pop: true
+        - include: statement
+  element-access-expression:
+    - match: |-
+        (?x)
+        (?:(\?)\s*)?                        # preceding null-conditional operator?
+        (?:(\.)\s*)?                        # preceding dot?
+        (?:(@?[_[:alpha:]][_[:alnum:]]*)\s*)? # property name
+        (?:(\?)\s*)?                        # null-conditional operator?
+        (?=\[)                              # open bracket of argument list
+      captures:
+        1: keyword.operator.null-conditional.cs
+        2: punctuation.accessor.cs
+        3: variable.other.object.property.cs
+        4: keyword.operator.null-conditional.cs
+      push:
+        - match: '(?<=\])(?!\s*\[)'
+          pop: true
+        - include: bracketed-argument-list
+  else-part:
+    - match: (?<!\.)\b(else)\b
+      captures:
+        1: keyword.control.conditional.else.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: statement
+  enum-declaration:
+    - match: (?=\benum\b)
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - match: (?=enum)
+          push:
+            - match: '(?=\{)'
+              pop: true
+            - include: comment
+            - match: '(enum)\s+(@?[_[:alpha:]][_[:alnum:]]*)'
+              captures:
+                1: keyword.other.enum.cs
+                2: entity.name.type.enum.cs
+            - match: ":"
+              captures:
+                0: punctuation.separator.colon.cs
+              push:
+                - match: '(?=\{)'
+                  pop: true
+                - include: type
+        - match: '\{'
+          captures:
+            0: punctuation.curlybrace.open.cs
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.curlybrace.close.cs
+              pop: true
+            - include: preprocessor
+            - include: comment
+            - include: attribute-section
+            - include: punctuation-comma
+            - match: "@?[_[:alpha:]][_[:alnum:]]*"
+              captures:
+                0: entity.name.variable.enum-member.cs
+              push:
+                - match: '(?=(,|\}))'
+                  pop: true
+                - include: comment
+                - include: variable-initializer
+        - include: preprocessor
+        - include: comment
+  event-accessors:
+    - match: '\{'
+      captures:
+        0: punctuation.curlybrace.open.cs
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.curlybrace.close.cs
+          pop: true
+        - match: \b(add)\b
+          scope: keyword.other.add.cs
+        - match: \b(remove)\b
+          scope: keyword.other.remove.cs
+        - include: comment
+        - include: attribute-section
+        - include: expression-body
+        - include: block
+        - include: punctuation-semicolon
+  event-declaration:
+    - match: |-
+        (?x)
+        \b(event)\b\s*
+        (?<returntype>
+          (?<typename>
+            (?:
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )\s+
+        )
+        (?<interfacename>\g<typename>\s*\.\s*)?
+        (?<eventnames>\g<identifier>(?:\s*,\s*\g<identifier>)*)\s*
+        (?=\{|;|$)
+      captures:
+        1: keyword.other.event.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: event-accessors
+        - include: punctuation-comma
+  expression:
+    - include: preprocessor
+    - include: comment
+    - include: checked-unchecked-expression
+    - include: typeof-or-default-expression
+    - include: nameof-expression
+    - include: throw-expression
+    - include: interpolated-string
+    - include: verbatim-interpolated-string
+    - include: this-or-base-expression
+    - include: conditional-operator
+    - include: expression-operators
+    - include: await-expression
+    - include: query-expression
+    - include: as-expression
+    - include: is-expression
+    - include: anonymous-method-expression
+    - include: object-creation-expression
+    - include: array-creation-expression
+    - include: anonymous-object-creation-expression
+    - include: invocation-expression
+    - include: member-access-expression
+    - include: element-access-expression
+    - include: cast-expression
+    - include: literal
+    - include: parenthesized-expression
+    - include: tuple-deconstruction-assignment
+    - include: initializer-expression
+    - include: identifier
+  expression-body:
+    - match: "=>"
+      captures:
+        0: keyword.operator.arrow.cs
+      push:
+        - match: '(?=[,\);}])'
+          pop: true
+        - include: ref-modifier
+        - include: expression
+  expression-operators:
+    - match: \*=|/=|%=|\+=|-=
+      scope: keyword.operator.assignment.compound.cs
+    - match: \&=|\^=|<<=|>>=|\|=
+      scope: keyword.operator.assignment.compound.bitwise.cs
+    - match: "<<|>>"
+      scope: keyword.operator.bitwise.shift.cs
+    - match: "==|!="
+      scope: keyword.operator.comparison.cs
+    - match: <=|>=|<|>
+      scope: keyword.operator.relational.cs
+    - match: \!|&&|\|\|
+      scope: keyword.operator.logical.cs
+    - match: \&|~|\^|\|
+      scope: keyword.operator.bitwise.cs
+    - match: \=
+      scope: keyword.operator.assignment.cs
+    - match: "--"
+      scope: keyword.operator.decrement.cs
+    - match: \+\+
+      scope: keyword.operator.increment.cs
+    - match: '%|\*|/|-|\+'
+      scope: keyword.operator.arithmetic.cs
+    - match: \?\?
+      scope: keyword.operator.null-coalescing.cs
+  extern-alias-directive:
+    - match: '\s*(extern)\b\s*(alias)\b\s*(@?[_[:alpha:]][_[:alnum:]]*)'
+      captures:
+        1: keyword.other.extern.cs
+        2: keyword.other.alias.cs
+        3: variable.other.alias.cs
+      push:
+        - match: (?=;)
+          pop: true
+  field-declaration:
+    - match: |-
+        (?x)
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s+
+        (\g<identifier>)\s* # first field name
+        (?!=>|==)(?=,|;|=|$)
+      captures:
+        6: variable.other.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - match: "@?[_[:alpha:]][_[:alnum:]]*"
+          scope: variable.other.cs
+        - include: punctuation-comma
+        - include: comment
+        - include: variable-initializer
+        - include: class-or-struct-members
+  finally-clause:
+    - match: (?<!\.)\b(finally)\b
+      captures:
+        1: keyword.control.try.finally.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: comment
+        - include: block
+  for-statement:
+    - match: (?<!\.)\b(for)\b\s*(?=\()
+      captures:
+        1: keyword.control.loop.for.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - include: local-variable-declaration
+            - include: expression
+            - include: punctuation-comma
+            - include: punctuation-semicolon
+        - include: statement
+  foreach-statement:
+    - match: (?<!\.)\b(foreach)\b\s*(?=\()
+      captures:
+        1: keyword.control.loop.foreach.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - match: |-
+                (?x)
+                (?:
+                  (\bvar\b)|
+                  (?<typename>
+                    (?:
+                      (?:
+                        (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                        (?<nameandtypeargs> # identifier + type arguments (if any)
+                          \g<identifier>\s*
+                          (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                        )
+                        (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                        (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+                      )
+                      (?:\s*\?\s*)? # nullable suffix?
+                      (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+                    )
+                  )
+                )\s+
+                (\g<identifier>)\s+
+                \b(in)\b
+              captures:
+                1: keyword.other.var.cs
+                7: variable.other.cs
+                8: keyword.control.loop.in.cs
+            - match: |-
+                (?x) # match foreach (var (x, y) in ...)
+                (?:\b(var)\b\s*)?
+                (?<tuple>\((?:[^\(\)]|\g<tuple>)+\))\s+
+                \b(in)\b
+              captures:
+                1: keyword.other.var.cs
+                3: keyword.control.loop.in.cs
+            - include: expression
+        - include: statement
+  generic-constraints:
+    - match: '(where)\s+(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)'
+      captures:
+        1: keyword.other.where.cs
+        2: entity.name.type.type-parameter.cs
+        3: punctuation.separator.colon.cs
+      push:
+        - match: '(?=\{|where|;|=>)'
+          pop: true
+        - match: \bclass\b
+          scope: keyword.other.class.cs
+        - match: \bstruct\b
+          scope: keyword.other.struct.cs
+        - match: (new)\s*(\()\s*(\))
+          captures:
+            1: keyword.other.new.cs
+            2: punctuation.parenthesis.open.cs
+            3: punctuation.parenthesis.close.cs
+        - include: type
+        - include: punctuation-comma
+        - include: generic-constraints
+  goto-statement:
+    - match: (?<!\.)\b(goto)\b
+      captures:
+        1: keyword.control.goto.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - match: \b(case)\b
+          captures:
+            1: keyword.control.case.cs
+          push:
+            - match: (?=;)
+              pop: true
+            - include: expression
+        - match: \b(default)\b
+          captures:
+            1: keyword.control.default.cs
+        - match: "@?[_[:alpha:]][_[:alnum:]]*"
+          scope: entity.name.label.cs
+  group-by:
+    - match: \b(by)\b\s*
+      captures:
+        1: keyword.query.by.cs
+  group-clause:
+    - match: \b(group)\b\s*
+      captures:
+        1: keyword.query.group.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: group-by
+        - include: group-into
+        - include: query-body
+        - include: expression
+  group-into:
+    - match: |-
+        (?x)
+        \b(into)\b\s*
+        (@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+      captures:
+        1: keyword.query.into.cs
+        2: entity.name.variable.range-variable.cs
+  identifier:
+    - match: "@?[_[:alpha:]][_[:alnum:]]*"
+      scope: variable.other.readwrite.cs
+  if-statement:
+    - match: (?<!\.)\b(if)\b\s*(?=\()
+      captures:
+        1: keyword.control.conditional.if.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - include: expression
+        - include: statement
+  indexer-declaration:
+    - match: |-
+        (?x)
+        (?<returntype>
+          (?<typename>
+            (?:
+              (?:ref\s+(?:readonly\s+)?)?   # ref return
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )\s+
+        )
+        (?<interfacename>\g<typename>\s*\.\s*)?
+        (?<indexername>this)\s*
+        (?=\[)
+      captures:
+        8: keyword.other.this.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: bracketed-parameter-list
+        - include: property-accessors
+        - include: expression-body
+        - include: variable-initializer
+  initializer-expression:
+    - match: '\{'
+      captures:
+        0: punctuation.curlybrace.open.cs
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.curlybrace.close.cs
+          pop: true
+        - include: expression
+        - include: punctuation-comma
+  interface-declaration:
+    - match: (?=\binterface\b)
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - match: |-
+            (?x)
+            (interface)\b\s+
+            (@?[_[:alpha:]][_[:alnum:]]*)
+          captures:
+            1: keyword.other.interface.cs
+            2: entity.name.type.interface.cs
+          push:
+            - match: '(?=\{)'
+              pop: true
+            - include: comment
+            - include: type-parameter-list
+            - include: base-types
+            - include: generic-constraints
+        - match: '\{'
+          captures:
+            0: punctuation.curlybrace.open.cs
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.curlybrace.close.cs
+              pop: true
+            - include: interface-members
+        - include: preprocessor
+        - include: comment
+  interface-members:
+    - include: preprocessor
+    - include: comment
+    - include: property-declaration
+    - include: event-declaration
+    - include: indexer-declaration
+    - include: method-declaration
+    - include: attribute-section
+    - include: punctuation-semicolon
+  interpolated-string:
+    - match: \$"
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.quoted.double.cs
+        - match: '(")|((?:[^\\\n])$)'
+          captures:
+            1: punctuation.definition.string.end.cs
+            2: invalid.illegal.newline.cs
+          pop: true
+        - include: string-character-escape
+        - include: interpolation
+  interpolation:
+    - match: '(?<=[^\{])((?:\{\{)*)(\{)(?=[^\{])'
+      captures:
+        1: string.quoted.double.cs
+        2: punctuation.definition.interpolation.begin.cs
+      push:
+        - meta_scope: meta.interpolation.cs
+        - match: '\}'
+          captures:
+            0: punctuation.definition.interpolation.end.cs
+          pop: true
+        - include: expression
+  invocation-expression:
+    - match: |-
+        (?x)
+        (?:(\?)\s*)?                                     # preceding null-conditional operator?
+        (?:(\.)\s*)?                                     # preceding dot?
+        (@?[_[:alpha:]][_[:alnum:]]*)\s*                   # method name
+        (?<typeargs>\s*<([^<>]|\g<typeargs>)+>\s*)?\s* # type arguments
+        (?=\()                                           # open paren of argument list
+      captures:
+        1: keyword.operator.null-conditional.cs
+        2: punctuation.accessor.cs
+        3: entity.name.function.cs
+      push:
+        - match: (?<=\))
+          pop: true
+        - include: argument-list
+  is-expression:
+    - match: |-
+        (?x)
+        (?<!\.)\b(is)\b\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )?
+      captures:
+        1: keyword.other.is.cs
+  join-clause:
+    - match: |-
+        (?x)
+        \b(join)\b\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )?
+        \s+(\g<identifier>)\b\s*
+        \b(in)\b\s*
+      captures:
+        1: keyword.query.join.cs
+        7: entity.name.variable.range-variable.cs
+        8: keyword.query.in.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: join-on
+        - include: join-equals
+        - include: join-into
+        - include: query-body
+        - include: expression
+  join-equals:
+    - match: \b(equals)\b\s*
+      captures:
+        1: keyword.query.equals.cs
+  join-into:
+    - match: |-
+        (?x)
+        \b(into)\b\s*
+        (@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+      captures:
+        1: keyword.query.into.cs
+        2: entity.name.variable.range-variable.cs
+  join-on:
+    - match: \b(on)\b\s*
+      captures:
+        1: keyword.query.on.cs
+  labeled-statement:
+    - match: '(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)'
+      captures:
+        1: entity.name.label.cs
+        2: punctuation.separator.colon.cs
+  lambda-parameter:
+    - match: |-
+        (?x)
+        (?:\b(ref|out|in)\b)?\s*
+        (?:(?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s+)?
+        (\g<identifier>)\b\s*
+        (?=[,)])
+      captures:
+        1: storage.modifier.cs
+        7: variable.parameter.function.cs
+  lambda-parameter-list:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: comment
+        - include: attribute-section
+        - include: lambda-parameter
+        - include: punctuation-comma
+  let-clause:
+    - match: |-
+        (?x)
+        \b(let)\b\s*
+        (@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+        (=)\s*
+      captures:
+        1: keyword.query.let.cs
+        2: entity.name.variable.range-variable.cs
+        3: keyword.operator.assignment.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: query-body
+        - include: expression
+  literal:
+    - include: boolean-literal
+    - include: null-literal
+    - include: numeric-literal
+    - include: char-literal
+    - include: string-literal
+    - include: verbatim-string-literal
+    - include: tuple-literal
+  local-constant-declaration:
+    - match: |-
+        (?x)
+        (?<constkeyword>\b(?:const)\b)\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s+
+        (\g<identifier>)\s*
+        (?=,|;|=)
+      captures:
+        1: storage.modifier.cs
+        7: variable.other.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - match: "@?[_[:alpha:]][_[:alnum:]]*"
+          scope: variable.other.cs
+        - include: punctuation-comma
+        - include: comment
+        - include: variable-initializer
+  local-declaration:
+    - include: local-constant-declaration
+    - include: local-variable-declaration
+    - include: local-tuple-var-deconstruction
+  local-tuple-var-deconstruction:
+    - match: |-
+        (?x) # e.g. var (x, y) = GetPoint();
+        (?:\b(var)\b\s*)
+        (?<tuple>\((?:[^\(\)]|\g<tuple>)+\))\s*
+        (?=;|=|\))
+      captures:
+        1: keyword.other.var.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: comment
+        - include: variable-initializer
+  local-variable-declaration:
+    - match: |-
+        (?x)
+        (?:
+          (?:(\bref)\s+(?:(\breadonly)\s+)?)?(\bvar\b)| # ref local
+          (?<typename>
+            (?:
+              (?:ref\s+(?:readonly\s+)?)?   # ref local
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )
+        )\s+
+        (\g<identifier>)\s*
+        (?=,|;|=|\))
+      captures:
+        1: storage.modifier.cs
+        2: storage.modifier.cs
+        3: keyword.other.var.cs
+        9: variable.other.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - match: "@?[_[:alpha:]][_[:alnum:]]*"
+          scope: variable.other.cs
+        - include: punctuation-comma
+        - include: comment
+        - include: variable-initializer
+  lock-statement:
+    - match: (?<!\.)\b(lock)\b\s*(?=\()
+      captures:
+        1: keyword.other.lock.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - include: expression
+        - include: statement
+  member-access-expression:
+    - match: |-
+        (?x)
+        (?:(\?)\s*)?                   # preceding null-conditional operator?
+        (\.)\s*                        # preceding dot
+        (@?[_[:alpha:]][_[:alnum:]]*)\s* # property name
+        (?![_[:alnum:]]|\(|(\?)?\[|<)  # next character is not alpha-numeric, nor a (, [, or <. Also, test for ?[
+      captures:
+        1: keyword.operator.null-conditional.cs
+        2: punctuation.accessor.cs
+        3: variable.other.object.property.cs
+    - match: |-
+        (?x)
+        (\.)?\s*
+        (@?[_[:alpha:]][_[:alnum:]]*)
+        (?<typeparams>\s*<([^<>]|\g<typeparams>)+>\s*)
+        (?=
+          (\s*\?)?
+          \s*\.\s*@?[_[:alpha:]][_[:alnum:]]*
+        )
+      captures:
+        1: punctuation.accessor.cs
+        2: variable.other.object.cs
+    - match: |-
+        (?x)
+        (@?[_[:alpha:]][_[:alnum:]]*)
+        (?=
+          (\s*\?)?
+          \s*\.\s*@?[_[:alpha:]][_[:alnum:]]*
+        )
+      captures:
+        1: variable.other.object.cs
+  method-declaration:
+    - match: |-
+        (?x)
+        (?<returntype>
+          (?<typename>
+            (?:
+              (?:ref\s+(?:readonly\s+)?)?   # ref return
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )\s+
+        )
+        (?<interfacename>\g<typename>\s*\.\s*)?
+        (\g<identifier>)\s*
+        (<([^<>]+)>)?\s*
+        (?=\()
+      captures:
+        8: entity.name.function.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: parenthesized-parameter-list
+        - include: generic-constraints
+        - include: expression-body
+        - include: block
+  named-argument:
+    - match: '(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)'
+      captures:
+        1: variable.parameter.function.cs
+        2: punctuation.separator.colon.cs
+      push:
+        - match: '(?=(,|\)|\]))'
+          pop: true
+        - include: argument
+  nameof-expression:
+    - match: (?<!\.)\b(nameof)\b\s*(\()
+      captures:
+        1: keyword.other.nameof.cs
+        2: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: expression
+  namespace-declaration:
+    - match: \b(namespace)\s+
+      captures:
+        1: keyword.other.namespace.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: comment
+        - match: "@?[_[:alpha:]][_[:alnum:]]*"
+          scope: entity.name.type.namespace.cs
+        - include: punctuation-accessor
+        - match: '\{'
+          captures:
+            0: punctuation.curlybrace.open.cs
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.curlybrace.close.cs
+              pop: true
+            - include: declarations
+            - include: using-directive
+            - include: punctuation-semicolon
+  null-literal:
+    - match: (?<!\.)\bnull\b
+      scope: constant.language.null.cs
+  numeric-literal:
+    - match: '\b0(x|X)[0-9a-fA-F_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b'
+      scope: constant.numeric.hex.cs
+    - match: '\b0(b|B)[01_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b'
+      scope: constant.numeric.binary.cs
+    - match: '\b([0-9_]+)?\.[0-9_]+((e|E)[0-9]+)?(F|f|D|d|M|m)?\b'
+      scope: constant.numeric.decimal.cs
+    - match: '\b[0-9_]+(e|E)[0-9_]+(F|f|D|d|M|m)?\b'
+      scope: constant.numeric.decimal.cs
+    - match: '\b[0-9_]+(F|f|D|d|M|m)\b'
+      scope: constant.numeric.decimal.cs
+    - match: '\b[0-9_]+(U|u|L|l|UL|Ul|uL|ul|LU|Lu|lU|lu)?\b'
+      scope: constant.numeric.decimal.cs
+  object-creation-expression:
+    - include: object-creation-expression-with-parameters
+    - include: object-creation-expression-with-no-parameters
+  object-creation-expression-with-no-parameters:
+    - match: |-
+        (?x)
+        (new)\s+
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s*
+        (?=\{|$)
+      captures:
+        1: keyword.other.new.cs
+  object-creation-expression-with-parameters:
+    - match: |-
+        (?x)
+        (new)\s+
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s*
+        (?=\()
+      captures:
+        1: keyword.other.new.cs
+      push:
+        - match: (?<=\))
+          pop: true
+        - include: argument-list
+  operator-assignment:
+    - match: (?<!=|!)(=)(?!=)
+      scope: keyword.operator.assignment.cs
+  operator-declaration:
+    - match: |-
+        (?x)
+        (?<typename>
+          (?:
+            (?:ref\s+(?:readonly\s+)?)?   # ref return
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s*
+        (?<operatorkeyword>(?:\b(?:operator)))\s*
+        (?<operator>(?:\+|-|\*|/|%|&|\||\^|\<\<|\>\>|==|!=|\>|\<|\>=|\<=|!|~|\+\+|--|true|false))\s*
+        (?=\()
+      captures:
+        6: keyword.other.operator-decl.cs
+        7: entity.name.function.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: parenthesized-parameter-list
+        - include: expression-body
+        - include: block
+  orderby-clause:
+    - match: \b(orderby)\b\s*
+      captures:
+        1: keyword.query.orderby.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: ordering-direction
+        - include: query-body
+        - include: expression
+        - include: punctuation-comma
+  ordering-direction:
+    - match: \b(?:(ascending)|(descending))\b
+      captures:
+        1: keyword.query.ascending.cs
+        2: keyword.query.descending.cs
+  parameter:
+    - match: |-
+        (?x)
+        (?:(?:\b(ref|params|out|in|this)\b)\s+)?
+        (?<typename>
+          (?:
+            (?:ref\s+)?   # ref return
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )\s+
+        (\g<identifier>)
+      captures:
+        1: storage.modifier.cs
+        7: variable.parameter.function.cs
+  parenthesized-expression:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: expression
+  parenthesized-parameter-list:
+    - match: (\()
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: (\))
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: comment
+        - include: attribute-section
+        - include: parameter
+        - include: punctuation-comma
+        - include: variable-initializer
+  preprocessor:
+    - match: ^\s*(\#)\s*
+      captures:
+        1: punctuation.separator.hash.cs
+      push:
+        - meta_scope: meta.preprocessor.cs
+        - match: (?<=$)
+          pop: true
+        - include: comment
+        - include: preprocessor-define-or-undef
+        - include: preprocessor-if-or-elif
+        - include: preprocessor-else-or-endif
+        - include: preprocessor-warning-or-error
+        - include: preprocessor-region
+        - include: preprocessor-endregion
+        - include: preprocessor-load
+        - include: preprocessor-r
+        - include: preprocessor-line
+        - include: preprocessor-pragma-warning
+        - include: preprocessor-pragma-checksum
+  preprocessor-define-or-undef:
+    - match: '\b(?:(define)|(undef))\b\s*\b([_[:alpha:]][_[:alnum:]]*)\b'
+      captures:
+        1: keyword.preprocessor.define.cs
+        2: keyword.preprocessor.undef.cs
+        3: entity.name.variable.preprocessor.symbol.cs
+  preprocessor-else-or-endif:
+    - match: \b(?:(else)|(endif))\b
+      captures:
+        1: keyword.preprocessor.else.cs
+        2: keyword.preprocessor.endif.cs
+  preprocessor-endregion:
+    - match: \b(endregion)\b
+      captures:
+        1: keyword.preprocessor.endregion.cs
+  preprocessor-expression:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: preprocessor-expression
+    - match: '\b(?:(true)|(false)|([_[:alpha:]][_[:alnum:]]*))\b'
+      captures:
+        1: constant.language.boolean.true.cs
+        2: constant.language.boolean.false.cs
+        3: entity.name.variable.preprocessor.symbol.cs
+    - match: (==|!=)|(\!|&&|\|\|)
+      captures:
+        1: keyword.operator.comparison.cs
+        2: keyword.operator.logical.cs
+  preprocessor-if-or-elif:
+    - match: \b(?:(if)|(elif))\b
+      captures:
+        1: keyword.preprocessor.if.cs
+        2: keyword.preprocessor.elif.cs
+      push:
+        - match: (?=$)
+          pop: true
+        - include: comment
+        - include: preprocessor-expression
+  preprocessor-line:
+    - match: \b(line)\b
+      captures:
+        1: keyword.preprocessor.line.cs
+      push:
+        - match: (?=$)
+          pop: true
+        - match: \b(?:(default|hidden))
+          captures:
+            1: keyword.preprocessor.default.cs
+            2: keyword.preprocessor.hidden.cs
+        - match: "[0-9]+"
+          captures:
+            0: constant.numeric.decimal.cs
+        - match: '\"[^"]*\"'
+          captures:
+            0: string.quoted.double.cs
+  preprocessor-load:
+    - match: \b(load)\b
+      captures:
+        1: keyword.preprocessor.load.cs
+      push:
+        - match: (?=$)
+          pop: true
+        - match: '\"[^"]*\"'
+          captures:
+            0: string.quoted.double.cs
+  preprocessor-pragma-checksum:
+    - match: '\b(pragma)\b\s*\b(checksum)\b\s*(\"[^"]*\")\s*(\"[^"]*\")\s*(\"[^"]*\")'
+      captures:
+        1: keyword.preprocessor.pragma.cs
+        2: keyword.preprocessor.checksum.cs
+        3: string.quoted.double.cs
+        4: string.quoted.double.cs
+        5: string.quoted.double.cs
+  preprocessor-pragma-warning:
+    - match: '\b(pragma)\b\s*\b(warning)\b\s*\b(?:(disable)|(restore))\b(\s*[0-9]+(?:\s*,\s*[0-9]+)?)?'
+      captures:
+        1: keyword.preprocessor.pragma.cs
+        2: keyword.preprocessor.warning.cs
+        3: keyword.preprocessor.disable.cs
+        4: keyword.preprocessor.restore.cs
+  preprocessor-r:
+    - match: \b(r)\b
+      captures:
+        1: keyword.preprocessor.r.cs
+      push:
+        - match: (?=$)
+          pop: true
+        - match: '\"[^"]*\"'
+          captures:
+            0: string.quoted.double.cs
+  preprocessor-region:
+    - match: \b(region)\b\s*(.*)(?=$)
+      captures:
+        1: keyword.preprocessor.region.cs
+        2: string.unquoted.preprocessor.message.cs
+  preprocessor-warning-or-error:
+    - match: \b(?:(warning)|(error))\b\s*(.*)(?=$)
+      captures:
+        1: keyword.preprocessor.warning.cs
+        2: keyword.preprocessor.error.cs
+        3: string.unquoted.preprocessor.message.cs
+  property-accessors:
+    - match: '\{'
+      captures:
+        0: punctuation.curlybrace.open.cs
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.curlybrace.close.cs
+          pop: true
+        - match: \b(private|protected|internal)\b
+          scope: storage.modifier.cs
+        - match: \b(get)\b
+          scope: keyword.other.get.cs
+        - match: \b(set)\b
+          scope: keyword.other.set.cs
+        - include: comment
+        - include: attribute-section
+        - include: expression-body
+        - include: block
+        - include: punctuation-semicolon
+  property-declaration:
+    - match: |-
+        (?x)
+
+        # The negative lookahead below ensures that we don't match nested types
+        # or other declarations as properties.
+        (?![[:word:][:space:]]*\b(?:class|interface|struct|enum|event)\b)
+
+        (?<returntype>
+          (?<typename>
+            (?:
+              (?:ref\s+(?:readonly\s+)?)?   # ref return
+              (?:
+                (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+                (?<nameandtypeargs> # identifier + type arguments (if any)
+                  \g<identifier>\s*
+                  (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+                )
+                (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+                (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+              )
+              (?:\s*\?\s*)? # nullable suffix?
+              (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+            )
+          )\s+
+        )
+        (?<interfacename>\g<typename>\s*\.\s*)?
+        (?<propertyname>\g<identifier>)\s*
+        (?=\{|=>|$)
+      captures:
+        8: variable.other.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - include: comment
+        - include: property-accessors
+        - include: expression-body
+        - include: variable-initializer
+        - include: class-or-struct-members
+  punctuation-accessor:
+    - match: \.
+      scope: punctuation.accessor.cs
+  punctuation-comma:
+    - match: ","
+      scope: punctuation.separator.comma.cs
+  punctuation-semicolon:
+    - match: ;
+      scope: punctuation.terminator.statement.cs
+  query-body:
+    - include: let-clause
+    - include: where-clause
+    - include: join-clause
+    - include: orderby-clause
+    - include: select-clause
+    - include: group-clause
+  query-expression:
+    - match: |-
+        (?x)
+        \b(from)\b\s*
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )?
+        \s+(\g<identifier>)\b\s*
+        \b(in)\b\s*
+      captures:
+        1: keyword.query.from.cs
+        7: entity.name.variable.range-variable.cs
+        8: keyword.query.in.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: query-body
+        - include: expression
+  readonly-modifier:
+    - match: \b(readonly)\b
+      scope: storage.modifier.cs
+  ref-modifier:
+    - match: \b(ref)\b
+      scope: storage.modifier.cs
+  return-statement:
+    - match: (?<!\.)\b(return)\b
+      captures:
+        1: keyword.control.flow.return.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: ref-modifier
+        - include: expression
+  script-top-level:
+    - include: method-declaration
+    - include: statement
+    - include: punctuation-semicolon
+  select-clause:
+    - match: \b(select)\b\s*
+      captures:
+        1: keyword.query.select.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: query-body
+        - include: expression
+  statement:
+    - include: preprocessor
+    - include: comment
+    - include: while-statement
+    - include: do-statement
+    - include: for-statement
+    - include: foreach-statement
+    - include: if-statement
+    - include: else-part
+    - include: switch-statement
+    - include: goto-statement
+    - include: return-statement
+    - include: break-or-continue-statement
+    - include: throw-statement
+    - include: yield-statement
+    - include: await-statement
+    - include: try-statement
+    - include: checked-unchecked-statement
+    - include: lock-statement
+    - include: using-statement
+    - include: labeled-statement
+    - include: local-declaration
+    - include: block
+    - include: expression
+    - include: punctuation-semicolon
+  storage-modifier:
+    - match: (?<!\.)\b(new|public|protected|internal|private|abstract|virtual|override|sealed|static|partial|readonly|volatile|const|extern|async|unsafe|ref)\b
+      scope: storage.modifier.cs
+  string-character-escape:
+    - match: \\.
+      scope: constant.character.escape.cs
+  string-literal:
+    - match: (?<!@)"
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.quoted.double.cs
+        - match: '(")|((?:[^\\\n])$)'
+          captures:
+            1: punctuation.definition.string.end.cs
+            2: invalid.illegal.newline.cs
+          pop: true
+        - include: string-character-escape
+  struct-declaration:
+    - match: (?=\bstruct\b)
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - match: |-
+            (?x)
+            (struct)\b\s+
+            (@?[_[:alpha:]][_[:alnum:]]*)
+          captures:
+            1: keyword.other.struct.cs
+            2: entity.name.type.struct.cs
+          push:
+            - match: '(?=\{)'
+              pop: true
+            - include: comment
+            - include: type-parameter-list
+            - include: base-types
+            - include: generic-constraints
+        - match: '\{'
+          captures:
+            0: punctuation.curlybrace.open.cs
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.curlybrace.close.cs
+              pop: true
+            - include: class-or-struct-members
+        - include: preprocessor
+        - include: comment
+  switch-label:
+    - match: (?<!\.)\b(case)\b\s+
+      captures:
+        1: keyword.control.case.cs
+      push:
+        - match: ":"
+          captures:
+            0: punctuation.separator.colon.cs
+          pop: true
+        - include: expression
+    - match: (?<!\.)\b(default)\b\s*(:)
+      captures:
+        1: keyword.control.default.cs
+        2: punctuation.separator.colon.cs
+  switch-statement:
+    - match: (?<!\.)\b(switch)\b\s*(?=\()
+      captures:
+        1: keyword.control.switch.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - include: expression
+        - match: '\{'
+          captures:
+            0: punctuation.curlybrace.open.cs
+          push:
+            - match: '\}'
+              captures:
+                0: punctuation.curlybrace.close.cs
+              pop: true
+            - include: switch-label
+            - include: statement
+  this-or-base-expression:
+    - match: \b(?:(base)|(this))\b
+      captures:
+        1: keyword.other.base.cs
+        2: keyword.other.this.cs
+  throw-expression:
+    - match: (?<!\.)\b(throw)\b
+      captures:
+        1: keyword.control.flow.throw.cs
+  throw-statement:
+    - match: (?<!\.)\b(throw)\b
+      captures:
+        1: keyword.control.flow.throw.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: expression
+  try-block:
+    - match: (?<!\.)\b(try)\b
+      captures:
+        1: keyword.control.try.cs
+      push:
+        - match: '(?<=\})'
+          pop: true
+        - include: comment
+        - include: block
+  try-statement:
+    - include: try-block
+    - include: catch-clause
+    - include: finally-clause
+  tuple-declaration-deconstruction-element-list:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: comment
+        - include: tuple-declaration-deconstruction-element-list
+        - include: declaration-expression-tuple
+        - include: punctuation-comma
+        - match: |-
+            (?x) # e.g. x
+            (@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+            (?=[,)])
+          captures:
+            1: entity.name.variable.tuple-element.cs
+  tuple-deconstruction-assignment:
+    - match: |-
+        (?x)
+        (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))\s*
+        (?!=>|==)(?==)
+      captures:
+  tuple-deconstruction-element-list:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: comment
+        - include: tuple-deconstruction-element-list
+        - include: declaration-expression-tuple
+        - include: punctuation-comma
+        - match: |-
+            (?x) # e.g. x
+            (@?[_[:alpha:]][_[:alnum:]]*)\b\s*
+            (?=[,)])
+          captures:
+            1: variable.other.readwrite.cs
+  tuple-element:
+    - match: |-
+        (?x)
+        (?<typename>
+          (?:
+            (?:
+              (?:(?<identifier>@?[_[:alpha:]][_[:alnum:]]*)\s*\:\:\s*)? # alias-qualification
+              (?<nameandtypeargs> # identifier + type arguments (if any)
+                \g<identifier>\s*
+                (?<typeargs>\s*<(?:[^<>]|\g<typeargs>)+>\s*)?
+              )
+              (?:\s*\.\s*\g<nameandtypeargs>)* | # Are there any more names being dotted into?
+              (?<tuple>\s*\((?:[^\(\)]|\g<tuple>)+\))
+            )
+            (?:\s*\?\s*)? # nullable suffix?
+            (?:\s*\[(?:\s*,\s*)*\]\s*)* # array suffix?
+          )
+        )
+        (?:(?<tuplename>\g<identifier>)\b)?
+      captures:
+        6: entity.name.variable.tuple-element.cs
+  tuple-literal:
+    - match: '(\()(?=.*[:,])'
+      captures:
+        1: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: comment
+        - include: tuple-literal-element
+        - include: punctuation-comma
+  tuple-literal-element:
+    - match: |-
+        (?x)
+        (?:(@?[_[:alpha:]][_[:alnum:]]*)\s*(:)\s*)?
+        (?![,)])
+      captures:
+        0: entity.name.variable.tuple-element.cs
+        1: punctuation.separator.colon.cs
+      push:
+        - match: "(?=[,)])"
+          pop: true
+        - include: expression
+  tuple-type:
+    - match: \(
+      captures:
+        0: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: tuple-element
+        - include: punctuation-comma
+  type:
+    - include: comment
+    - include: ref-modifier
+    - include: readonly-modifier
+    - include: tuple-type
+    - include: type-builtin
+    - include: type-name
+    - include: type-arguments
+    - include: type-array-suffix
+    - include: type-nullable-suffix
+  type-arguments:
+    - match: <
+      captures:
+        0: punctuation.definition.typeparameters.begin.cs
+      push:
+        - match: ">"
+          captures:
+            0: punctuation.definition.typeparameters.end.cs
+          pop: true
+        - include: comment
+        - include: type
+        - include: punctuation-comma
+  type-array-suffix:
+    - match: '\['
+      captures:
+        0: punctuation.squarebracket.open.cs
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.squarebracket.close.cs
+          pop: true
+        - include: punctuation-comma
+  type-builtin:
+    - match: \b(bool|byte|char|decimal|double|float|int|long|object|sbyte|short|string|uint|ulong|ushort|void|dynamic)\b
+      captures:
+        1: keyword.type.cs
+  type-declarations:
+    - include: preprocessor
+    - include: comment
+    - include: storage-modifier
+    - include: class-declaration
+    - include: delegate-declaration
+    - include: enum-declaration
+    - include: interface-declaration
+    - include: struct-declaration
+    - include: attribute-section
+    - include: punctuation-semicolon
+  type-name:
+    - match: '(@?[_[:alpha:]][_[:alnum:]]*)\s*(\:\:)'
+      captures:
+        1: entity.name.type.alias.cs
+        2: punctuation.separator.coloncolon.cs
+    - match: '(@?[_[:alpha:]][_[:alnum:]]*)\s*(\.)'
+      captures:
+        1: storage.type.cs
+        2: punctuation.accessor.cs
+    - match: '(\.)\s*(@?[_[:alpha:]][_[:alnum:]]*)'
+      captures:
+        1: punctuation.accessor.cs
+        2: storage.type.cs
+    - match: "@?[_[:alpha:]][_[:alnum:]]*"
+      scope: entity.name.type.cs
+  type-nullable-suffix:
+    - match: \?
+      captures:
+        0: punctuation.separator.question-mark.cs
+  type-parameter-list:
+    - match: \<
+      captures:
+        0: punctuation.definition.typeparameters.begin.cs
+      push:
+        - match: \>
+          captures:
+            0: punctuation.definition.typeparameters.end.cs
+          pop: true
+        - match: \b(in|out)\b
+          captures:
+            1: storage.modifier.cs
+        - match: '(@?[_[:alpha:]][_[:alnum:]]*)\b'
+          captures:
+            1: entity.name.type.type-parameter.cs
+        - include: comment
+        - include: punctuation-comma
+        - include: attribute-section
+  typeof-or-default-expression:
+    - match: (?<!\.)\b(?:(typeof)|(default))\b\s*(\()
+      captures:
+        1: keyword.other.typeof.cs
+        2: keyword.other.default.cs
+        3: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: type
+  using-directive:
+    - match: \b(using)\b\s+(static)\s+
+      captures:
+        1: keyword.other.using.cs
+        2: keyword.other.static.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: type
+    - match: '\b(using)\s+(?=(@?[_[:alpha:]][_[:alnum:]]*)\s*=)'
+      captures:
+        1: keyword.other.using.cs
+        2: entity.name.type.alias.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: comment
+        - include: type
+        - include: operator-assignment
+    - match: \b(using)\s*
+      captures:
+        1: keyword.other.using.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: comment
+        - match: "@?[_[:alpha:]][_[:alnum:]]*"
+          scope: entity.name.type.namespace.cs
+        - include: operator-assignment
+  using-statement:
+    - match: (?<!\.)\b(using)\b\s*(?=\()
+      captures:
+        1: keyword.other.using.cs
+      push:
+        - match: '(?=\;|})'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - include: local-variable-declaration
+            - include: expression
+        - include: statement
+  variable-initializer:
+    - match: (?<!=|!)(=)(?!=|>)
+      captures:
+        1: keyword.operator.assignment.cs
+      push:
+        - match: '(?=[,\)\];}])'
+          pop: true
+        - include: ref-modifier
+        - include: expression
+  verbatim-interpolated-string:
+    - match: \$@"
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.quoted.double.cs
+        - match: '"(?=[^"])'
+          captures:
+            0: punctuation.definition.string.end.cs
+          pop: true
+        - include: verbatim-string-character-escape
+        - include: interpolation
+  verbatim-string-character-escape:
+    - match: '""'
+      scope: constant.character.escape.cs
+  verbatim-string-literal:
+    - match: '@"'
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.quoted.double.cs
+        - match: '"(?=[^"])'
+          captures:
+            0: punctuation.definition.string.end.cs
+          pop: true
+        - include: verbatim-string-character-escape
+  when-clause:
+    - match: (?<!\.)\b(when)\b\s*(\()
+      captures:
+        1: keyword.control.try.when.cs
+        2: punctuation.parenthesis.open.cs
+      push:
+        - match: \)
+          captures:
+            0: punctuation.parenthesis.close.cs
+          pop: true
+        - include: expression
+        - include: comment
+  where-clause:
+    - match: |-
+        (?x)
+        \b(where)\b\s*
+      captures:
+        1: keyword.query.where.cs
+      push:
+        - match: (?=;|\))
+          pop: true
+        - include: query-body
+        - include: expression
+  while-statement:
+    - match: (?<!\.)\b(while)\b\s*(?=\()
+      captures:
+        1: keyword.control.loop.while.cs
+      push:
+        - match: '(?<=\})|(?=;)'
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.parenthesis.open.cs
+          push:
+            - match: \)
+              captures:
+                0: punctuation.parenthesis.close.cs
+              pop: true
+            - include: expression
+        - include: statement
+  xml-attribute:
+    - match: |-
+        (?x)
+        (?:^|\s+)
+        (
+          (?:
+            ([-_[:alnum:]]+)
+            (:)
+          )?
+          ([-_[:alnum:]]+)
+        )
+        (=)
+      captures:
+        1: entity.other.attribute-name.cs
+        2: entity.other.attribute-name.namespace.cs
+        3: punctuation.separator.colon.cs
+        4: entity.other.attribute-name.localname.cs
+        5: punctuation.separator.equals.cs
+    - include: xml-string
+  xml-cdata:
+    - match: '<!\[CDATA\['
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.unquoted.cdata.cs
+        - match: '\]\]>'
+          captures:
+            0: punctuation.definition.string.end.cs
+          pop: true
+  xml-character-entity:
+    - match: |-
+        (?x)
+        (&)
+        (
+          (?:[[:alpha:]:_][[:alnum:]:_.-]*)|
+          (?:\#[[:digit:]]+)|
+          (?:\#x[[:xdigit:]]+)
+        )
+        (;)
+      scope: constant.character.entity.cs
+      captures:
+        1: punctuation.definition.constant.cs
+        3: punctuation.definition.constant.cs
+    - match: "&"
+      scope: invalid.illegal.bad-ampersand.cs
+  xml-comment:
+    - match: <!--
+      captures:
+        0: punctuation.definition.comment.cs
+      push:
+        - meta_scope: comment.block.cs
+        - match: "-->"
+          captures:
+            0: punctuation.definition.comment.cs
+          pop: true
+  xml-doc-comment:
+    - include: xml-comment
+    - include: xml-character-entity
+    - include: xml-cdata
+    - include: xml-tag
+  xml-string:
+    - match: \'
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.quoted.single.cs
+        - match: \'
+          captures:
+            0: punctuation.definition.string.end.cs
+          pop: true
+        - include: xml-character-entity
+    - match: \"
+      captures:
+        0: punctuation.definition.string.begin.cs
+      push:
+        - meta_scope: string.quoted.double.cs
+        - match: \"
+          captures:
+            0: punctuation.definition.string.end.cs
+          pop: true
+        - include: xml-character-entity
+  xml-tag:
+    - match: |-
+        (?x)
+        (</?)
+        (
+          (?:
+            ([-_[:alnum:]]+)
+            (:)
+          )?
+          ([-_[:alnum:]]+)
+        )
+      captures:
+        1: punctuation.definition.tag.cs
+        2: entity.name.tag.cs
+        3: entity.name.tag.namespace.cs
+        4: punctuation.separator.colon.cs
+        5: entity.name.tag.localname.cs
+      push:
+        - meta_scope: meta.tag.cs
+        - match: (/?>)
+          captures:
+            1: punctuation.definition.tag.cs
+          pop: true
+        - include: xml-attribute
+  yield-break-statement:
+    - match: (?<!\.)\b(yield)\b\s*\b(break)\b
+      captures:
+        1: keyword.control.flow.yield.cs
+        2: keyword.control.flow.break.cs
+  yield-return-statement:
+    - match: (?<!\.)\b(yield)\b\s*\b(return)\b
+      captures:
+        1: keyword.control.flow.yield.cs
+        2: keyword.control.flow.return.cs
+      push:
+        - match: (?=;)
+          pop: true
+        - include: expression
+  yield-statement:
+    - include: yield-return-statement
+    - include: yield-break-statement

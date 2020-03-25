@@ -1,0 +1,222 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JFlex
+file_extensions:
+  - jflex
+  - flex
+scope: source.jflex
+contexts:
+  main:
+    - match: \A
+      push:
+        - meta_scope: meta.package.jflex
+        - match: ^%(?=%)
+          captures:
+            0: markup.heading.jflex
+          pop: true
+        - match: '^\s*(package)\b(?:\s*([^ ;$]+)\s*(;)?)?'
+          scope: meta.package.java
+          captures:
+            1: keyword.other.package.java
+            2: storage.modifier.package.java
+            3: punctuation.terminator.java
+        - match: (import static)\b\s*
+          captures:
+            1: keyword.other.import.static.java
+          push:
+            - meta_scope: meta.import.java
+            - meta_content_scope: storage.modifier.import.java
+            - match: \s*(?:$|(;))
+              captures:
+                1: punctuation.terminator.java
+              pop: true
+            - match: \.
+              scope: punctuation.separator.java
+            - match: \s
+              scope: invalid.illegal.character_not_allowed_here.java
+        - match: (import)\b\s*
+          captures:
+            1: keyword.other.import.java
+          push:
+            - meta_scope: meta.import.java
+            - meta_content_scope: storage.modifier.import.java
+            - match: \s*(?:$|(;))
+              captures:
+                1: punctuation.terminator.java
+              pop: true
+            - match: \.
+              scope: punctuation.separator.java
+            - match: \s
+              scope: invalid.illegal.character_not_allowed_here.java
+        - include: scope:source.java#code
+    - match: "%"
+      captures:
+        0: markup.heading.jflex
+      push:
+        - meta_scope: meta.macros.jflex
+        - match: ^%%
+          captures:
+            0: markup.heading.jflex
+          pop: true
+        - match: '^%unicode(\s+[1-9][0-9]*(\.[0-9]+){0,2})?'
+          scope: keyword.other.jflex
+        - match: '^%buffer\s+[1-9][0-9]*'
+          scope: keyword.other.jflex
+        - match: ^%(eofclose|inputstreamctor)(\s+(true|false))?
+          scope: keyword.other.jflex
+        - match: ^(%(?:class|extends|type|ctorarg|implements|include|initthrow|eofthrow|yylexthrow|throws|scanerror))\s+(.+)
+          scope: meta.somearg.jflex
+          captures:
+            1: keyword.other.jflex
+            2: storage.type.jflex
+        - match: ^(%function)\s+(\w+)
+          scope: meta.funarg.jflex
+          captures:
+            1: keyword.other.jflex
+            2: storage.type.jflex
+        - match: ^(%cupsym)\s+(\w+(\.w+)*)
+          scope: meta.cupsym.jflex
+          captures:
+            1: keyword.other.jflex
+            2: storage.type.jflex
+        - match: ^%state
+          captures:
+            0: keyword.other.jflex
+          push:
+            - meta_scope: meta.states.jflex
+            - match: $
+              pop: true
+            - match: \w+
+              scope: storage.modifier.jflex
+            - match: ","
+              scope: punctuation.separator.jflex
+            - match: \s+
+              scope: meta.whitespace.jflex
+            - include: scope:source.java#comments
+            - match: \S
+              scope: invalid.illegal.characater.jflex
+        - match: ^%(char|line|column|byaccj|cup2|cup(debug)?|integer|int(wrap)?|yyeof|notunix|7bit|full|8bit|16bit|caseless|ignorecase|public|apiprivate|final|abstract|debug|standalone|pack)
+          scope: keyword.other.jflex
+        - match: "^%(|init|initthrow|eof|eofthrow|yylexthrow|eofval){"
+          captures:
+            0: keyword.other.jflex
+          push:
+            - meta_scope: meta.classcode.jflex
+            - match: "^%(|init|initthrow|eof|eofthrow|yylexthrow|eofval)}"
+              captures:
+                0: keyword.other.jflex
+              pop: true
+            - include: scope:source.java#code
+        - match: (\w+)\s*(=)
+          captures:
+            1: variable.other.jflex
+            2: keyword.operator.jflex
+          push:
+            - meta_scope: meta.macro.jflex
+            - match: (?=^%|\w+\s*=)
+              pop: true
+            - include: regexp
+        - match: ^%\S*
+          scope: invalid.illegal.directive.jflex
+        - include: scope:source.java#comments
+    - match: ""
+      push:
+        - meta_content_scope: meta.rules.jflex
+        - match: \z
+          pop: true
+        - include: rules
+  charclass:
+    - match: '\[:(jletter|jletterdigit|letter|uppercase|lowercase|digit):\]'
+      scope: keyword.operator.jflex
+    - match: '\\(d|D|s|S|w|W|p{[^}]*}|P{[^}]*})'
+      scope: keyword.operator.jflex
+  class:
+    - match: '\['
+      captures:
+        0: keyword.operator.jflex
+      push:
+        - meta_scope: meta.class.jflex
+        - match: '\]'
+          captures:
+            0: keyword.operator.jflex
+          pop: true
+        - include: classcontent
+  classcontent:
+    - match: \^|\-|\&\&|\|\|
+      scope: keyword.operator.jflex
+    - include: charclass
+    - include: numeric
+    - include: escape
+    - match: '({)(\w+)(})'
+      scope: variable.other.macro.jflex
+    - include: string
+    - include: class
+  escape:
+    - match: \\(b|n|t|f|r|R)
+      scope: keyword.operator.jflex
+    - match: \\.
+      scope: constant.character.escape.jflex
+  macro:
+    - match: '({)(\s*\w+\s*)(})'
+      scope: variable.other.macro.jflex
+  numeric:
+    - match: '\\x[0-9a-fA-F]{2}'
+      scope: constant.numeric.jflex
+    - match: '\\[0-3]?[0-7]{1,2}'
+      scope: constant.numeric.jflex
+    - match: '\\U[0-9a-fA-F]{6}'
+      scope: constant.numeric.jflex
+    - match: '\\u[0-9a-fA-F]{4}'
+      scope: constant.numeric.jflex
+    - match: '\\u{[0-9a-fA-F]{1,6}}'
+      scope: constant.numeric.jflex
+  regexp:
+    - include: repeat
+    - include: macro
+    - include: charclass
+    - include: class
+    - include: numeric
+    - include: escape
+    - include: string
+    - include: scope:source.java#comments
+    - match: \.|\+|\*|\(|\)|\?|\||~|!|\$|\^|\\R|/
+      scope: keyword.operator.jflex
+  repeat:
+    - match: '{\s*\d+\s*(\s*,\s*\d+\s*)?}'
+      scope: keyword.operator.jflex
+  rules:
+    - match: '(\<\s*\w+\s*(?:,\s*\w+\s*)*\>)\s*({)(?!\s*\w+\s*})'
+      captures:
+        1: variable.parameter.jflex
+        2: keyword.operator.jflex
+      push:
+        - meta_scope: meta.states.jflex
+        - match: "}"
+          captures:
+            0: keyword.operator.jflex
+          pop: true
+        - include: rules
+    - match: \<\s*\w+\s*(,\s*\w+\s*)*\>
+      scope: variable.parameter.jflex
+    - include: regexp
+    - match: "<<EOF>>"
+      scope: constant.language.jflex
+    - match: '({)(?!\s*\w+\s*})'
+      captures:
+        1: keyword.operator.jflex
+      push:
+        - meta_scope: meta.code.jflex
+        - match: "}"
+          captures:
+            0: keyword.operator.jflex
+          pop: true
+        - include: scope:source.java#code
+  string:
+    - match: '"'
+      push:
+        - meta_scope: string
+        - match: '"'
+          pop: true
+        - include: numeric
+        - include: escape

@@ -1,0 +1,848 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: .wgetrc
+file_extensions:
+  - wgetrc
+scope: source.wgetrc
+contexts:
+  main:
+    - include: scope:etc#comment
+    - include: addhostdir
+    - include: adjustextension
+    - include: askpassword
+    - include: authnochallenge
+    - include: background
+    - include: backupconverted
+    - include: backups
+    - include: cache
+    - include: checkcertificate
+    - include: connecttimeout
+    - include: contentdisposition
+    - include: continue
+    - include: convertlinks
+    - include: cookies
+    - include: cutdirs
+    - include: debug
+    - include: deleteafter
+    - include: dirstruct
+    - include: dnscache
+    - include: dnstimeout
+    - include: dotbytes
+    - include: dotsinline
+    - include: dotspacing
+    - include: followftp
+    - include: forcehtml
+    - include: glob
+    - include: httpkeepalive
+    - include: httpsonly
+    - include: ignorecase
+    - include: ignorelength
+    - include: inet4only
+    - include: inet6only
+    - include: iri
+    - include: limitrate
+    - include: localencoding
+    - include: keepsessioncookies
+    - include: maxredirect
+    - include: mirror
+    - include: netrc
+    - include: noclobber
+    - include: noparent
+    - include: pagerequisites
+    - include: passiveftp
+    - include: preferfamily
+    - include: protocoldirectories
+    - include: quiet
+    - include: quota
+    - include: randomwait
+    - include: readtimeout
+    - include: reclevel
+    - include: recursive
+    - include: relativeonly
+    - include: remoteencoding
+    - include: removelisting
+    - include: restrictfilenames
+    - include: retrsymlinks
+    - include: retryconnrefused
+    - include: robots
+    - include: saveheaders
+    - include: secureprotocol
+    - include: serverresponse
+    - include: showalldnsentries
+    - include: spanhosts
+    - include: spider
+    - include: strictcomments
+    - include: timeout
+    - include: timestamping
+    - include: tries
+    - include: trustservernames
+    - include: useproxy
+    - include: useservertimestamps
+    - include: verbose
+    - include: waitretry
+    - include: wait
+    - match: '^\s*([^#=\s]+)\s*(=)\s*(\S.*)\s*$'
+      scope: "meta.field.${1:/downcase}.wgetrc"
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+        3: string.unquoted.wgetrc
+  addhostdir:
+    - match: '(?i)^\s*([-_]*a[-_]*d[-_]*d[-_]*h[-_]*o[-_]*s[-_]*t[-_]*d[-_]*i[-_]*r[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.addhostdir.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  adjustextension:
+    - match: '(?i)^\s*([-_]*a[-_]*d[-_]*j[-_]*u[-_]*s[-_]*t[-_]*e[-_]*x[-_]*t[-_]*e[-_]*n[-_]*s[-_]*i[-_]*o[-_]*n[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.adjustextension.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  askpassword:
+    - match: '(?i)^\s*([-_]*a[-_]*s[-_]*k[-_]*p[-_]*a[-_]*s[-_]*s[-_]*w[-_]*o[-_]*r[-_]*d[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.askpassword.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  authnochallenge:
+    - match: '(?i)^\s*([-_]*a[-_]*u[-_]*t[-_]*h[-_]*n[-_]*o[-_]*c[-_]*h[-_]*a[-_]*l[-_]*l[-_]*e[-_]*n[-_]*g[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.authnochallenge.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  background:
+    - match: '(?i)^\s*([-_]*b[-_]*a[-_]*c[-_]*k[-_]*g[-_]*r[-_]*o[-_]*u[-_]*n[-_]*d[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.background.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  backupconverted:
+    - match: '(?i)^\s*([-_]*b[-_]*a[-_]*c[-_]*k[-_]*u[-_]*p[-_]*c[-_]*o[-_]*n[-_]*v[-_]*e[-_]*r[-_]*t[-_]*e[-_]*d[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.backupconverted.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  backups:
+    - match: '(?i)^\s*([-_]*b[-_]*a[-_]*c[-_]*k[-_]*u[-_]*p[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.backups.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  boolean:
+    - match: (?i)\b(on|off)\b
+      scope: "constant.logical.boolean.${1:/downcase}.wgetrc"
+  bytes:
+    - match: '(?i)([-+]?[.e\d]+)(k|m)?'
+      captures:
+        2: keyword.other.unit.bytes.wgetrc
+  cache:
+    - match: '(?i)^\s*([-_]*c[-_]*a[-_]*c[-_]*h[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.cache.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  checkcertificate:
+    - match: '(?i)^\s*([-_]*c[-_]*h[-_]*e[-_]*c[-_]*k[-_]*c[-_]*e[-_]*r[-_]*t[-_]*i[-_]*f[-_]*i[-_]*c[-_]*a[-_]*t[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.checkcertificate.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  connecttimeout:
+    - match: '(?i)^\s*([-_]*c[-_]*o[-_]*n[-_]*n[-_]*e[-_]*c[-_]*t[-_]*t[-_]*i[-_]*m[-_]*e[-_]*o[-_]*u[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.connecttimeout.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  contentdisposition:
+    - match: '(?i)^\s*([-_]*c[-_]*o[-_]*n[-_]*t[-_]*e[-_]*n[-_]*t[-_]*d[-_]*i[-_]*s[-_]*p[-_]*o[-_]*s[-_]*i[-_]*t[-_]*i[-_]*o[-_]*n[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.contentdisposition.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  continue:
+    - match: '(?i)^\s*([-_]*c[-_]*o[-_]*n[-_]*t[-_]*i[-_]*n[-_]*u[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.continue.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  convertlinks:
+    - match: '(?i)^\s*([-_]*c[-_]*o[-_]*n[-_]*v[-_]*e[-_]*r[-_]*t[-_]*l[-_]*i[-_]*n[-_]*k[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.convertlinks.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  cookies:
+    - match: '(?i)^\s*([-_]*c[-_]*o[-_]*o[-_]*k[-_]*i[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.cookies.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  cutdirs:
+    - match: '(?i)^\s*([-_]*c[-_]*u[-_]*t[-_]*d[-_]*i[-_]*r[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.cutdirs.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  debug:
+    - match: '(?i)^\s*([-_]*d[-_]*e[-_]*b[-_]*u[-_]*g[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.debug.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  deleteafter:
+    - match: '(?i)^\s*([-_]*d[-_]*e[-_]*l[-_]*e[-_]*t[-_]*e[-_]*a[-_]*f[-_]*t[-_]*e[-_]*r[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.deleteafter.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  dirstruct:
+    - match: '(?i)^\s*([-_]*d[-_]*i[-_]*r[-_]*s[-_]*t[-_]*r[-_]*u[-_]*c[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.dirstruct.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  dnscache:
+    - match: '(?i)^\s*([-_]*d[-_]*n[-_]*s[-_]*c[-_]*a[-_]*c[-_]*h[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.dnscache.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  dnstimeout:
+    - match: '(?i)^\s*([-_]*d[-_]*n[-_]*s[-_]*t[-_]*i[-_]*m[-_]*e[-_]*o[-_]*u[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.dnstimeout.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  dotbytes:
+    - match: '(?i)^\s*([-_]*d[-_]*o[-_]*t[-_]*b[-_]*y[-_]*t[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.dotbytes.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: bytes
+  dotsinline:
+    - match: '(?i)^\s*([-_]*d[-_]*o[-_]*t[-_]*s[-_]*i[-_]*n[-_]*l[-_]*i[-_]*n[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.dotsinline.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  dotspacing:
+    - match: '(?i)^\s*([-_]*d[-_]*o[-_]*t[-_]*s[-_]*p[-_]*a[-_]*c[-_]*i[-_]*n[-_]*g[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.dotspacing.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  encoding:
+    - match: '(?:\G|^|(?<==))\s*([^=\s#]+)'
+      scope: constant.language.encoding.wgetrc
+  followftp:
+    - match: '(?i)^\s*([-_]*f[-_]*o[-_]*l[-_]*l[-_]*o[-_]*w[-_]*f[-_]*t[-_]*p[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.followftp.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  forcehtml:
+    - match: '(?i)^\s*([-_]*f[-_]*o[-_]*r[-_]*c[-_]*e[-_]*h[-_]*t[-_]*m[-_]*l[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.forcehtml.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  glob:
+    - match: '(?i)^\s*([-_]*g[-_]*l[-_]*o[-_]*b[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.glob.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  httpkeepalive:
+    - match: '(?i)^\s*([-_]*h[-_]*t[-_]*t[-_]*p[-_]*k[-_]*e[-_]*e[-_]*p[-_]*a[-_]*l[-_]*i[-_]*v[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.httpkeepalive.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  httpsonly:
+    - match: '(?i)^\s*([-_]*h[-_]*t[-_]*t[-_]*p[-_]*s[-_]*o[-_]*n[-_]*l[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.httpsonly.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  ignorecase:
+    - match: '(?i)^\s*([-_]*i[-_]*g[-_]*n[-_]*o[-_]*r[-_]*e[-_]*c[-_]*a[-_]*s[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.ignorecase.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  ignorelength:
+    - match: '(?i)^\s*([-_]*i[-_]*g[-_]*n[-_]*o[-_]*r[-_]*e[-_]*l[-_]*e[-_]*n[-_]*g[-_]*t[-_]*h[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.ignorelength.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  inet4only:
+    - match: '(?i)^\s*([-_]*i[-_]*n[-_]*e[-_]*t[-_]*4[-_]*o[-_]*n[-_]*l[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.inet4only.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  inet6only:
+    - match: '(?i)^\s*([-_]*i[-_]*n[-_]*e[-_]*t[-_]*6[-_]*o[-_]*n[-_]*l[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.inet6only.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  iri:
+    - match: '(?i)^\s*([-_]*i[-_]*r[-_]*i[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.iri.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  keepsessioncookies:
+    - match: '(?i)^\s*([-_]*k[-_]*e[-_]*e[-_]*p[-_]*s[-_]*e[-_]*s[-_]*s[-_]*i[-_]*o[-_]*n[-_]*c[-_]*o[-_]*o[-_]*k[-_]*i[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.keepsessioncookies.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  limitrate:
+    - match: '(?i)^\s*([-_]*l[-_]*i[-_]*m[-_]*i[-_]*t[-_]*r[-_]*a[-_]*t[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.limitrate.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  localencoding:
+    - match: '(?i)^\s*([-_]*l[-_]*o[-_]*c[-_]*a[-_]*l[-_]*e[-_]*n[-_]*c[-_]*o[-_]*d[-_]*i[-_]*n[-_]*g[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.localencoding.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: encoding
+  maxredirect:
+    - match: '(?i)^\s*([-_]*m[-_]*a[-_]*x[-_]*r[-_]*e[-_]*d[-_]*i[-_]*r[-_]*e[-_]*c[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.maxredirect.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  mirror:
+    - match: '(?i)^\s*([-_]*m[-_]*i[-_]*r[-_]*r[-_]*o[-_]*r[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.mirror.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  netrc:
+    - match: '(?i)^\s*([-_]*n[-_]*e[-_]*t[-_]*r[-_]*c[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.netrc.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  noclobber:
+    - match: '(?i)^\s*([-_]*n[-_]*o[-_]*c[-_]*l[-_]*o[-_]*b[-_]*b[-_]*e[-_]*r[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.noclobber.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  noparent:
+    - match: '(?i)^\s*([-_]*n[-_]*o[-_]*p[-_]*a[-_]*r[-_]*e[-_]*n[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.noparent.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  number:
+    - include: scope:etc#num
+    - match: (?i)\binf\b
+      scope: constant.language.numeric.infinity.wgetrc
+  pagerequisites:
+    - match: '(?i)^\s*([-_]*p[-_]*a[-_]*g[-_]*e[-_]*r[-_]*e[-_]*q[-_]*u[-_]*i[-_]*s[-_]*i[-_]*t[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.pagerequisites.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  passiveftp:
+    - match: '(?i)^\s*([-_]*p[-_]*a[-_]*s[-_]*s[-_]*i[-_]*v[-_]*e[-_]*f[-_]*t[-_]*p[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.passiveftp.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  preferfamily:
+    - match: '(?i)^\s*([-_]*p[-_]*r[-_]*e[-_]*f[-_]*e[-_]*r[-_]*f[-_]*a[-_]*m[-_]*i[-_]*l[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.preferfamily.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - match: \S+
+          scope: constant.other.family-type.wgetrc
+  protocoldirectories:
+    - match: '(?i)^\s*([-_]*p[-_]*r[-_]*o[-_]*t[-_]*o[-_]*c[-_]*o[-_]*l[-_]*d[-_]*i[-_]*r[-_]*e[-_]*c[-_]*t[-_]*o[-_]*r[-_]*i[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.protocoldirectories.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  quiet:
+    - match: '(?i)^\s*([-_]*q[-_]*u[-_]*i[-_]*e[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.quiet.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  quota:
+    - match: '(?i)^\s*([-_]*q[-_]*u[-_]*o[-_]*t[-_]*a[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.quota.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: bytes
+        - include: number
+  randomwait:
+    - match: '(?i)^\s*([-_]*r[-_]*a[-_]*n[-_]*d[-_]*o[-_]*m[-_]*w[-_]*a[-_]*i[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.randomwait.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  readtimeout:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*a[-_]*d[-_]*t[-_]*i[-_]*m[-_]*e[-_]*o[-_]*u[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.readtimeout.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  reclevel:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*c[-_]*l[-_]*e[-_]*v[-_]*e[-_]*l[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.reclevel.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  recursive:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*c[-_]*u[-_]*r[-_]*s[-_]*i[-_]*v[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.recursive.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  relativeonly:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*l[-_]*a[-_]*t[-_]*i[-_]*v[-_]*e[-_]*o[-_]*n[-_]*l[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.relativeonly.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  remoteencoding:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*m[-_]*o[-_]*t[-_]*e[-_]*e[-_]*n[-_]*c[-_]*o[-_]*d[-_]*i[-_]*n[-_]*g[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.remoteencoding.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: encoding
+  removelisting:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*m[-_]*o[-_]*v[-_]*e[-_]*l[-_]*i[-_]*s[-_]*t[-_]*i[-_]*n[-_]*g[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.removelisting.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  restrictfilenames:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*s[-_]*t[-_]*r[-_]*i[-_]*c[-_]*t[-_]*f[-_]*i[-_]*l[-_]*e[-_]*n[-_]*a[-_]*m[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.removelisting.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - match: (?i)\b(unix|windows)\b
+          scope: constant.language.os-type.wgetrc
+  retrsymlinks:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*t[-_]*r[-_]*s[-_]*y[-_]*m[-_]*l[-_]*i[-_]*n[-_]*k[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.retrsymlinks.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  retryconnrefused:
+    - match: '(?i)^\s*([-_]*r[-_]*e[-_]*t[-_]*r[-_]*y[-_]*c[-_]*o[-_]*n[-_]*n[-_]*r[-_]*e[-_]*f[-_]*u[-_]*s[-_]*e[-_]*d[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.retryconnrefused.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  robots:
+    - match: '(?i)^\s*([-_]*r[-_]*o[-_]*b[-_]*o[-_]*t[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.robots.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  saveheaders:
+    - match: '(?i)^\s*([-_]*s[-_]*a[-_]*v[-_]*e[-_]*h[-_]*e[-_]*a[-_]*d[-_]*e[-_]*r[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.saveheaders.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  secureprotocol:
+    - match: '(?i)^\s*([-_]*s[-_]*e[-_]*c[-_]*u[-_]*r[-_]*e[-_]*p[-_]*r[-_]*o[-_]*t[-_]*o[-_]*c[-_]*o[-_]*l[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.secureprotocol.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - match: '(?:\G|^|(?<==))\s*([^\s#]+)'
+          captures:
+            1: constant.language.secure-protocol.wgetrc
+  serverresponse:
+    - match: '(?i)^\s*([-_]*s[-_]*e[-_]*r[-_]*v[-_]*e[-_]*r[-_]*r[-_]*e[-_]*s[-_]*p[-_]*o[-_]*n[-_]*s[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.serverresponse.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  showalldnsentries:
+    - match: '(?i)^\s*([-_]*s[-_]*h[-_]*o[-_]*w[-_]*a[-_]*l[-_]*l[-_]*d[-_]*n[-_]*s[-_]*e[-_]*n[-_]*t[-_]*r[-_]*i[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.showalldnsentries.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  spanhosts:
+    - match: '(?i)^\s*([-_]*s[-_]*p[-_]*a[-_]*n[-_]*h[-_]*o[-_]*s[-_]*t[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.spanhosts.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  spider:
+    - match: '(?i)^\s*([-_]*s[-_]*p[-_]*i[-_]*d[-_]*e[-_]*r[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.spider.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  strictcomments:
+    - match: '(?i)^\s*([-_]*s[-_]*t[-_]*r[-_]*i[-_]*c[-_]*t[-_]*c[-_]*o[-_]*m[-_]*m[-_]*e[-_]*n[-_]*t[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.strictcomments.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  timeout:
+    - match: '(?i)^\s*([-_]*t[-_]*i[-_]*m[-_]*e[-_]*o[-_]*u[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.timeout.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  timestamping:
+    - match: '(?i)^\s*([-_]*t[-_]*i[-_]*m[-_]*e[-_]*s[-_]*t[-_]*a[-_]*m[-_]*p[-_]*i[-_]*n[-_]*g[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.timestamping.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  tries:
+    - match: '(?i)^\s*([-_]*t[-_]*r[-_]*i[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.tries.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  trustservernames:
+    - match: '(?i)^\s*([-_]*t[-_]*r[-_]*u[-_]*s[-_]*t[-_]*s[-_]*e[-_]*r[-_]*v[-_]*e[-_]*r[-_]*n[-_]*a[-_]*m[-_]*e[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.trustservernames.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  useproxy:
+    - match: '(?i)^\s*([-_]*u[-_]*s[-_]*e[-_]*p[-_]*r[-_]*o[-_]*x[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.useproxy.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  useservertimestamps:
+    - match: '(?i)^\s*([-_]*u[-_]*s[-_]*e[-_]*s[-_]*e[-_]*r[-_]*v[-_]*e[-_]*r[-_]*t[-_]*i[-_]*m[-_]*e[-_]*s[-_]*t[-_]*a[-_]*m[-_]*p[-_]*s[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.useservertimestamps.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  verbose:
+    - match: '(?i)^\s*([-_]*v[-_]*e[-_]*r[-_]*b[-_]*o[-_]*s[-_]*e[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.verbose.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: boolean
+  wait:
+    - match: '(?i)^\s*([-_]*w[-_]*a[-_]*i[-_]*t[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.wait.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number
+  waitretry:
+    - match: '(?i)^\s*([-_]*w[-_]*a[-_]*i[-_]*t[-_]*r[-_]*e[-_]*t[-_]*r[-_]*y[-_]*)(?=\s|=|$)'
+      captures:
+        1: variable.assignment.parameter.name.wgetrc
+      push:
+        - meta_scope: meta.field.waitretry.wgetrc
+        - match: $
+          pop: true
+        - include: scope:etc#eql
+        - include: number

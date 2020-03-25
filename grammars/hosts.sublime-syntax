@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Hosts file
+file_extensions:
+  - hosts
+scope: source.hosts
+contexts:
+  main:
+    - include: scope:etc#comment
+    - include: scope:etc#ip
+    - include: loopback
+    - include: host
+  host:
+    - match: '[^:\s#][^\s#]*'
+      scope: string.unquoted.hostname
+  loopback:
+    - match: (?<=\s|^)(::)1
+      scope: constant.numeric.other.ip-address
+      captures:
+        1: punctuation.definition.ip-address.loopback

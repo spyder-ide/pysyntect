@@ -1,0 +1,233 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Readline Init File
+file_extensions:
+  - inputrc
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		(readline|inputrc)
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		readline
+  	(?=\s|:|$)
+scope: source.inputrc
+contexts:
+  main:
+    - include: comment
+    - include: include
+    - include: conditional
+    - include: variable
+    - include: keyBinding
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.ini.inputrc
+      push:
+        - meta_scope: comment.line.number-sign.ini.inputrc
+        - match: $
+          pop: true
+  conditional:
+    - match: (?i)^\s*((\$)if)(?=\s|$)(.*)
+      captures:
+        1: keyword.control.flow.if.inputrc
+        2: punctuation.definition.directive.inputrc
+      push:
+        - meta_scope: meta.conditional.inputrc
+        - match: (?i)^\s*((\$)endif)(?=\s|$)
+          captures:
+            1: keyword.control.flow.endif.inputrc
+            2: punctuation.definition.directive.inputrc
+          pop: true
+        - include: main
+    - match: (?i)^\s*((\$)(else|endif))(?=\s|$)
+  conditions:
+    - match: (?i)(?:^|\G)\s*(mode)\s*(==|=|!=)\s*(?:(emacs|vi)(?=\s|$))?
+      captures:
+        1: variable.parameter.condition.mode.inputrc
+        2: keyword.operator.comparison.inputrc
+        3: constant.language.editing-mode.inputrc
+    - match: (?i)(?:^|\G)\s*(term)\s*(==|=|!=)\s*(\S.*?)\s*$
+      captures:
+        1: variable.parameter.condition.term.inputrc
+        2: keyword.operator.comparison.inputrc
+        3: constant.language.terminal-type.inputrc
+    - match: '(?i)(?:^|\G)\s*(version)\s*(==|=|!=|<=|>=|<|>)\s*(?:([-+]?[.\d]+))?'
+      captures:
+        1: variable.parameter.condition.version.inputrc
+        2: keyword.operator.comparison.inputrc
+    - match: '(?i)(?:^|\G)\s*([^\s!=#]+)\s*(==|=|!=)\s*(?:(on|off)(?=\s|$)|(\S.*))?'
+      captures:
+        1: variable.parameter.condition.named.inputrc
+        2: keyword.operator.comparison.inputrc
+        3: "constant.logical.bool.boolean.${3:/downcase}.inputrc"
+        4: string.unquoted.inputrc
+    - match: '(?i)(?:^|\G)\s*([^\s!=#]+)\s*$'
+      captures:
+        1: variable.parameter.condition.application.inputrc
+  escapes:
+    - match: \\a
+      scope: constant.character.escape.alert.inputrc
+    - match: \\b
+      scope: constant.character.escape.backspace.inputrc
+    - match: \\d
+      scope: constant.character.escape.delete.inputrc
+    - match: \\f
+      scope: constant.character.escape.form-feed.inputrc
+    - match: \\n
+      scope: constant.character.escape.newline.inputrc
+    - match: \\r
+      scope: constant.character.escape.carriage-return.inputrc
+    - match: \\t
+      scope: constant.character.escape.horizontal-tab.inputrc
+    - match: \\v
+      scope: constant.character.escape.vertical-tab.inputrc
+    - match: \\C
+      scope: constant.character.escape.control-prefix.inputrc
+    - match: \\M
+      scope: constant.character.escape.meta-prefix.inputrc
+    - match: \\e
+      scope: constant.character.escape.literal.inputrc
+    - match: '\{2}'
+      scope: constant.character.escape.backslash.inputrc
+    - match: \\"
+      scope: constant.character.escape.quote.double.inputrc
+    - match: \\'
+      scope: constant.character.escape.quote.single.inputrc
+    - match: '\\[0-7]{1,3}'
+      scope: constant.character.escape.codepoint.octal.inputrc
+    - match: '\\x[a-fA-F0-9]{1,2}'
+      scope: constant.character.escape.codepoint.hex.inputrc
+  include:
+    - match: ^\s*((\$)include)(?=\s|$)
+      captures:
+        1: keyword.control.directive.include.inputrc
+        2: punctuation.definition.directive.inputrc
+      push:
+        - meta_scope: meta.include.inputrc
+        - meta_content_scope: string.unquoted.file.path.inputrc
+        - match: $
+          pop: true
+        - include: escapes
+  keyBinding:
+    - match: '(?i)^\s*(?!set(?:\s|$)|\$)(?=[^\s#])'
+      push:
+        - meta_scope: meta.key-binding.inputrc
+        - match: $
+          pop: true
+        - include: keyName
+        - match: ':[ \t]*'
+          push:
+            - match: (?=$)
+              pop: true
+            - match: \G"
+              captures:
+                0: punctuation.definition.string.begin.inputrc
+              push:
+                - meta_scope: string.quoted.double.macro.inputrc
+                - match: '"|(?=$)'
+                  captures:
+                    0: punctuation.definition.string.end.inputrc
+                  pop: true
+                - include: escapes
+            - match: \G'
+              captures:
+                0: punctuation.definition.string.begin.inputrc
+              push:
+                - meta_scope: string.quoted.single.macro.inputrc
+                - match: "'|(?=$)"
+                  captures:
+                    0: punctuation.definition.string.end.inputrc
+                  pop: true
+                - include: escapes
+            - match: '\G([-\w]+)'
+              scope: entity.name.function.inputrc
+            - match: '(?<=[''"\s])\s*(?=\S)'
+              push:
+                - meta_scope: comment.line.ignored.inputrc
+                - match: $
+                  pop: true
+  keyName:
+    - match: \G(")
+      captures:
+        0: string.quoted.double.inputrc
+        1: punctuation.definition.string.begin.inputrc
+      push:
+        - meta_scope: meta.key-name.quoted.inputrc
+        - match: (")|(?=$)
+          captures:
+            0: string.quoted.double.inputrc
+            1: punctuation.definition.string.end.inputrc
+          pop: true
+        - include: keyNameInnards
+    - match: \G(')
+      captures:
+        0: string.quoted.single.inputrc
+        1: punctuation.definition.string.begin.inputrc
+      push:
+        - meta_scope: meta.key-name.quoted.inputrc
+        - match: (')|(?=$)
+          captures:
+            0: string.quoted.single.inputrc
+            1: punctuation.definition.string.end.inputrc
+          pop: true
+        - include: keyNameInnards
+    - match: '\G((?:[^\\:\s]|\\.)+)'
+      scope: meta.key-name.unquoted.inputrc
+      captures:
+  keyNameInnards:
+    - match: (?i)(-)?\b(CONTROL|DEL|ESCAPE|ESC|LFD|META|NEWLINE|RETURN|RET|RUBOUT|SPACE|SPC|TAB)\b
+      captures:
+        1: punctuation.separator.dash.hyphen.inputrc
+        2: constant.character.key-name.symbolic.inputrc
+    - include: escapes
+    - match: (-)?(\S)
+      captures:
+        1: punctuation.separator.dash.hyphen.inputrc
+        2: constant.character.key-name.literal.inputrc
+  variable:
+    - match: '(?i)^\s*(set)(?=\s|$)[ \t]*'
+      captures:
+        1: keyword.operator.set.inputrc
+      push:
+        - match: $
+          pop: true
+        - match: (?i)\G(bell-style)(?=\s|$)
+          captures:
+            1: variable.assignment.inputrc
+          push:
+            - match: (?i)(visible|audible|none)(?=\s|$)|(?=$|#|\S)
+              captures:
+                1: constant.language.bell-style.inputrc
+              pop: true
+        - match: (?i)\G(editing-mode)(?=\s|$)
+          captures:
+            1: variable.assignment.inputrc
+          push:
+            - match: (?i)(emacs|vi)(?=\s|$)|(?=$|#|\S)
+              captures:
+                1: constant.language.editing-mode.inputrc
+              pop: true
+        - match: (?i)\G(comment-begin|emacs-mode-string|vi-(?:cmd|ins)-mode-string)(?=\s|$)\s*
+          captures:
+            1: variable.assignment.inputrc
+          push:
+            - meta_content_scope: string.unquoted.inputc
+            - match: (?=$)
+              pop: true
+            - include: escapes
+        - match: '(?i)\G([-a-z0-9]+)(?=\s|$)'
+          captures:
+            1: variable.assignment.inputrc
+          push:
+            - match: '(?i)(?:(on|off)(?=\s|$)|([^#\s]+))|(?=$|#)'
+              captures:
+                1: "constant.logical.bool.boolean.${1:/downcase}.inputrc"
+              pop: true

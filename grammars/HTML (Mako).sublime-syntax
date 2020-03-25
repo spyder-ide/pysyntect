@@ -1,0 +1,424 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML (Mako)
+file_extensions:
+  - mako
+  - html
+scope: text.html.mako
+contexts:
+  main:
+    - match: (##(.*)$)
+      comment: comments
+      scope: comment.line.mako
+    - match: (<%\s)
+      captures:
+        1: keyword.control
+      push:
+        - meta_scope: source.mako.substitution
+        - match: (%>)
+          captures:
+            1: keyword.control
+          pop: true
+        - include: scope:source.python
+    - match: (<%!\s)
+      captures:
+        1: keyword.control
+      push:
+        - meta_scope: source.mako.substitution
+        - match: (%>)
+          captures:
+            1: keyword.control
+          pop: true
+        - include: scope:source.python
+    - match: (<%(text)>)
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: source.mako.text
+        - match: (</%(\2)>)
+          captures:
+            1: keyword.control
+            2: storage.type.function.python
+          pop: true
+    - match: (<%(doc)>)
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: comment.block.mako
+        - match: (</%(\2)>)
+          captures:
+            1: keyword.control
+            2: storage.type.function.python
+          pop: true
+    - match: '(\${)'
+      captures:
+        1: keyword.control
+        2: keyword.control
+      push:
+        - meta_scope: source.mako.expression
+        - match: "(})"
+          captures:
+            1: keyword.control
+            2: keyword.control
+          pop: true
+        - include: scope:source.python
+    - match: ^\s*(%)(\s*((endfor)|(endif)|(endwhile)))?
+      captures:
+        1: keyword.control
+        2: keyword.control
+      push:
+        - meta_scope: source.doc.python.mako.controlline
+        - match: $
+          pop: true
+        - include: scope:source.python
+    - match: ^(#)
+      captures:
+        1: keyword.control
+      push:
+        - meta_scope: source.python.mako.line
+        - match: $
+          pop: true
+        - include: scope:comment.block
+    - match: (<%(def)\S?)
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: source.mako.def
+        - match: (</%(\2)>)
+          captures:
+            1: keyword.control
+            2: storage.type.function.python
+          pop: true
+        - match: (?<=<%def)
+          push:
+            - match: (?=>)
+              pop: true
+            - match: '(name)\s*(=)\s*(")(?=[A-Za-z_][A-Za-z0-9_]*)'
+              captures:
+                1: keyword.control
+                2: keyword.operator
+                3: punctuation.section.function.begin.python
+              push:
+                - meta_content_scope: entity.name.function.python
+                - match: (")
+                  captures:
+                    1: punctuation.section.function.begin.python
+                  pop: true
+                - include: function_def
+                - include: entity_name
+            - include: tag-stuff
+        - match: (>)
+          captures:
+            1: keyword.control
+          push:
+            - match: (?=</%def>)
+              captures:
+                1: keyword.control
+              pop: true
+            - include: main
+    - match: (<%(call))
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: source.mako.call
+        - match: (</%(\2)>)
+          captures:
+            1: keyword.control
+            2: storage.type.function.python
+          pop: true
+        - match: (expr)\s*(=)\s*(")
+          captures:
+            1: keyword.control
+            2: keyword.operator
+            3: punctuation.section.function.begin.python
+          push:
+            - match: (")
+              captures:
+                1: punctuation.section.function.begin.python
+              pop: true
+            - include: scope:source.python
+        - match: (>)
+          captures:
+            1: keyword.control
+          push:
+            - match: (?=</%call>)
+              captures:
+                1: keyword.control
+              pop: true
+            - include: main
+    - match: "(<%(inherit|namespace|include)) "
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: source.mako.inherit
+        - match: (/>)
+          captures:
+            1: keyword.control
+          pop: true
+        - include: tag-stuff
+    - match: (<%(page))
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: source.mako.page
+        - match: (\/>)
+          captures:
+            1: keyword.control
+          pop: true
+        - match: (args)\s*(=)\s*(")
+          captures:
+            1: keyword.control
+            2: keyword.operator
+            3: punctuation.section.function.begin.python
+          push:
+            - match: (")
+              captures:
+                1: punctuation.section.function.end.python
+              pop: true
+            - include: positional_args
+            - include: keyword_arguments
+        - include: tag-stuff
+    - match: "(<%([a-zA-Z0-9:_]+))"
+      captures:
+        1: keyword.control
+        2: storage.type.function.python
+      push:
+        - meta_scope: source.mako.genericcall
+        - match: (</%(\2)>|\/>)
+          captures:
+            1: keyword.control
+            2: storage.type.function.python
+          pop: true
+        - match: (expr)\s*(=)\s*(")
+          captures:
+            1: keyword.control
+            2: keyword.operator
+            3: punctuation.section.function.begin.python
+          push:
+            - match: (")
+              captures:
+                1: punctuation.section.function.begin.python
+              pop: true
+            - include: scope:source.python
+        - match: (>)
+          captures:
+            1: keyword.control
+          push:
+            - match: "(?=</%[a-zA-Z0-9:_]+>)"
+              captures:
+                1: keyword.control
+              pop: true
+            - include: main
+        - include: tag-stuff
+    - include: scope:text.html.basic
+  builtin_exceptions:
+    - match: (?x)\b((Arithmetic|Assertion|Attribute|EOF|Environment|FloatingPoint|IO|Import|Indentation|Index|Key|Lookup|Memory|Name|OS|Overflow|NotImplemented|Reference|Runtime|Standard|Syntax|System|Tab|Type|UnboundLocal|Unicode(Translate|Encode|Decode)?|Value|ZeroDivision)Error|(Deprecation|Future|Overflow|PendingDeprecation|Runtime|Syntax|User)?Warning|KeyboardInterrupt|NotImplemented|StopIteration|SystemExit|(Base)?Exception)\b
+      scope: support.type.exception.python
+  builtin_functions:
+    - match: |-
+        (?x)\b(
+                        __import__|all|abs|any|apply|callable|chr|cmp|coerce|compile|delattr|dir|
+                        divmod|eval|execfile|filter|getattr|globals|hasattr|hash|hex|id|
+                        input|intern|isinstance|issubclass|iter|len|locals|map|max|min|oct|
+                        ord|pow|range|raw_input|reduce|reload|repr|round|setattr|sorted|
+                        sum|unichr|vars|zip
+        			)\b
+      scope: support.function.builtin.python
+  builtin_types:
+    - match: |-
+        (?x)\b(
+        	basestring|bool|buffer|classmethod|complex|dict|enumerate|file|
+        	float|frozenset|int|list|long|object|open|property|reversed|set|
+        	slice|staticmethod|str|super|tuple|type|unicode|xrange
+        )\b
+      scope: support.type.python
+  constant_placeholder:
+    - match: '(?i:%(\([a-z_]+\))?#?0?\-?[ ]?\+?([0-9]*|\*)(\.([0-9]*|\*))?[hL]?[a-z%])'
+      scope: constant.other.placeholder.python
+  dotted_entity_name:
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)'
+      push:
+        - match: "(?<=[A-Za-z0-9_])"
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - match: "(?<=[A-Za-z0-9_])"
+              pop: true
+            - include: entity_name
+  entities:
+    - match: "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.html
+      captures:
+        1: punctuation.definition.entity.html
+        3: punctuation.definition.entity.html
+    - match: "&"
+      scope: invalid.illegal.bad-ampersand.html
+  entity_name:
+    - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+      push:
+        - match: "(?<=[A-Za-z0-9_])"
+          pop: true
+        - include: magic_function_names
+        - include: magic_variable_names
+        - include: illegal_names
+        - include: builtin_exceptions
+        - include: builtin_functions
+        - include: builtin_types
+        - include: generic_name
+  escaped_char:
+    - match: '\\[.\n]'
+      scope: constant.character.escape.python
+  function_def:
+    - match: (\()
+      captures:
+        1: punctuation.section.parameters.begin.python
+      push:
+        - meta_content_scope: meta.function.parameters.python
+        - match: (\))\s*(?=\")
+          captures:
+            1: punctuation.section.parameters.end.python
+          pop: true
+        - include: keyword_arguments
+        - include: positional_args
+  function_name:
+    - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+      push:
+        - match: "(?<=[A-Za-z0-9_])"
+          pop: true
+        - include: magic_function_names
+        - include: magic_variable_names
+        - include: builtin_exceptions
+        - include: builtin_functions
+        - include: builtin_types
+        - include: generic_name
+  generic_name:
+    - match: "[A-Za-z_][A-Za-z0-9_]*"
+  illegal_names:
+    - match: \b(and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while|with|yield)\b
+      scope: invalid.illegal.name.python
+  keyword_arguments:
+    - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(=)'
+      captures:
+        1: variable.parameter.function.python
+        2: keyword.operator.assignment.python
+      push:
+        - match: '\s*(?:(,)|(?=$\n?|[\)"]))'
+          captures:
+            1: punctuation.separator.parameters.python
+          pop: true
+        - include: $top_level_main
+  line_continuation:
+    - match: (\\)(.*)$\n?
+      captures:
+        1: punctuation.separator.continuation.line.python
+        2: invalid.illegal.unexpected-text.python
+  magic_function_names:
+    - match: |-
+        (?x)\b(__(?:
+        	abs|add|and|call|cmp|coerce|complex|contains|del|delattr|
+        	delete|delitem|delslice|div|divmod|enter|eq|exit|float|
+        	floordiv|ge|get|getattr|getattribute|getitem|getslice|gt|
+        	hash|hex|iadd|iand|idiv|ifloordiv|ilshift|imod|imul|init|
+        	int|invert|ior|ipow|irshift|isub|iter|itruediv|ixor|le|len|
+        	long|lshift|lt|mod|mul|ne|neg|new|nonzero|oct|or|pos|pow|
+        	radd|rand|rdiv|rdivmod|repr|rfloordiv|rlshift|rmod|rmul|ror|
+        	rpow|rrshift|rshift|rsub|rtruediv|rxor|set|setattr|setitem|
+        	setslice|str|sub|truediv|unicode|xor
+        )__)\b
+      comment: these methods have magic interpretation by python and are generally called indirectly through syntactic constructs
+      scope: entity.name.function.magic.python
+  magic_variable_names:
+    - match: \b__(all|bases|class|debug|dict|doc|file|members|metaclass|methods|name|slots|weakref)__\b
+      comment: magic variables which a class/module may have.
+      scope: support.variable.magic.python
+  positional_args:
+    - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,)|(?=[\n\)"]))'
+      captures:
+        1: variable.parameter.function.python
+        2: punctuation.separator.parameters.python
+  source_mako_tagargs:
+    - match: '(name)\s*(=)\s*(")(?=[A-Za-z_][A-Za-z0-9_]*)'
+      captures:
+        1: keyword.control
+        2: keyword.operator
+        3: punctuation.section.function.begin.python
+      push:
+        - meta_content_scope: entity.name.function.python
+        - match: (")
+          captures:
+            1: punctuation.section.function.begin.python
+          pop: true
+        - include: function_def
+        - include: entity_name
+    - include: tag-stuff
+  string-double-quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.double.html
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: entities
+  string-single-quoted:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.single.html
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: entities
+  tag-generic-attribute:
+    - match: '\b([a-zA-Z\-_:]+)'
+      scope: entity.other.attribute-name.html
+  tag-id-attribute:
+    - match: \b(id)\b\s*(=)
+      captures:
+        1: entity.other.attribute-name.id.html
+        2: punctuation.separator.key-value.html
+      push:
+        - meta_scope: meta.attribute-with-value.id.html
+        - match: (?<='|")
+          captures:
+            1: entity.other.attribute-name.id.html
+            2: punctuation.separator.key-value.html
+          pop: true
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.html
+          push:
+            - meta_scope: string.quoted.double.html
+            - meta_content_scope: meta.toc-list.id.html
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.html
+              pop: true
+            - include: entities
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.html
+          push:
+            - meta_scope: string.quoted.single.html
+            - meta_content_scope: meta.toc-list.id.html
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.html
+              pop: true
+            - include: entities
+  tag-stuff:
+    - include: tag-id-attribute
+    - include: tag-generic-attribute
+    - include: string-double-quoted
+    - include: string-single-quoted

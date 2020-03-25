@@ -1,0 +1,20 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Literate Clean
+file_extensions:
+  - lcl
+scope: text.restructuredtext.clean
+contexts:
+  main:
+    - match: ^(>>?)
+      captures:
+        1: punctuation.separator.literate.clean
+      push:
+        - meta_scope: meta.embedded.clean
+        - match: $
+          captures:
+            1: punctuation.separator.literate.clean
+          pop: true
+        - include: scope:source.clean
+    - include: scope:text.restructuredtext

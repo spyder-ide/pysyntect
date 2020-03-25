@@ -1,0 +1,50 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Apollo Guidance Computer
+file_extensions:
+  - agc
+scope: source.agc
+contexts:
+  main:
+    - include: comment
+    - include: number
+    - include: inclusion
+    - include: identifier
+    - include: opcode
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.agc
+      push:
+        - meta_scope: comment.line.number-sign.agc
+        - match: $
+          pop: true
+        - match: TODO|FIXME|CHANGED|XXX|IDEA|HACK|NOTE|REVIEW|NB|BUG
+          scope: disable-todo
+    - match: '^\t[-+]\d+(?=\t)'
+      scope: comment.annotation.numeric.agc
+  identifier:
+    - match: '^(?!\$)(?:[^#\s]{1,7}\t|[^#\s]{8})'
+      scope: entity.name.identifier.agc
+  inclusion:
+    - match: ^\$
+      captures:
+        0: punctuation.definition.directive.agc
+      push:
+        - meta_scope: meta.preprocessor.include.directive.agc
+        - match: (?=\s)
+          pop: true
+  number:
+    - match: '[-+]\d+(?:\.\d+)?D?'
+      scope: constant.numeric.agc
+  opcode:
+    - match: '(?<=\t)([^#\s]+)(?=\s|$)'
+      captures:
+        1: keyword.function.opcode.agc
+      push:
+        - meta_scope: meta.opcode.agc
+        - match: '$|(?=#)|[^#\s]+'
+          captures:
+            0: variable.parameter.operand.agc
+          pop: true

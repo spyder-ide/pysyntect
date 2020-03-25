@@ -1,0 +1,772 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: DataWeave
+file_extensions:
+  - dwl
+scope: source.data-weave
+contexts:
+  main:
+    - include: comments
+    - include: directives
+    - match: (---)
+      scope: keyword.operator.body-marker.dw
+    - include: expressions
+    - match: '([^\s]+)'
+      scope: invalid
+  array-literal:
+    - match: '(?<!\w|}|])(\[)'
+      captures:
+        0: meta.brace.square.dw
+      push:
+        - meta_scope: meta.array.literal.dw
+        - match: '\]'
+          captures:
+            0: meta.brace.square.dw
+          pop: true
+        - include: expressions
+        - include: punctuation-comma
+  attr-literal:
+    - match: \@\(
+      captures:
+        0: keyword.operator.attributes.dw
+      push:
+        - meta_scope: meta.attributes.dw
+        - match: \)
+          captures:
+            0: keyword.operator.attributes.dw
+          pop: true
+        - include: object-member
+  case-clause:
+    - match: (?<!\.|\$)\b(case|else(?=\s*->))\b(?!\$|\.)
+      captures:
+        1: keyword.control.switch.dw
+      push:
+        - meta_scope: case-clause.expr.dw
+        - match: \-\>
+          captures:
+            0: keyword.control.switch.dw
+          pop: true
+        - match: (?<!\.|\$)\b(is)\s+
+          captures:
+            1: keyword.control.is.dw
+          push:
+            - match: (?=\-\>)
+              pop: true
+            - include: types
+        - match: (?<!\.|\$)\b(matches)\b
+          captures:
+            1: keyword.control.matches.dw
+          push:
+            - match: (?=\-\>)
+              pop: true
+            - include: expressions
+        - match: '(?<!\.|\$)\b([A-Za-z][a-zA-Z0-9_]*)\s*:\s+'
+          captures:
+            1: entity.name.variable.dw
+          push:
+            - match: (?=\-\>)
+              pop: true
+            - include: expressions
+        - match: '(?<!\.|\$)\b([A-Za-z][a-zA-Z0-9_]*)\s*(if|matches)\s+'
+          captures:
+            1: entity.name.variable.dw
+            2: keyword.control.if.dw
+          push:
+            - match: (?=\-\>)
+              pop: true
+            - include: expressions
+        - include: expressions
+  cast:
+    - match: (?<!\.|\$)\b(as|is)\s+
+      captures:
+        1: keyword.control.as.dw
+      push:
+        - match: '(?=$|^|[;,:})\]\s])'
+          pop: true
+        - include: types
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.dw
+      push:
+        - meta_scope: comment.block.dw
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.dw
+          pop: true
+    - match: \s*((//).*$\n?)
+      captures:
+        1: comment.line.double-slash.dw
+        2: punctuation.definition.comment.dw
+  constants:
+    - match: \b(true|false|null)\b
+      scope: constant.language.dw
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDd]|UL|ul)?\b'
+      scope: constant.numeric.dw
+    - match: \|
+      captures:
+        0: constant.numeric.dw
+      push:
+        - match: \|
+          captures:
+            0: constant.numeric.dw
+          pop: true
+        - match: "([0-9]+)"
+          scope: constant.numeric.dw
+        - match: '([+:\-WYMDTHSPZ\.])'
+          scope: constant.character.escape.dw
+        - match: '([^\|])'
+          scope: invalid
+  directives:
+    - include: dw-directive
+    - include: import-directive
+    - include: type-directive
+    - include: fun-directive
+    - include: var-directive
+    - include: ns-directive
+    - include: input-directive
+    - include: output-directive
+  do-statement:
+    - match: '(?<!\.|\$)\b(do)\s*(\{)'
+      captures:
+        1: keyword.control.do.dw
+        2: punctuation.definitions.begin.dw
+      push:
+        - meta_scope: do-statement.expr.dw
+        - match: '(\})'
+          captures:
+            1: punctuation.definitions.end.dw
+          pop: true
+        - include: comments
+        - include: directives
+        - match: (---)
+          scope: keyword.operator.body-marker.dw
+        - include: expressions
+        - match: '([^\s]+)'
+          scope: invalid
+  dw-directive:
+    - match: '(?<!\.|\$)(%dw)\s+([0-9]\.[0-9])(?!\$|\.)'
+      captures:
+        1: comment.dw
+        2: comment.dw
+      push:
+        - meta_scope: meta.directive.version.dw
+        - match: (?=\n)
+          pop: true
+  expressions:
+    - match: \b(not)\s+
+      scope: keyword.other.dw
+    - include: paren-expression
+    - include: strings
+    - include: constants
+    - include: comments
+    - include: match-statement
+    - include: using-statement
+    - include: do-statement
+    - include: if-statement
+    - include: regex
+    - include: keywords
+    - include: object-literal
+    - include: array-literal
+    - include: cast
+    - include: object-member
+    - include: variable-reference
+    - include: selectors
+    - include: directives
+    - include: infix
+  fun-directive:
+    - match: '(\s*(fun)\s+([a-zA-Z][a-zA-Z0-9]*))'
+      captures:
+        2: storage.type.dw
+        3: entity.name.function.dw
+      push:
+        - meta_scope: meta.directive.fun.dw
+        - match: (=)
+          captures:
+            0: keyword.operator.assignment.dw
+          pop: true
+        - match: <
+          push:
+            - match: ">"
+              pop: true
+            - include: generics
+        - match: \(
+          push:
+            - match: \)
+              pop: true
+            - include: parameters
+        - match: (:)
+          captures:
+            1: keyword.operator.declaration.dw
+          push:
+            - match: (?==)
+              pop: true
+            - include: types
+  function_call:
+    - match: \s*\(
+      push:
+        - meta_scope: function_call
+        - match: \s*\)
+          pop: true
+        - include: punctuation-comma
+        - include: expressions
+  generics:
+    - match: (:)
+      captures:
+        1: keyword.operator.declaration.dw
+      push:
+        - match: (?=,|>)
+          pop: true
+        - include: types
+    - match: "<:"
+      scope: keyword.operator.extends.dw
+    - include: keywords
+    - match: \w+
+      scope: entity.name.type.parameter.dw
+  if-statement:
+    - match: (?<!\.|\$)\b(if\s*)\(
+      captures:
+        1: keyword.control.if.dw
+      push:
+        - meta_scope: meta.if.dw
+        - match: \)
+          pop: true
+        - include: expressions
+  import-directive:
+    - match: (\s*(import)\s+)
+      captures:
+        2: storage.type.dw
+      push:
+        - meta_scope: meta.directive.import.dw
+        - match: (?=(fun|input|output|type|var|ns|import|%dw|private|---)\s|$)
+          pop: true
+        - include: comments
+        - match: (,)
+        - match: (\*)
+        - match: \b(from)\s+
+          captures:
+            1: storage.type.dw
+        - match: "(?:[a-zA-Z][a-zA-Z0-9]*(?:::[a-zA-Z][a-zA-Z0-9]*)*)"
+          scope: entity.name.other.dw
+        - match: '\s+(as)\s+([a-zA-Z][a-zA-Z0-9]*)'
+          captures:
+            1: keyword.other.dw
+            2: entity.name.other.dw
+  infix:
+    - match: '(?<!^|,|\[|\(|=|\+|>|<|\-|\*|:|\{|case|is|else|not|as|and|or)(?<=[a-zA-Z0-9_$\}\])"''`|/])\s*(?!(var|match|case|else|fun|input|output|is|as|default|ns|import|null|false|true|using|do|not|and|or)\s)(\+\+|\-\-|[a-zA-Z][a-zA-Z_0-9]*)(\s+|\s*(?=["''/|{]))'
+      scope: support.function.dw
+  input-directive:
+    - match: '(?<!\.|\$)\b(input)\s+([[:alpha:]][[:alnum:]]*)\s*'
+      captures:
+        1: storage.type.dw
+        2: entity.name.variable.dw
+      push:
+        - meta_scope: meta.directive.ns.dw
+        - match: (?=\n)
+          pop: true
+        - match: (\:\s*)
+          captures:
+            1: keyword.other.dw
+          push:
+            - match: (\s|\n)
+              pop: true
+            - include: types
+        - match: '([^{\n\s])'
+          scope: string.mime.dw
+  keywords:
+    - match: \b(throw|for|yield|enum|private|async)\b
+      scope: keyword.reserved.dw
+    - match: \b(not)\b
+      scope: invalid
+    - match: \b(if|else|while|for|do|using|unless|default)\b
+      scope: keyword.control.dw
+    - match: (~=|==|!=|!=|<=|>=|<|>)
+      scope: keyword.operator.comparison.dw
+    - match: (=)
+      scope: keyword.operator.assignment.dw
+    - match: (:)
+      scope: keyword.operator.declaration.dw
+    - match: (\-|\+|\*|\/)
+      scope: keyword.operator.arithmetic.dw
+    - match: \b(and|or)\b
+      scope: keyword.other.dw
+  match-block:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.dw
+      push:
+        - meta_scope: match-block.expr.dw
+        - match: '(?=\})'
+          pop: true
+        - include: case-clause
+        - include: expressions
+  match-statement:
+    - match: '(?<!\.|\$)\b(match)\s*(?=\{)'
+      captures:
+        1: keyword.control.switch.dw
+      push:
+        - meta_scope: match-statement.expr.dw
+        - match: '\}'
+          captures:
+            1: punctuation.definition.block.dw
+          pop: true
+        - include: match-block
+  ns-directive:
+    - match: '(?<!\.|\$)\b(ns)\s+([A-Za-z][a-zA-Z0-9_]*)\s+([^\n]*)(?!\$|\.)'
+      captures:
+        1: storage.type.dw
+        2: entity.name.namespace.dw
+        3: meta.definition.ns.dw string.url.dw
+      push:
+        - meta_scope: meta.directive.ns.dw
+        - match: (?=\n)
+          pop: true
+  object-key:
+    - match: '\b([[:alpha:]][_[:alnum:]]+#)'
+      scope: meta.object.member.dw meta.object-literal.namespace.dw
+      captures:
+        0: variable.language.dw
+    - match: '(?=[\''\"\`])'
+      push:
+        - meta_scope: meta.object.member.dw meta.object-literal.key.dw
+        - match: (?=@\(|:)
+          pop: true
+        - include: strings
+    - match: '(?:[_$[:alpha:]][_$[:alnum:]]*)\s*(?=:|@\()'
+      scope: meta.object.member.dw
+      captures:
+        1: meta.object-literal.key.dw
+  object-literal:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.dw
+      push:
+        - meta_scope: meta.objectliteral.dw
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.dw
+          pop: true
+        - include: object-member
+  object-member:
+    - include: comments
+    - include: paren-expression
+    - match: \s+if\b
+      captures:
+        0: keyword.control.dw
+      push:
+        - match: "(?=,|})"
+          pop: true
+        - include: expressions
+    - include: object-key
+    - include: attr-literal
+    - include: object-member-body
+    - include: punctuation-comma
+  object-member-body:
+    - match: ":"
+      captures:
+        0: meta.object-literal.key.dw punctuation.separator.key-value.dw
+      push:
+        - meta_scope: meta.object.member.dw
+        - match: '(?=,|\}|\))'
+          pop: true
+        - include: expressions
+  object-member-type:
+    - include: comments
+    - match: _
+      scope: variable.language.dw
+    - match: "([a-zA-Z0-9]+#)"
+      scope: variable.language.dw
+    - match: '\(\s*([a-zA-Z][a-zA-Z0-9]*)\s*\)'
+      scope: entity.name.type.dw
+    - match: "([a-zA-Z][a-zA-Z0-9]*)"
+      scope: meta.object.member.dw
+    - include: strings
+    - match: \?
+      scope: keyword.operator.optional.dw
+    - match: \*
+      scope: keyword.operator.optional.dw
+    - match: (\@\()
+      captures:
+        1: keyword.operator.attributes.dw
+      push:
+        - match: (\))
+          captures:
+            1: keyword.operator.attributes.dw
+          pop: true
+        - include: punctuation-comma
+        - include: object-member-type
+    - match: (:)
+      captures:
+        1: keyword.operator.declaration.dw
+      push:
+        - match: '(?=,|}|\)|\|}|\-}|\|\-})'
+          pop: true
+        - include: types
+    - match: '([^\s])'
+      scope: invalid
+  output-directive:
+    - match: '(?<!\.|\$)\b(output)\s+([^\n{\s]*)(?!\$|\.)'
+      captures:
+        1: storage.type.dw
+        2: string.other.dw
+      push:
+        - meta_scope: meta.directive.ns.dw
+        - match: (?=\n)
+          pop: true
+  parameters:
+    - match: (:)
+      captures:
+        1: keyword.operator.declaration.dw
+      push:
+        - match: (?=,|\)|=)
+          pop: true
+        - include: types
+    - match: (=)
+      captures:
+        1: keyword.operator.declaration.dw
+      push:
+        - match: (?=,|\))
+          pop: true
+        - include: expressions
+    - match: \w+
+      scope: variable.parameter.dw
+  paren-expression:
+    - match: (\()
+      captures:
+        1: punctuation.expression.begin.dw
+      push:
+        - match: (\))
+          captures:
+            1: punctuation.expression.end.dw
+          pop: true
+        - include: expressions
+  punctuation-comma:
+    - match: ","
+      scope: punctuation.separator.comma.dw
+  qstring-backtick:
+    - match: "`"
+      captures:
+        0: string.quoted.double.dw punctuation.definition.string.begin.dw
+      push:
+        - match: "`"
+          captures:
+            0: string.quoted.double.dw punctuation.definition.string.end.dw
+          pop: true
+        - include: template-substitution-element
+        - include: template-dollar
+        - include: string-character-escape
+        - match: "([^`])"
+          scope: string.template.dw
+  qstring-double:
+    - match: '"'
+      captures:
+        0: string.quoted.double.dw punctuation.definition.string.begin.dw
+      push:
+        - match: '"'
+          captures:
+            0: string.quoted.double.dw punctuation.definition.string.end.dw
+          pop: true
+        - include: template-substitution-element
+        - include: template-dollar
+        - include: string-character-escape
+        - match: '([^"])'
+          scope: string.quoted.double.dw
+  qstring-single:
+    - match: "'"
+      captures:
+        0: string.quoted.single.dw punctuation.definition.string.begin.dw
+      push:
+        - match: '(\'')|((?:[^\\\n])$)'
+          captures:
+            1: string.quoted.single.dw punctuation.definition.string.end.dw
+            2: invalid.illegal.newline.dw
+          pop: true
+        - include: template-substitution-element
+        - include: template-dollar
+        - include: string-character-escape
+        - match: "([^'])"
+          scope: string.quoted.single.dw
+  regex:
+    - match: '(?<=[=(:,\[?+!]|replace|match|scan|matches|contains|---|case|->|and|or|\*\/)\s*(\/)(?![\/*])(?=(?:[^\/\\\[]|\\.|\[([^\]\\]|\\.)+\])+\/(?![\/*])(?!\s*[a-zA-Z0-9_$]))'
+      captures:
+        1: punctuation.definition.string.begin.dw
+      push:
+        - meta_scope: string.regexp.dw
+        - match: (/)
+          captures:
+            1: punctuation.definition.string.end.dw
+          pop: true
+        - include: regexp
+    - match: '(?<![_$[:alnum:])])\/(?![\/*])(?=(?:[^\/\\\[]|\\.|\[([^\]\\]|\\.)+\])+\/(?![\/*])(?!\s*[a-zA-Z0-9_$]))'
+      captures:
+        0: punctuation.definition.string.begin.dw
+      push:
+        - meta_scope: string.regexp.dw
+        - match: (/)
+          captures:
+            1: punctuation.definition.string.end.dw
+          pop: true
+        - include: regexp
+  regex-character-class:
+    - match: '\\[wWsSdDtrnvf]|\.'
+      scope: constant.other.character-class.regexp
+    - match: '\\([0-7]{3}|x\h\h|u\h\h\h\h)'
+      scope: constant.character.numeric.regexp
+    - match: '\\c[A-Z]'
+      scope: constant.character.control.regexp
+    - match: \\.
+      scope: constant.character.escape.backslash.regexp
+  regexp:
+    - match: '\\[bB]|\^|\$'
+      scope: keyword.control.anchor.regexp
+    - match: '\\[1-9]\d*'
+      scope: keyword.other.back-reference.regexp
+    - match: '[?+*]|\{(\d+,\d+|\d+,|,\d+|\d+)\}\??'
+      scope: keyword.operator.quantifier.regexp
+    - match: \|
+      scope: keyword.operator.or.regexp
+    - match: (\()((\?=)|(\?!))
+      captures:
+        1: punctuation.definition.group.regexp
+        2: punctuation.definition.group.assertion.regexp
+        3: meta.assertion.look-ahead.regexp
+        4: meta.assertion.negative-look-ahead.regexp
+      push:
+        - meta_scope: meta.group.assertion.regexp
+        - match: (\))
+          captures:
+            1: punctuation.definition.group.regexp
+          pop: true
+        - include: regexp
+    - match: \((\?:)?
+      captures:
+        0: punctuation.definition.group.regexp
+        1: punctuation.definition.group.capture.regexp
+      push:
+        - meta_scope: meta.group.regexp
+        - match: \)
+          captures:
+            0: punctuation.definition.group.regexp
+          pop: true
+        - include: regexp
+    - match: '(\[)(\^)?'
+      captures:
+        1: punctuation.definition.character-class.regexp
+        2: keyword.operator.negation.regexp
+      push:
+        - meta_scope: constant.other.character-class.set.regexp
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.character-class.regexp
+          pop: true
+        - match: '(?:.|(\\(?:[0-7]{3}|x\h\h|u\h\h\h\h))|(\\c[A-Z])|(\\.))\-(?:[^\]\\]|(\\(?:[0-7]{3}|x\h\h|u\h\h\h\h))|(\\c[A-Z])|(\\.))'
+          scope: constant.other.character-class.range.regexp
+          captures:
+            1: constant.character.numeric.regexp
+            2: constant.character.control.regexp
+            3: constant.character.escape.backslash.regexp
+            4: constant.character.numeric.regexp
+            5: constant.character.control.regexp
+            6: constant.character.escape.backslash.regexp
+        - include: regex-character-class
+    - include: regex-character-class
+  selectors:
+    - match: '(?<![\[\(:+*/\-])(\s*\.\.\*|\s*\.\.|\s*\.\*|\s*\.\@|\s*\.#|\s*\.&|\s*\.|(?=\[)|\:\:)'
+      push:
+        - meta_scope: meta.selector.data-weave
+        - match: '(?=\s|,|\}|\)|\n|\]|\(|-|$)'
+          pop: true
+        - match: '\b([[:alpha:]][_[:alnum:]]+#)'
+          scope: meta.object.member.dw
+          captures:
+            0: variable.language.dw
+        - match: '((?:[A-Za-z])([a-zA-Z0-9_]*)[?!]?|(\$)+)'
+          scope: meta.object.member.dw
+        - include: strings
+        - match: '(\[(@|\^)?)'
+          push:
+            - match: '(\])'
+              pop: true
+            - include: expressions
+            - match: '([\)])'
+              scope: invalid
+        - include: selectors
+  string-character-escape:
+    - match: '\\(u\h{4}|$|.)'
+      scope: constant.character.escape.dw
+  strings:
+    - include: qstring-single
+    - include: qstring-double
+    - include: qstring-backtick
+    - include: template
+  template:
+    - match: '([$[:alpha:]][_$[:alnum:]]*)\s*(`)'
+      captures:
+        1: support.function.dw
+        2: string.template.dw punctuation.definition.string.template.begin.dw
+      push:
+        - match: "`"
+          captures:
+            0: string.template.dw punctuation.definition.string.template.end.dw
+          pop: true
+        - include: template-substitution-element
+        - include: template-dollar
+        - include: string-character-escape
+        - match: "([^`])"
+          scope: string.template.dw
+  template-dollar:
+    - match: (\$(\$)+)
+      scope: variable.parameter.dw
+    - match: '(\$)(?![a-zA-Z(])'
+      scope: variable.parameter.dw
+    - match: '(\$)([a-zA-Z][a-zA-Z0-9_]*)'
+      scope: variable.parameter.dw
+      captures:
+        1: keyword.other.dw
+        2: variable.other.dw
+  template-substitution-element:
+    - match: \$\(
+      captures:
+        0: keyword.other.dw
+      push:
+        - meta_scope: meta.template.expression.dw
+        - match: \)
+          captures:
+            0: keyword.other.dw
+          pop: true
+        - include: expressions
+  type-directive:
+    - match: '(\s*(type)\s+([a-zA-Z][a-zA-Z0-9]*))'
+      captures:
+        2: storage.type.dw
+        3: entity.name.type.dw
+      push:
+        - meta_scope: meta.directive.type.dw
+        - match: (?=(fun|input|output|type|var|ns|import|%dw|private|---)\s)
+          pop: true
+        - match: <
+          push:
+            - match: ">"
+              pop: true
+            - include: generics
+        - match: \=
+          scope: keyword.other.dw
+        - include: types
+  types:
+    - include: comments
+    - match: \b(String|Boolean|Number|Range|Namespace|Uri|DateTime|LocalDateTime|Date|LocalTime|Time|TimeZone|Period|Binary|Null|Regex|Nothing|Any|Object|Key)\b
+      scope: support.class.dw
+    - match: \b(Array|Type)\s*<\b
+      captures:
+        1: support.type.dw
+      push:
+        - match: ">"
+          pop: true
+        - match: ","
+          scope: invalid
+        - include: types
+    - match: (&|\|)
+      scope: keyword.operator.declaration.dw
+    - match: "<:"
+      scope: keyword.operator.declaration.dw
+    - match: '\b([A-Z][a-zA-Z0-9_]*)'
+      scope: support.class.dw
+    - match: <
+      push:
+        - match: ">"
+          pop: true
+        - include: types
+        - include: punctuation-comma
+        - include: comments
+    - match: \(
+      captures:
+        1: keyword.operator.tuple.dw
+      push:
+        - match: (\)\s*\-\>)
+          pop: true
+        - include: types
+        - include: parameters
+    - match: '\{\-\|'
+      push:
+        - match: '\|\-\}'
+          pop: true
+        - include: punctuation-comma
+        - include: object-member-type
+    - match: '\{\|'
+      push:
+        - match: '\|\}'
+          pop: true
+        - include: punctuation-comma
+        - include: object-member-type
+    - match: '\{\-'
+      push:
+        - match: '\-\}'
+          pop: true
+        - include: punctuation-comma
+        - include: object-member-type
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: punctuation-comma
+        - include: object-member-type
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: types
+    - match: \b(var|fun|ns)\b
+    - match: \b(input|output|var|ns|import|try|catch|throw|do|for|yield|enum|private|async)\b
+      scope: invalid
+    - match: \b(if|else|while|for|do|using|unless|default|match)\b
+      scope: invalid
+    - match: (~=|==|!=|===|!==|<=|>=|<|>|\$+)
+      scope: invalid
+  using-statement:
+    - match: (?<!\.|\$)\b(using)\s*(\()
+      captures:
+        1: keyword.control.using.dw
+        2: punctuation.definitions.begin.dw
+      push:
+        - meta_scope: using-statement.expr.dw
+        - match: (\))
+          captures:
+            1: punctuation.definitions.end.dw
+          pop: true
+        - match: '((?:\+\+|\-\-|[A-Za-z])(?:[a-zA-Z0-9_]*))(\s*=)'
+          captures:
+            1: entity.name.variable.dw
+            2: keyword.operator.dw
+        - include: expressions
+  var-directive:
+    - match: '(\s*(var)\s+([a-zA-Z][a-zA-Z0-9]*))'
+      captures:
+        2: storage.type.dw
+        3: entity.name.variable.dw
+      push:
+        - meta_scope: meta.directive.var.dw
+        - match: (=)
+          captures:
+            0: keyword.operator.assignment.dw
+          pop: true
+        - match: <
+          push:
+            - match: ">"
+              pop: true
+            - include: generics
+        - match: (:)
+          captures:
+            1: keyword.operator.declaration.dw
+          push:
+            - match: (?==|$)
+              pop: true
+            - include: comments
+            - include: types
+  variable-reference:
+    - match: '\b(?!(fun|input|output|type|var|ns|import|%dw|private|---)\b)((\+\+|\-\-|[A-Za-z])[a-zA-Z0-9_]*)'
+      scope: variable.other.dw
+    - match: \b(fun|input|output|type|var|ns|import|private)\b
+      scope: invalid
+    - match: (\$+)
+      scope: variable.parameter.dw

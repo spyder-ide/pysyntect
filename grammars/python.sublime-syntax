@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Salt pydsl (Python)
+file_extensions: []
+first_line_match: ^#!py
+scope: source.python.salt
+contexts:
+  main:
+    - include: scope:source.python

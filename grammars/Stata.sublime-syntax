@@ -1,0 +1,105 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Stata
+file_extensions:
+  - do
+  - ado
+  - mata
+scope: source.stata
+contexts:
+  main:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.stata
+      push:
+        - meta_scope: string.quoted.double.stata
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.stata
+          pop: true
+    - match: '`"'
+      captures:
+        0: punctuation.definition.string.begin.stata
+      push:
+        - meta_scope: string.quoted.double.compound.stata
+        - match: '"'''
+          captures:
+            0: punctuation.definition.string.end.stata
+          pop: true
+        - include: cdq_string_content
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.stata
+      push:
+        - meta_scope: comment.block.stata
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.stata
+          pop: true
+        - include: cb_content
+    - match: ^\s*(\*).*$\n?
+      scope: comment.line.star.stata
+      captures:
+        0: punctuation.definition.comment.stata
+    - match: (///).*$\n?
+      scope: comment.line.triple-slash.stata
+      captures:
+        0: punctuation.definition.comment.stata
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.stata
+      captures:
+        0: punctuation.definition.comment.stata
+    - match: \+|\-|\*|\^
+      scope: keyword.operator.arithmetic.stata
+    - match: "(?<![a-zA-Z.])/(?![a-zA-Z.]|$)"
+      comment: match division operator but not path separator
+      scope: keyword.operator.arithmetic.stata
+    - match: \&|\||!|~
+      scope: keyword.operator.logical.stata
+    - match: <|>|<\=|>\=|\=\=|!\=|~\=
+      scope: keyword.operator.comparison.stata
+    - match: \=
+      scope: keyword.operator.assignment.stata
+    - match: \b(while|forv(a|al|alu|alue|alues)?|continue)\b
+      scope: keyword.control.flow.stata
+    - match: '\b(foreach)\s+[a-zA-Z0-9_]+\s+(in|of loc(a|al)?|of glo(b|ba|bal)?|of var(l|li|lis|list)?|of new(l|li|lis|list)?|of num(l|li|lis|list)?)\b'
+      captures:
+        1: keyword.control.flow.stata
+        2: keyword.control.flow.stata
+    - match: ^\s*(if|else if|else)\b
+      captures:
+        1: keyword.control.flow.stata
+    - match: ^\s*(gl(o|ob|oba|obal)?|loc(a|al)?|tempvar|tempname|tempfile)\b
+      captures:
+        1: storage.type.macro.stata
+    - match: ^\s*(sca(l|la|lar)?(\s+de(f|fi|fin|fine)?)?)\s+(?!(drop|dir?|l(i|is|ist)?)\s+)
+      captures:
+        1: storage.type.scalar.stata
+    - match: '(^|:|{|qui(e|et|etl|etly)?\s+|n(o|oi|ois|oisi|oisil|oisily)?\s+)\s*(by(s|so|sor|sort)?)((\s|,)[^:]*)?(?=:)'
+      captures:
+        4: keyword.control.flow.stata
+        5: keyword.control.flow.stata
+    - match: '(^|:|{|qui(e|et|etl|etly)?\s+|n(o|oi|ois|oisi|oisil|oisily)?\s+)\s*((g(e|en|ene|ener|enera|enerat|enerate)?)|replace|egen)\b'
+      captures:
+        4: storage.type.variable.stata
+    - match: ^\s*mata:?\s*$
+      comment: won't match single-line Mata statements
+      push:
+        - meta_scope: meta.embedded.block.mata
+        - meta_content_scope: source.mata
+        - match: ^\s*end\s*$\n?
+          pop: true
+        - include: scope:source.mata
+  cb_content:
+    - match: /\*
+      push:
+        - match: \*/
+          pop: true
+        - include: cb_content
+  cdq_string_content:
+    - match: '`"'
+      push:
+        - match: '"'''
+          pop: true
+        - include: cdq_string_content

@@ -1,0 +1,51 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: PogoScript
+file_extensions:
+  - pogo
+scope: source.pogoscript
+contexts:
+  main:
+    - match: "[(){}@]"
+      scope: variable.language.pogoscript
+    - match: '\b[0-9]+\b'
+      scope: constant.numeric.pogoscript
+    - match: '//[^\n]*'
+      scope: comment.line.double-slash.pogoscript
+    - match: /\*
+      push:
+        - meta_scope: comment.block.pogoscript
+        - match: \*/
+          pop: true
+    - match: "=>|[.:?!;,=]|self"
+      scope: keyword
+    - match: \t
+      scope: invalid
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.pogoscript
+        - match: "'"
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.pogoscript
+    - match: r/
+      push:
+        - meta_scope: string.regexp.pogoscript
+        - match: "/[gim]?"
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.pogoscript
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.pogoscript
+        - match: '"'
+          pop: true
+        - include: interpolated
+  interpolated:
+    - match: '#\('
+      push:
+        - meta_scope: source.pogoscript
+        - match: \)
+          pop: true
+        - include: scope:source.pogoscript

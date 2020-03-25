@@ -1,0 +1,1744 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Flex Config
+comment: |
+  The majority of items in the language repository are automatically generated and may not be complete.
+                Please post to the TM list if you spot anything thats missing.
+first_line_match: flex-config
+scope: text.xml.flex-config
+contexts:
+  name:
+    - match: <name>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.keep-as3-metadata.name
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.keep-as3-metadata.name
+        - match: </name>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.keep-as3-metadata.name
+          pop: true
+        - include: etc
+  main:
+    - include: flex-config
+    - include: scope:text.xml
+  accessible:
+    - match: <accessible>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.accessible
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.accessible
+        - match: </accessible>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.accessible
+          pop: true
+        - include: etc
+  actionscript-file-encoding:
+    - match: <actionscript-file-encoding>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.actionscript-file-encoding
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.actionscript-file-encoding
+        - match: </actionscript-file-encoding>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.actionscript-file-encoding
+          pop: true
+        - include: etc
+  advanced-anti-aliasing:
+    - match: <advanced-anti-aliasing>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.advanced-anti-aliasing
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.advanced-anti-aliasing
+        - match: </advanced-anti-aliasing>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.advanced-anti-aliasing
+          pop: true
+        - include: etc
+  allow-source-path-overlap:
+    - match: <allow-source-path-overlap>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.allow-source-path-overlap
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.allow-source-path-overlap
+        - match: </allow-source-path-overlap>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.allow-source-path-overlap
+          pop: true
+        - include: etc
+  appendable:
+    - match: ' (append)="(true|false)"'
+      scope: entity.other.attribute.xml.flex-config
+  as-three:
+    - match: <as3>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.as3
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.as3
+        - match: </as3>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.as3
+          pop: true
+        - include: etc
+  benchmark:
+    - match: <benchmark>
+      captures:
+        0: meta.tag.xml.flex-config.benchmark
+      push:
+        - meta_content_scope: meta.scope.flex-config.benchmark
+        - match: </benchmark>
+          captures:
+            0: meta.tag.xml.flex-config.benchmark
+          pop: true
+        - include: etc
+  bundle:
+    - match: <bundle>
+      captures:
+        0: meta.tag.xml.flex-config.include-resource-bundles.bundle
+      push:
+        - meta_content_scope: meta.scope.flex-config.include-resource-bundles.bundle
+        - match: </bundle>
+          captures:
+            0: meta.tag.xml.flex-config.include-resource-bundles.bundle
+          pop: true
+        - include: etc
+  classname:
+    - match: <classname>
+      captures:
+        0: meta.tag.xml.flex-config.frames.frame.classname
+      push:
+        - meta_content_scope: meta.scope.flex-config.frames.frame.classname
+        - match: </classname>
+          captures:
+            0: meta.tag.xml.flex-config.frames.frame.classname
+          pop: true
+        - include: etc
+  comments:
+    - match: "<[!%]--"
+      captures:
+        0: punctuation.definition.comment.xml.flex-config
+      push:
+        - meta_scope: comment.block.xml.flex-config
+        - match: "--%?>"
+          captures:
+            0: punctuation.definition.comment.xml.flex-config
+          pop: true
+  compatibility-version:
+    - match: <compatibility-version>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.mxml.compatibility-version
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.mxml.compatibility-version
+        - match: </compatibility-version>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.mxml.compatibility-version
+          pop: true
+        - include: etc
+  compiler:
+    - match: <compiler>
+      captures:
+        0: meta.tag.xml.flex-config.compiler
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler
+        - match: </compiler>
+          captures:
+            0: meta.tag.xml.flex-config.compiler
+          pop: true
+        - include: accessible
+        - include: actionscript-file-encoding
+        - include: allow-source-path-overlap
+        - include: as-three
+        - include: context-root
+        - include: debug
+        - include: defaults-css-files
+        - include: defaults-css-url
+        - include: define
+        - include: es
+        - include: external-library-path
+        - include: fonts
+        - include: headless-server
+        - include: include-libraries
+        - include: incremental
+        - include: keep-all-type-selectors
+        - include: keep-as-three-metadata
+        - include: keep-generated-actionscript
+        - include: library-path
+        - include: locale
+        - include: mxml
+        - include: namespaces
+        - include: optimize
+        - include: services
+        - include: show-actionscript-warnings
+        - include: show-binding-warnings
+        - include: show-shadowed-device-font-warnings
+        - include: show-unused-type-selector-warnings
+        - include: source-path
+        - include: strict
+        - include: theme
+        - include: use-resource-bundle-metadata
+        - include: verbose-stacktraces
+        - include: warn-array-tostring-changes
+        - include: warn-assignment-within-conditional
+        - include: warn-bad-array-cast
+        - include: warn-bad-bool-assignment
+        - include: warn-bad-date-cast
+        - include: warn-bad-es-three-type-method
+        - include: warn-bad-es-three-type-prop
+        - include: warn-bad-nan-comparison
+        - include: warn-bad-null-assignment
+        - include: warn-bad-null-comparison
+        - include: warn-bad-undefined-comparison
+        - include: warn-boolean-constructor-with-no-args
+        - include: warn-changes-in-resolve
+        - include: warn-class-is-sealed
+        - include: warn-const-not-initialized
+        - include: warn-constructor-returns-value
+        - include: warn-deprecated-event-handler-error
+        - include: warn-deprecated-function-error
+        - include: warn-deprecated-property-error
+        - include: warn-duplicate-argument-names
+        - include: warn-duplicate-variable-def
+        - include: warn-for-var-in-changes
+        - include: warn-import-hides-class
+        - include: warn-instance-of-changes
+        - include: warn-internal-error
+        - include: warn-level-not-supported
+        - include: warn-missing-namespace-decl
+        - include: warn-negative-uint-literal
+        - include: warn-no-constructor
+        - include: warn-no-explicit-super-call-in-constructor
+        - include: warn-no-type-decl
+        - include: warn-number-from-string-changes
+        - include: warn-scoping-change-in-this
+        - include: warn-slow-text-field-addition
+        - include: warn-unlikely-function-value
+        - include: warn-xml-class-has-changed
+        - include: etc
+  context-root:
+    - match: <context-root>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.context-root
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.context-root
+        - match: </context-root>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.context-root
+          pop: true
+        - include: etc
+  contributor:
+    - match: <contributor>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.contributor
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.contributor
+        - match: </contributor>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.contributor
+          pop: true
+        - include: etc
+  creator:
+    - match: <creator>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.creator
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.creator
+        - match: </creator>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.creator
+          pop: true
+        - include: etc
+  date:
+    - match: <date>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.date
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.date
+        - match: </date>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.date
+          pop: true
+        - include: etc
+  debug:
+    - match: <debug>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.debug
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.debug
+        - match: </debug>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.debug
+          pop: true
+        - include: etc
+  debug-password:
+    - match: <debug-password>
+      captures:
+        0: meta.tag.xml.flex-config.debug-password
+      push:
+        - meta_content_scope: meta.scope.flex-config.debug-password
+        - match: </debug-password>
+          captures:
+            0: meta.tag.xml.flex-config.debug-password
+          pop: true
+        - include: etc
+  default-background-color:
+    - match: <default-background-color>
+      captures:
+        0: meta.tag.xml.flex-config.default-background-color
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-background-color
+        - match: </default-background-color>
+          captures:
+            0: meta.tag.xml.flex-config.default-background-color
+          pop: true
+        - include: etc
+  default-frame-rate:
+    - match: <default-frame-rate>
+      captures:
+        0: meta.tag.xml.flex-config.default-frame-rate
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-frame-rate
+        - match: </default-frame-rate>
+          captures:
+            0: meta.tag.xml.flex-config.default-frame-rate
+          pop: true
+        - include: etc
+  default-script-limits:
+    - match: <default-script-limits>
+      captures:
+        0: meta.tag.xml.flex-config.default-script-limits
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-script-limits
+        - match: </default-script-limits>
+          captures:
+            0: meta.tag.xml.flex-config.default-script-limits
+          pop: true
+        - include: max-recursion-depth
+        - include: max-execution-time
+        - include: etc
+  default-size:
+    - match: <default-size>
+      captures:
+        0: meta.tag.xml.flex-config.default-size
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-size
+        - match: </default-size>
+          captures:
+            0: meta.tag.xml.flex-config.default-size
+          pop: true
+        - include: width
+        - include: height
+        - include: etc
+  defaults-css-files:
+    - match: <defaults-css-files>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.defaults-css-files
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.defaults-css-files
+        - match: </defaults-css-files>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.defaults-css-files
+          pop: true
+        - include: filename
+        - include: etc
+  defaults-css-url:
+    - match: <defaults-css-url>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.defaults-css-url
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.defaults-css-url
+        - match: </defaults-css-url>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.defaults-css-url
+          pop: true
+        - include: etc
+  define:
+    - match: <define>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.define
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.define
+        - match: </define>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.define
+          pop: true
+        - include: name
+        - include: value
+        - include: etc
+  description:
+    - match: <description>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.description
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.description
+        - match: </description>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.description
+          pop: true
+        - include: etc
+  doublequotedString:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.xml.flex-config
+      push:
+        - meta_scope: string.quoted.double.xml.flex-config
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.xml.flex-config
+          pop: true
+  errors:
+    - match: "(</?)(?:([-_a-zA-Z0-9]+)((:)))?([-_a-zA-Z0-9:]+)"
+      push:
+        - meta_scope: invalid.illegal.directive.flex-config
+        - match: (/?>)
+          pop: true
+  es:
+    - match: <es>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.es
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.es
+        - match: </es>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.es
+          pop: true
+        - include: etc
+  etc:
+    - include: comments
+    - include: errors
+    - include: scope:text.xml
+  external-library-path:
+    - match: <external-library-path( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.external-library-path
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.external-library-path
+        - match: </external-library-path>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.external-library-path
+          pop: true
+        - include: path-element
+        - include: etc
+  externs:
+    - match: <externs( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.externs
+      push:
+        - meta_content_scope: meta.scope.flex-config.externs
+        - match: </externs>
+          captures:
+            0: meta.tag.xml.flex-config.externs
+          pop: true
+        - include: symbol
+        - include: etc
+  filename:
+    - match: <filename>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.theme.filename
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.theme.filename
+        - match: </filename>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.theme.filename
+          pop: true
+        - include: etc
+  flash-type:
+    - match: <flash-type>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.flash-type
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.flash-type
+        - match: </flash-type>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.flash-type
+          pop: true
+        - include: etc
+  flex-config:
+    - match: <flex-config>
+      captures:
+        0: meta.tag.xml.flex-config
+      push:
+        - meta_content_scope: meta.scope.flex-config
+        - match: </flex-config>
+          captures:
+            0: meta.tag.xml.flex-config
+          pop: true
+        - include: benchmark
+        - include: compiler
+        - include: debug-password
+        - include: default-background-color
+        - include: default-frame-rate
+        - include: default-script-limits
+        - include: default-size
+        - include: externs
+        - include: frames
+        - include: include-resource-bundles
+        - include: includes
+        - include: link-report
+        - include: load-config
+        - include: load-externs
+        - include: metadata
+        - include: output
+        - include: raw-metadata
+        - include: resource-bundle-list
+        - include: runtime-shared-libraries
+        - include: runtime-shared-library-path
+        - include: static-link-runtime-shared-libraries
+        - include: static-rsls
+        - include: target-player
+        - include: use-network
+        - include: verify-digests
+        - include: version
+        - include: warnings
+        - include: etc
+  fonts:
+    - match: <fonts>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts
+        - match: </fonts>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts
+          pop: true
+        - include: advanced-anti-aliasing
+        - include: flash-type
+        - include: languages
+        - include: local-fonts-snapshot
+        - include: managers
+        - include: max-cached-fonts
+        - include: max-glyphs-per-face
+        - include: etc
+  frame:
+    - match: <frame>
+      captures:
+        0: meta.tag.xml.flex-config.frames.frame
+      push:
+        - meta_content_scope: meta.scope.flex-config.frames.frame
+        - match: </frame>
+          captures:
+            0: meta.tag.xml.flex-config.frames.frame
+          pop: true
+        - include: label
+        - include: classname
+        - include: etc
+  frames:
+    - match: <frames>
+      captures:
+        0: meta.tag.xml.flex-config.frames
+      push:
+        - meta_content_scope: meta.scope.flex-config.frames
+        - match: </frames>
+          captures:
+            0: meta.tag.xml.flex-config.frames
+          pop: true
+        - include: frame
+        - include: etc
+  headless-server:
+    - match: <headless-server>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.headless-server
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.headless-server
+        - match: </headless-server>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.headless-server
+          pop: true
+        - include: etc
+  height:
+    - match: <height>
+      captures:
+        0: meta.tag.xml.flex-config.default-size.height
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-size.height
+        - match: </height>
+          captures:
+            0: meta.tag.xml.flex-config.default-size.height
+          pop: true
+        - include: etc
+  include-libraries:
+    - match: <include-libraries( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.include-libraries
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.include-libraries
+        - match: </include-libraries>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.include-libraries
+          pop: true
+        - include: library
+        - include: etc
+  include-resource-bundles:
+    - match: <include-resource-bundles( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.include-resource-bundles
+      push:
+        - meta_content_scope: meta.scope.flex-config.include-resource-bundles
+        - match: </include-resource-bundles>
+          captures:
+            0: meta.tag.xml.flex-config.include-resource-bundles
+          pop: true
+        - include: bundle
+        - include: etc
+  includes:
+    - match: <includes( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.includes
+      push:
+        - meta_content_scope: meta.scope.flex-config.includes
+        - match: </includes>
+          captures:
+            0: meta.tag.xml.flex-config.includes
+          pop: true
+        - include: symbol
+        - include: etc
+  incremental:
+    - match: <incremental>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.incremental
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.incremental
+        - match: </incremental>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.incremental
+          pop: true
+        - include: etc
+  keep-all-type-selectors:
+    - match: <keep-all-type-selectors>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.keep-all-type-selectors
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.keep-all-type-selectors
+        - match: </keep-all-type-selectors>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.keep-all-type-selectors
+          pop: true
+        - include: etc
+  keep-as-three-metadata:
+    - match: <keep-as3-metadata( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.keep-as3-metadata
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.keep-as3-metadata
+        - match: </keep-as3-metadata>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.keep-as3-metadata
+          pop: true
+        - include: name
+        - include: etc
+  keep-generated-actionscript:
+    - match: <keep-generated-actionscript>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.keep-generated-actionscript
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.keep-generated-actionscript
+        - match: </keep-generated-actionscript>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.keep-generated-actionscript
+          pop: true
+        - include: etc
+  label:
+    - match: <label>
+      captures:
+        0: meta.tag.xml.flex-config.frames.frame.label
+      push:
+        - meta_content_scope: meta.scope.flex-config.frames.frame.label
+        - match: </label>
+          captures:
+            0: meta.tag.xml.flex-config.frames.frame.label
+          pop: true
+        - include: etc
+  lang:
+    - match: <lang>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.localized-title.lang
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.localized-title.lang
+        - match: </lang>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.localized-title.lang
+          pop: true
+        - include: etc
+  language:
+    - match: <language>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.language
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.language
+        - match: </language>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.language
+          pop: true
+        - include: etc
+  language-range:
+    - match: <language-range>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.languages.language-range
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.languages.language-range
+        - match: </language-range>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.languages.language-range
+          pop: true
+        - include: lang
+        - include: range
+        - include: etc
+  languages:
+    - match: <languages>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.languages
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.languages
+        - match: </languages>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.languages
+          pop: true
+        - include: language-range
+        - include: etc
+  library:
+    - match: <library>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.include-libraries.library
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.include-libraries.library
+        - match: </library>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.include-libraries.library
+          pop: true
+        - include: etc
+  library-path:
+    - match: <library-path( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.library-path
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.library-path
+        - match: </library-path>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.library-path
+          pop: true
+        - include: path-element
+        - include: etc
+  link-report:
+    - match: <link-report>
+      captures:
+        0: meta.tag.xml.flex-config.link-report
+      push:
+        - meta_content_scope: meta.scope.flex-config.link-report
+        - match: </link-report>
+          captures:
+            0: meta.tag.xml.flex-config.link-report
+          pop: true
+        - include: etc
+  load-config:
+    - match: <load-config>
+      captures:
+        0: meta.tag.xml.flex-config.load-config
+      push:
+        - meta_content_scope: meta.scope.flex-config.load-config
+        - match: </load-config>
+          captures:
+            0: meta.tag.xml.flex-config.load-config
+          pop: true
+        - include: etc
+  load-externs:
+    - match: <load-externs>
+      captures:
+        0: meta.tag.xml.flex-config.load-externs
+      push:
+        - meta_content_scope: meta.scope.flex-config.load-externs
+        - match: </load-externs>
+          captures:
+            0: meta.tag.xml.flex-config.load-externs
+          pop: true
+        - include: etc
+  local-fonts-snapshot:
+    - match: <local-fonts-snapshot>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.local-fonts-snapshot
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.local-fonts-snapshot
+        - match: </local-fonts-snapshot>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.local-fonts-snapshot
+          pop: true
+        - include: etc
+  locale:
+    - match: <locale>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.locale
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.locale
+        - match: </locale>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.locale
+          pop: true
+        - include: locale-element
+        - include: etc
+  locale-element:
+    - match: <locale-element>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.locale.locale-element
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.locale.locale-element
+        - match: </locale-element>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.locale.locale-element
+          pop: true
+        - include: etc
+  localized-description:
+    - match: <localized-description>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.localized-description
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.localized-description
+        - match: </localized-description>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.localized-description
+          pop: true
+        - include: text
+        - include: lang
+        - include: etc
+  localized-title:
+    - match: <localized-title>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.localized-title
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.localized-title
+        - match: </localized-title>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.localized-title
+          pop: true
+        - include: title
+        - include: lang
+        - include: etc
+  manager-class:
+    - match: <manager-class>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.managers.manager-class
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.managers.manager-class
+        - match: </manager-class>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.managers.manager-class
+          pop: true
+        - include: etc
+  managers:
+    - match: <managers>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.managers
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.managers
+        - match: </managers>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.managers
+          pop: true
+        - include: manager-class
+        - include: etc
+  manifest:
+    - match: <manifest>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.namespaces.namespace.manifest
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.namespaces.namespace.manifest
+        - match: </manifest>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.namespaces.namespace.manifest
+          pop: true
+        - include: etc
+  max-cached-fonts:
+    - match: <max-cached-fonts>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.max-cached-fonts
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.max-cached-fonts
+        - match: </max-cached-fonts>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.max-cached-fonts
+          pop: true
+        - include: etc
+  max-execution-time:
+    - match: <max-execution-time>
+      captures:
+        0: meta.tag.xml.flex-config.default-script-limits.max-execution-time
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-script-limits.max-execution-time
+        - match: </max-execution-time>
+          captures:
+            0: meta.tag.xml.flex-config.default-script-limits.max-execution-time
+          pop: true
+        - include: etc
+  max-glyphs-per-face:
+    - match: <max-glyphs-per-face>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.max-glyphs-per-face
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.max-glyphs-per-face
+        - match: </max-glyphs-per-face>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.max-glyphs-per-face
+          pop: true
+        - include: etc
+  max-recursion-depth:
+    - match: <max-recursion-depth>
+      captures:
+        0: meta.tag.xml.flex-config.default-script-limits.max-recursion-depth
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-script-limits.max-recursion-depth
+        - match: </max-recursion-depth>
+          captures:
+            0: meta.tag.xml.flex-config.default-script-limits.max-recursion-depth
+          pop: true
+        - include: etc
+  metadata:
+    - match: <metadata>
+      captures:
+        0: meta.tag.xml.flex-config.metadata
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata
+        - match: </metadata>
+          captures:
+            0: meta.tag.xml.flex-config.metadata
+          pop: true
+        - include: contributor
+        - include: creator
+        - include: date
+        - include: description
+        - include: language
+        - include: localized-description
+        - include: localized-title
+        - include: publisher
+        - include: title
+        - include: etc
+  mxml:
+    - match: <mxml>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.mxml
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.mxml
+        - match: </mxml>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.mxml
+          pop: true
+        - include: compatibility-version
+        - include: etc
+  namespace:
+    - match: <namespace>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.namespaces.namespace
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.namespaces.namespace
+        - match: </namespace>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.namespaces.namespace
+          pop: true
+        - include: uri
+        - include: manifest
+        - include: etc
+  namespaces:
+    - match: <namespaces>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.namespaces
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.namespaces
+        - match: </namespaces>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.namespaces
+          pop: true
+        - include: namespace
+        - include: etc
+  optimize:
+    - match: <optimize>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.optimize
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.optimize
+        - match: </optimize>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.optimize
+          pop: true
+        - include: etc
+  output:
+    - match: <output>
+      captures:
+        0: meta.tag.xml.flex-config.output
+      push:
+        - meta_content_scope: meta.scope.flex-config.output
+        - match: </output>
+          captures:
+            0: meta.tag.xml.flex-config.output
+          pop: true
+        - include: etc
+  path-element:
+    - match: <path-element>
+      captures:
+        0: meta.tag.xml.flex-config.runtime-shared-library-path.path-element
+      push:
+        - meta_content_scope: meta.scope.flex-config.runtime-shared-library-path.path-element
+        - match: </path-element>
+          captures:
+            0: meta.tag.xml.flex-config.runtime-shared-library-path.path-element
+          pop: true
+        - include: etc
+  policy-file-url:
+    - match: <policy-file-url>
+      captures:
+        0: meta.tag.xml.flex-config.runtime-shared-library-path.policy-file-url
+      push:
+        - meta_content_scope: meta.scope.flex-config.runtime-shared-library-path.policy-file-url
+        - match: </policy-file-url>
+          captures:
+            0: meta.tag.xml.flex-config.runtime-shared-library-path.policy-file-url
+          pop: true
+        - include: etc
+  publisher:
+    - match: <publisher>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.publisher
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.publisher
+        - match: </publisher>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.publisher
+          pop: true
+        - include: etc
+  range:
+    - match: <range>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.fonts.languages.language-range.range
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.fonts.languages.language-range.range
+        - match: </range>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.fonts.languages.language-range.range
+          pop: true
+        - include: etc
+  raw-metadata:
+    - match: <raw-metadata>
+      captures:
+        0: meta.tag.xml.flex-config.raw-metadata
+      push:
+        - meta_content_scope: meta.scope.flex-config.raw-metadata
+        - match: </raw-metadata>
+          captures:
+            0: meta.tag.xml.flex-config.raw-metadata
+          pop: true
+        - include: etc
+  resource-bundle-list:
+    - match: <resource-bundle-list>
+      captures:
+        0: meta.tag.xml.flex-config.resource-bundle-list
+      push:
+        - meta_content_scope: meta.scope.flex-config.resource-bundle-list
+        - match: </resource-bundle-list>
+          captures:
+            0: meta.tag.xml.flex-config.resource-bundle-list
+          pop: true
+        - include: etc
+  rsl-url:
+    - match: <rsl-url>
+      captures:
+        0: meta.tag.xml.flex-config.runtime-shared-library-path.rsl-url
+      push:
+        - meta_content_scope: meta.scope.flex-config.runtime-shared-library-path.rsl-url
+        - match: </rsl-url>
+          captures:
+            0: meta.tag.xml.flex-config.runtime-shared-library-path.rsl-url
+          pop: true
+        - include: etc
+  runtime-shared-libraries:
+    - match: <runtime-shared-libraries( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.runtime-shared-libraries
+      push:
+        - meta_content_scope: meta.scope.flex-config.runtime-shared-libraries
+        - match: </runtime-shared-libraries>
+          captures:
+            0: meta.tag.xml.flex-config.runtime-shared-libraries
+          pop: true
+        - include: url
+        - include: etc
+  runtime-shared-library-path:
+    - match: <runtime-shared-library-path>
+      captures:
+        0: meta.tag.xml.flex-config.runtime-shared-library-path
+      push:
+        - meta_content_scope: meta.scope.flex-config.runtime-shared-library-path
+        - match: </runtime-shared-library-path>
+          captures:
+            0: meta.tag.xml.flex-config.runtime-shared-library-path
+          pop: true
+        - include: path-element
+        - include: rsl-url
+        - include: policy-file-url
+        - include: etc
+  services:
+    - match: <services>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.services
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.services
+        - match: </services>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.services
+          pop: true
+        - include: etc
+  show-actionscript-warnings:
+    - match: <show-actionscript-warnings>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.show-actionscript-warnings
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.show-actionscript-warnings
+        - match: </show-actionscript-warnings>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.show-actionscript-warnings
+          pop: true
+        - include: etc
+  show-binding-warnings:
+    - match: <show-binding-warnings>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.show-binding-warnings
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.show-binding-warnings
+        - match: </show-binding-warnings>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.show-binding-warnings
+          pop: true
+        - include: etc
+  show-shadowed-device-font-warnings:
+    - match: <show-shadowed-device-font-warnings>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.show-shadowed-device-font-warnings
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.show-shadowed-device-font-warnings
+        - match: </show-shadowed-device-font-warnings>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.show-shadowed-device-font-warnings
+          pop: true
+        - include: etc
+  show-unused-type-selector-warnings:
+    - match: <show-unused-type-selector-warnings>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.show-unused-type-selector-warnings
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.show-unused-type-selector-warnings
+        - match: </show-unused-type-selector-warnings>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.show-unused-type-selector-warnings
+          pop: true
+        - include: etc
+  singlequotedString:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.xml.flex-config
+      push:
+        - meta_scope: string.quoted.single.flex-config
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.xml.flex-config
+          pop: true
+  source-path:
+    - match: <source-path( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.source-path
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.source-path
+        - match: </source-path>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.source-path
+          pop: true
+        - include: path-element
+        - include: etc
+  static-link-runtime-shared-libraries:
+    - match: <static-link-runtime-shared-libraries>
+      captures:
+        0: meta.tag.xml.flex-config.static-link-runtime-shared-libraries
+      push:
+        - meta_content_scope: meta.scope.flex-config.static-link-runtime-shared-libraries
+        - match: </static-link-runtime-shared-libraries>
+          captures:
+            0: meta.tag.xml.flex-config.static-link-runtime-shared-libraries
+          pop: true
+        - include: etc
+  static-rsls:
+    - match: <static-rsls>
+      captures:
+        0: meta.tag.xml.flex-config.static-rsls
+      push:
+        - meta_content_scope: meta.scope.flex-config.static-rsls
+        - match: </static-rsls>
+          captures:
+            0: meta.tag.xml.flex-config.static-rsls
+          pop: true
+        - include: etc
+  strict:
+    - match: <strict>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.strict
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.strict
+        - match: </strict>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.strict
+          pop: true
+        - include: etc
+  symbol:
+    - match: <symbol>
+      captures:
+        0: meta.tag.xml.flex-config.includes.symbol
+      push:
+        - meta_content_scope: meta.scope.flex-config.includes.symbol
+        - match: </symbol>
+          captures:
+            0: meta.tag.xml.flex-config.includes.symbol
+          pop: true
+        - include: etc
+  target-player:
+    - match: <target-player>
+      captures:
+        0: meta.tag.xml.flex-config.target-player
+      push:
+        - meta_content_scope: meta.scope.flex-config.target-player
+        - match: </target-player>
+          captures:
+            0: meta.tag.xml.flex-config.target-player
+          pop: true
+        - include: etc
+  text:
+    - match: <text>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.localized-description.text
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.localized-description.text
+        - match: </text>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.localized-description.text
+          pop: true
+        - include: etc
+  theme:
+    - match: <theme( append="true")?>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.theme
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.theme
+        - match: </theme>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.theme
+          pop: true
+        - include: filename
+        - include: etc
+  title:
+    - match: <title>
+      captures:
+        0: meta.tag.xml.flex-config.metadata.title
+      push:
+        - meta_content_scope: meta.scope.flex-config.metadata.title
+        - match: </title>
+          captures:
+            0: meta.tag.xml.flex-config.metadata.title
+          pop: true
+        - include: etc
+  uri:
+    - match: <uri>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.namespaces.namespace.uri
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.namespaces.namespace.uri
+        - match: </uri>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.namespaces.namespace.uri
+          pop: true
+        - include: etc
+  url:
+    - match: <url>
+      captures:
+        0: meta.tag.xml.flex-config.runtime-shared-libraries.url
+      push:
+        - meta_content_scope: meta.scope.flex-config.runtime-shared-libraries.url
+        - match: </url>
+          captures:
+            0: meta.tag.xml.flex-config.runtime-shared-libraries.url
+          pop: true
+        - include: etc
+  use-network:
+    - match: <use-network>
+      captures:
+        0: meta.tag.xml.flex-config.use-network
+      push:
+        - meta_content_scope: meta.scope.flex-config.use-network
+        - match: </use-network>
+          captures:
+            0: meta.tag.xml.flex-config.use-network
+          pop: true
+        - include: etc
+  use-resource-bundle-metadata:
+    - match: <use-resource-bundle-metadata>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.use-resource-bundle-metadata
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.use-resource-bundle-metadata
+        - match: </use-resource-bundle-metadata>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.use-resource-bundle-metadata
+          pop: true
+        - include: etc
+  value:
+    - match: <value>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.define.value
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.define.value
+        - match: </value>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.define.value
+          pop: true
+        - include: etc
+  verbose-stacktraces:
+    - match: <verbose-stacktraces>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.verbose-stacktraces
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.verbose-stacktraces
+        - match: </verbose-stacktraces>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.verbose-stacktraces
+          pop: true
+        - include: etc
+  verify-digests:
+    - match: <verify-digests>
+      captures:
+        0: meta.tag.xml.flex-config.verify-digests
+      push:
+        - meta_content_scope: meta.scope.flex-config.verify-digests
+        - match: </verify-digests>
+          captures:
+            0: meta.tag.xml.flex-config.verify-digests
+          pop: true
+        - include: etc
+  version:
+    - match: <version>
+      captures:
+        0: meta.tag.xml.flex-config.version
+      push:
+        - meta_content_scope: meta.scope.flex-config.version
+        - match: </version>
+          captures:
+            0: meta.tag.xml.flex-config.version
+          pop: true
+        - include: etc
+  warn-array-tostring-changes:
+    - match: <warn-array-tostring-changes>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-array-tostring-changes
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-array-tostring-changes
+        - match: </warn-array-tostring-changes>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-array-tostring-changes
+          pop: true
+        - include: etc
+  warn-assignment-within-conditional:
+    - match: <warn-assignment-within-conditional>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-assignment-within-conditional
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-assignment-within-conditional
+        - match: </warn-assignment-within-conditional>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-assignment-within-conditional
+          pop: true
+        - include: etc
+  warn-bad-array-cast:
+    - match: <warn-bad-array-cast>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-array-cast
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-array-cast
+        - match: </warn-bad-array-cast>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-array-cast
+          pop: true
+        - include: etc
+  warn-bad-bool-assignment:
+    - match: <warn-bad-bool-assignment>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-bool-assignment
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-bool-assignment
+        - match: </warn-bad-bool-assignment>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-bool-assignment
+          pop: true
+        - include: etc
+  warn-bad-date-cast:
+    - match: <warn-bad-date-cast>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-date-cast
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-date-cast
+        - match: </warn-bad-date-cast>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-date-cast
+          pop: true
+        - include: etc
+  warn-bad-es-three-type-method:
+    - match: <warn-bad-es3-type-method>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-es3-type-method
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-es3-type-method
+        - match: </warn-bad-es3-type-method>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-es3-type-method
+          pop: true
+        - include: etc
+  warn-bad-es-three-type-prop:
+    - match: <warn-bad-es3-type-prop>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-es3-type-prop
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-es3-type-prop
+        - match: </warn-bad-es3-type-prop>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-es3-type-prop
+          pop: true
+        - include: etc
+  warn-bad-nan-comparison:
+    - match: <warn-bad-nan-comparison>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-nan-comparison
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-nan-comparison
+        - match: </warn-bad-nan-comparison>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-nan-comparison
+          pop: true
+        - include: etc
+  warn-bad-null-assignment:
+    - match: <warn-bad-null-assignment>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-null-assignment
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-null-assignment
+        - match: </warn-bad-null-assignment>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-null-assignment
+          pop: true
+        - include: etc
+  warn-bad-null-comparison:
+    - match: <warn-bad-null-comparison>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-null-comparison
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-null-comparison
+        - match: </warn-bad-null-comparison>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-null-comparison
+          pop: true
+        - include: etc
+  warn-bad-undefined-comparison:
+    - match: <warn-bad-undefined-comparison>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-bad-undefined-comparison
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-bad-undefined-comparison
+        - match: </warn-bad-undefined-comparison>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-bad-undefined-comparison
+          pop: true
+        - include: etc
+  warn-boolean-constructor-with-no-args:
+    - match: <warn-boolean-constructor-with-no-args>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-boolean-constructor-with-no-args
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-boolean-constructor-with-no-args
+        - match: </warn-boolean-constructor-with-no-args>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-boolean-constructor-with-no-args
+          pop: true
+        - include: etc
+  warn-changes-in-resolve:
+    - match: <warn-changes-in-resolve>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-changes-in-resolve
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-changes-in-resolve
+        - match: </warn-changes-in-resolve>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-changes-in-resolve
+          pop: true
+        - include: etc
+  warn-class-is-sealed:
+    - match: <warn-class-is-sealed>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-class-is-sealed
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-class-is-sealed
+        - match: </warn-class-is-sealed>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-class-is-sealed
+          pop: true
+        - include: etc
+  warn-const-not-initialized:
+    - match: <warn-const-not-initialized>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-const-not-initialized
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-const-not-initialized
+        - match: </warn-const-not-initialized>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-const-not-initialized
+          pop: true
+        - include: etc
+  warn-constructor-returns-value:
+    - match: <warn-constructor-returns-value>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-constructor-returns-value
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-constructor-returns-value
+        - match: </warn-constructor-returns-value>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-constructor-returns-value
+          pop: true
+        - include: etc
+  warn-deprecated-event-handler-error:
+    - match: <warn-deprecated-event-handler-error>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-deprecated-event-handler-error
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-deprecated-event-handler-error
+        - match: </warn-deprecated-event-handler-error>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-deprecated-event-handler-error
+          pop: true
+        - include: etc
+  warn-deprecated-function-error:
+    - match: <warn-deprecated-function-error>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-deprecated-function-error
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-deprecated-function-error
+        - match: </warn-deprecated-function-error>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-deprecated-function-error
+          pop: true
+        - include: etc
+  warn-deprecated-property-error:
+    - match: <warn-deprecated-property-error>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-deprecated-property-error
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-deprecated-property-error
+        - match: </warn-deprecated-property-error>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-deprecated-property-error
+          pop: true
+        - include: etc
+  warn-duplicate-argument-names:
+    - match: <warn-duplicate-argument-names>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-duplicate-argument-names
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-duplicate-argument-names
+        - match: </warn-duplicate-argument-names>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-duplicate-argument-names
+          pop: true
+        - include: etc
+  warn-duplicate-variable-def:
+    - match: <warn-duplicate-variable-def>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-duplicate-variable-def
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-duplicate-variable-def
+        - match: </warn-duplicate-variable-def>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-duplicate-variable-def
+          pop: true
+        - include: etc
+  warn-for-var-in-changes:
+    - match: <warn-for-var-in-changes>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-for-var-in-changes
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-for-var-in-changes
+        - match: </warn-for-var-in-changes>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-for-var-in-changes
+          pop: true
+        - include: etc
+  warn-import-hides-class:
+    - match: <warn-import-hides-class>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-import-hides-class
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-import-hides-class
+        - match: </warn-import-hides-class>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-import-hides-class
+          pop: true
+        - include: etc
+  warn-instance-of-changes:
+    - match: <warn-instance-of-changes>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-instance-of-changes
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-instance-of-changes
+        - match: </warn-instance-of-changes>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-instance-of-changes
+          pop: true
+        - include: etc
+  warn-internal-error:
+    - match: <warn-internal-error>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-internal-error
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-internal-error
+        - match: </warn-internal-error>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-internal-error
+          pop: true
+        - include: etc
+  warn-level-not-supported:
+    - match: <warn-level-not-supported>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-level-not-supported
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-level-not-supported
+        - match: </warn-level-not-supported>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-level-not-supported
+          pop: true
+        - include: etc
+  warn-missing-namespace-decl:
+    - match: <warn-missing-namespace-decl>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-missing-namespace-decl
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-missing-namespace-decl
+        - match: </warn-missing-namespace-decl>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-missing-namespace-decl
+          pop: true
+        - include: etc
+  warn-negative-uint-literal:
+    - match: <warn-negative-uint-literal>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-negative-uint-literal
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-negative-uint-literal
+        - match: </warn-negative-uint-literal>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-negative-uint-literal
+          pop: true
+        - include: etc
+  warn-no-constructor:
+    - match: <warn-no-constructor>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-no-constructor
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-no-constructor
+        - match: </warn-no-constructor>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-no-constructor
+          pop: true
+        - include: etc
+  warn-no-explicit-super-call-in-constructor:
+    - match: <warn-no-explicit-super-call-in-constructor>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-no-explicit-super-call-in-constructor
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-no-explicit-super-call-in-constructor
+        - match: </warn-no-explicit-super-call-in-constructor>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-no-explicit-super-call-in-constructor
+          pop: true
+        - include: etc
+  warn-no-type-decl:
+    - match: <warn-no-type-decl>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-no-type-decl
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-no-type-decl
+        - match: </warn-no-type-decl>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-no-type-decl
+          pop: true
+        - include: etc
+  warn-number-from-string-changes:
+    - match: <warn-number-from-string-changes>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-number-from-string-changes
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-number-from-string-changes
+        - match: </warn-number-from-string-changes>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-number-from-string-changes
+          pop: true
+        - include: etc
+  warn-scoping-change-in-this:
+    - match: <warn-scoping-change-in-this>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-scoping-change-in-this
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-scoping-change-in-this
+        - match: </warn-scoping-change-in-this>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-scoping-change-in-this
+          pop: true
+        - include: etc
+  warn-slow-text-field-addition:
+    - match: <warn-slow-text-field-addition>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-slow-text-field-addition
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-slow-text-field-addition
+        - match: </warn-slow-text-field-addition>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-slow-text-field-addition
+          pop: true
+        - include: etc
+  warn-unlikely-function-value:
+    - match: <warn-unlikely-function-value>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-unlikely-function-value
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-unlikely-function-value
+        - match: </warn-unlikely-function-value>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-unlikely-function-value
+          pop: true
+        - include: etc
+  warn-xml-class-has-changed:
+    - match: <warn-xml-class-has-changed>
+      captures:
+        0: meta.tag.xml.flex-config.compiler.warn-xml-class-has-changed
+      push:
+        - meta_content_scope: meta.scope.flex-config.compiler.warn-xml-class-has-changed
+        - match: </warn-xml-class-has-changed>
+          captures:
+            0: meta.tag.xml.flex-config.compiler.warn-xml-class-has-changed
+          pop: true
+        - include: etc
+  warnings:
+    - match: <warnings>
+      captures:
+        0: meta.tag.xml.flex-config.warnings
+      push:
+        - meta_content_scope: meta.scope.flex-config.warnings
+        - match: </warnings>
+          captures:
+            0: meta.tag.xml.flex-config.warnings
+          pop: true
+        - include: etc
+  width:
+    - match: <width>
+      captures:
+        0: meta.tag.xml.flex-config.default-size.width
+      push:
+        - meta_content_scope: meta.scope.flex-config.default-size.width
+        - match: </width>
+          captures:
+            0: meta.tag.xml.flex-config.default-size.width
+          pop: true
+        - include: etc

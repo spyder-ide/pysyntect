@@ -1,0 +1,61 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Rd (R Documentation)
+file_extensions:
+  - rd
+  - Rd
+scope: text.tex.latex.rd
+contexts:
+  main:
+    - match: '((\\)(?:alias|docType|keyword|name|title|description|value|note|concept|keyword|details|format|references|source|arguments|seealso|author))(\{)'
+      captures:
+        1: keyword.other.section.rd
+        2: punctuation.definition.function.rd
+        3: punctuation.definition.arguments.begin.rd
+      push:
+        - meta_scope: meta.section.rd
+        - meta_content_scope: entity.name.tag.rd
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.arguments.end.rd
+          pop: true
+        - include: main
+    - match: '((\\)(?:usage))(\{)(?:\n)?'
+      captures:
+        1: keyword.other.usage.rd
+        2: punctuation.definition.function.rd
+        3: punctuation.definition.arguments.begin.rd
+      push:
+        - meta_scope: meta.usage.rd
+        - meta_content_scope: source.r.embedded
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.arguments.end.rd
+          pop: true
+        - include: scope:source.r
+    - match: '((\\)(?:examples))(\{)(?:\n)?'
+      captures:
+        1: keyword.other.examples.rd
+        2: punctuation.definition.function.rd
+        3: punctuation.definition.arguments.begin.rd
+      push:
+        - meta_scope: meta.examples.rd
+        - meta_content_scope: source.r.embedded
+        - match: '(^\}$)'
+          captures:
+            1: punctuation.definition.arguments.end.rd
+          pop: true
+        - include: scope:source.r
+    - match: '((\\)(?:author))(\{)(?:\n)?'
+      captures:
+        1: keyword.other.author.rd
+        2: punctuation.definition.function.rd
+        3: punctuation.definition.arguments.begin.rd
+      push:
+        - meta_scope: meta.author.rd
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.arguments.end.rd
+          pop: true
+    - include: scope:text.tex.latex

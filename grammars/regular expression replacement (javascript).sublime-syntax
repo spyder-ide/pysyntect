@@ -1,0 +1,14 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.js.regexp.replacement
+contexts:
+  main:
+    - include: regexp-replacement
+  regexp-replacement:
+    - match: '\$([1-9][0-9]|[1-9]|0[1-9]|[&`''])'
+      scope: variable.regexp.replacement
+    - match: \$\$
+      scope: constant.character.escape.dollar.regexp.replacement
+    - match: '\\[^$]'
+      scope: constant.character.escape.backslash.regexp.replacement

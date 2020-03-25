@@ -1,0 +1,20 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Python Traceback
+file_extensions:
+  - pytb
+scope: text.python.traceback
+contexts:
+  main:
+    - match: '^  File ("[^"]+"), line (\d+)(?:, in (.+))?$'
+      captures:
+        1: string.python.traceback
+        2: constant.numeric.python.traceback
+        3: entity.name.function.python.traceback
+    - match: ^    (.+)$
+      captures:
+    - match: '^([^\s:]+):(?: (.+))?$'
+      captures:
+        1: entity.name.type.class.python.traceback
+        2: string.python.traceback

@@ -1,0 +1,64 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: QASM
+file_extensions:
+  - qasm
+scope: source.qasm
+contexts:
+  main:
+    - match: \/\/.*$
+      comment: Use this to explain your code
+      scope: comment.line.double-slash
+    - match: "#.*$"
+      comment: Use this to explain your code
+      scope: comment.line.number-sign
+    - match: |-
+        ^(?x)                                  # At beggining of line
+        (\.)                                  # Valid function name
+        (
+          (?: [-a-zA-Z_0-9]|[^\x00-\x7F]     # Valid identifier characters
+            | \\(?:[0-9a-fA-F]{1,6}|.)       # Escape sequence
+          )+
+        )                                      # Followed by either:
+        (?= $                                  # - End of the line
+          | [\s,.\#)\[:{>+~|]               # - Another selector
+          | #                                  # - A comment
+        )
+      comment: function
+      scope: entity.name.function
+    - match: (?x)\b(include|OPENQASM|version)\b
+      comment: QASM control instructions
+      scope: entity.name.section
+    - match: (?x)\b(qubit|qubits|map)\b
+      comment: qubit
+      scope: variable.language
+    - match: '(?<=(\w\[)|(:))( *\d *)(?=(\s*\])|(:))'
+      comment: index
+      scope: constant.other
+    - match: "->"
+      comment: convert function
+      scope: keyword.storage.modifier
+    - match: ('.*')
+      comment: number
+      scope: constant.string.single
+    - match: '".*"'
+      comment: number
+      scope: constant.string.double
+    - match: (?x)^\b(?:(qreg|creg)| (gate|opaque))\b
+      comment: QASM classes
+      scope: storage.type
+    - match: (?x)\b(?:(prep_x|prep_y|prep_z|error_model)| (measure_x|measure_y|measure_z|measure_all|measure_parity|measure)| (display|display_binary))\b
+      comment: cQASM instructions
+      scope: support.function
+    - match: (?i)(?x)\b(?:((i|h|x|y|z)| (rx|ry|rz)| (x90|y90|z90|rx90|ry90|rz90|mx90|my90|mz90)| (x180|y180|z180|rx180|ry180|rz180|mx180|my180|mz180)| (u1|u2|u3|cu1|cu2|cu3)| (s|sdag|t|tdag)| (cnot|cx|cz|cr|crk|toffoli|ccx|ccnot)| (swap) ))\b
+      comment: quantum gates
+      scope: keyword.control
+    - match: (?i)(?x)\bc-(?:((i|h|x|y|z)| (rx|ry|rz)| (x90|y90|z90|rx90|ry90|rz90|mx90|my90|mz90)| (x180|y180|z180|rx180|ry180|rz180|mx180|my180|mz180)| (u1|u2|u3)| (s|sdag|t|tdag)| (cnot|cx|cz|cr|crk|toffoli|ccx|ccnot)| (swap) ))\b
+      comment: binary modified quantum gates
+      scope: keyword.control
+    - match: '(?i)(?x)\b(?:(not )|(if(?=[( ])))\b'
+      comment: classical gates
+      scope: keyword.control
+    - match: \b(depolarizing_channel|load_state|barrier)\b
+      scope: variable.language

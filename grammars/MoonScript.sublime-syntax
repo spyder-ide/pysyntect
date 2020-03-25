@@ -1,0 +1,81 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: MoonScript
+comment: "MoonScript Syntax: 0.0.1"
+file_extensions:
+  - moon
+scope: source.moonscript
+contexts:
+  main:
+    - match: '(--)(?!\[\[).*$\n?'
+      scope: comment.line.double-dash.lua
+      captures:
+        1: punctuation.definition.comment.lua
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.lua
+      push:
+        - meta_scope: string.quoted.single.lua
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.lua
+          pop: true
+        - match: '\\(\d{1,3}|.)'
+          scope: constant.character.escape.lua
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.lua
+      push:
+        - meta_scope: string.quoted.double.lua
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.lua
+          pop: true
+        - match: '\\(\d{1,3}|.)'
+          scope: constant.character.escape.lua
+    - match: '(?<!--)\[(=*)\['
+      captures:
+        0: punctuation.definition.string.begin.lua
+      push:
+        - meta_scope: string.quoted.other.multiline.lua
+        - match: '\]\1\]'
+          captures:
+            0: punctuation.definition.string.end.lua
+          pop: true
+    - match: '(?<![\d.])\s0x[a-fA-F\d]+|\b\d+(\.\d+)?([eE]-?\d+)?|\.\d+([eE]-?\d+)?'
+      scope: constant.numeric.lua
+    - match: '\b[A-Z]\w*\b(?!:)'
+      scope: support.constant
+    - match: "=>|->"
+      scope: keyword.operator
+    - match: \b(and|or|not)\b
+      scope: keyword.operator.lua
+    - match: '[a-zA-Z_]\w*\s*(?=:)'
+      scope: entity.name.function
+    - match: \(|\)
+      scope: entity.name.function
+    - match: '\+|-|%|#|\*|\/|\^|==?|~=|!=|\\|:|,|;|\.|<=?|>=?|(?<!\.)\.{2}(?!\.)'
+      scope: keyword.operator.lua
+    - match: '{|}|\[|\]'
+      scope: storage.modifier
+    - match: \b(class|extends|super)\b
+      scope: storage.type.class
+    - match: \b(if|then|else|elseif|export|import|from|switch|when|with|using|do|for|in|while|return|local|unless|continue|break)\b
+      scope: keyword.control
+    - match: \b(self)\b
+      scope: variable.language
+    - match: '@@?[a-zA-Z_]\w*\b'
+      scope: variable.parameter
+    - match: \b(nil)\b
+      scope: constant.language.nil
+    - match: \b(true|false)\b
+      scope: constant.language.boolean
+    - match: (?<!\.|\\)\b(function|repeat|end)\b(?!\s*:)
+      scope: invalid.illegal
+    - match: '(?<![^.]\.|\\)\b(assert|collectgarbage|dofile|error|getfenv|getmetatable|ipairs|loadfile|loadstring|module|next|pairs|pcall|print|rawequal|rawget|rawset|require|select|setfenv|setmetatable|tonumber|tostring|type|unpack|xpcall)\b'
+      scope: support.function.lua
+    - match: '(?<![^.]\.|\\)\b(_G)\b'
+      scope: support.constant
+    - match: '(?<![^.]\.|\\)\b(coroutine\.(create|resume|running|status|wrap|yield)|string\.(byte|char|dump|find|format|gmatch|gsub|len|lower|match|rep|reverse|sub|upper)|table\.(concat|insert|maxn|remove|sort)|math\.(abs|acos|asin|atan2?|ceil|cosh?|deg|exp|floor|fmod|frexp|ldexp|log|log10|max|min|modf|pow|rad|random|randomseed|sinh?|sqrt|tanh?)|io\.(close|flush|input|lines|open|output|popen|read|tmpfile|type|write)|os\.(clock|date|difftime|execute|exit|getenv|remove|rename|setlocale|time|tmpname)|package\.(cpath|loaded|loadlib|path|preload|seeall)|debug\.(debug|[gs]etfenv|[gs]ethook|getinfo|[gs]etlocal|[gs]etmetatable|getregistry|[gs]etupvalue|traceback))\b'
+      scope: support.function.library.lua

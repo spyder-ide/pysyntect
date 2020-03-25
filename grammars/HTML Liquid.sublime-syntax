@@ -1,0 +1,22 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML Liquid
+file_extensions:
+  - liquid
+scope: text.html.liquid
+contexts:
+  main:
+    - match: "{%+(?!>)=?"
+      push:
+        - meta_scope: source.liquid.tags.embedded.html
+        - match: "%}"
+          pop: true
+        - include: scope:source.ruby.rails
+    - match: "{{"
+      push:
+        - meta_scope: source.liquid.output.embedded.html
+        - match: "}}"
+          pop: true
+        - include: scope:source.ruby.rails
+    - include: scope:text.html.basic

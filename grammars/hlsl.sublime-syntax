@@ -1,0 +1,125 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HLSL
+file_extensions:
+  - hlsl
+  - hlsli
+  - fx
+  - fxh
+  - vsh
+  - psh
+  - cginc
+  - compute
+scope: source.hlsl
+contexts:
+  main:
+    - match: /\*
+      push:
+        - meta_scope: comment.line.block.hlsl
+        - match: \*/
+          pop: true
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.hlsl
+        - match: $
+          pop: true
+    - match: '\b[0-9]+\.[0-9]*(F|f)?\b'
+      scope: constant.numeric.decimal.hlsl
+    - match: '(\.([0-9]+)(F|f)?)\b'
+      scope: constant.numeric.decimal.hlsl
+    - match: '\b([0-9]+(F|f)?)\b'
+      scope: constant.numeric.decimal.hlsl
+    - match: '\b(0(x|X)[0-9a-fA-F]+)\b'
+      scope: constant.numeric.hex.hlsl
+    - match: \b(false|true)\b
+      scope: constant.language.hlsl
+    - match: ^\s*#\s*(define|elif|else|endif|ifdef|ifndef|if|undef|include|line|error|pragma)
+      scope: keyword.preprocessor.hlsl
+    - match: \b(break|case|continue|default|discard|do|else|for|if|return|switch|while)\b
+      scope: keyword.control.hlsl
+    - match: \b(compile)\b
+      scope: keyword.control.fx.hlsl
+    - match: \b(typedef)\b
+      scope: keyword.typealias.hlsl
+    - match: '\b(bool([1-4](x[1-4])?)?|double([1-4](x[1-4])?)?|dword|float([1-4](x[1-4])?)?|half([1-4](x[1-4])?)?|int([1-4](x[1-4])?)?|matrix|min10float([1-4](x[1-4])?)?|min12int([1-4](x[1-4])?)?|min16float([1-4](x[1-4])?)?|min16int([1-4](x[1-4])?)?|min16uint([1-4](x[1-4])?)?|unsigned|uint([1-4](x[1-4])?)?|vector|void)\b'
+      scope: storage.type.basic.hlsl
+    - match: '\b([a-zA-Z_][a-zA-Z0-9_]*)(?=[\s]*\()'
+      scope: support.function.hlsl
+    - match: '(?<=\:\s|\:)(?i:BINORMAL[0-9]*|BLENDINDICES[0-9]*|BLENDWEIGHT[0-9]*|COLOR[0-9]*|NORMAL[0-9]*|POSITIONT|POSITION|PSIZE[0-9]*|TANGENT[0-9]*|TEXCOORD[0-9]*|FOG|TESSFACTOR[0-9]*|VFACE|VPOS|DEPTH[0-9]*)\b'
+      scope: support.variable.semantic.hlsl
+    - match: '(?<=\:\s|\:)(?i:SV_ClipDistance[0-9]*|SV_CullDistance[0-9]*|SV_Coverage|SV_Depth|SV_DepthGreaterEqual[0-9]*|SV_DepthLessEqual[0-9]*|SV_InstanceID|SV_IsFrontFace|SV_Position|SV_RenderTargetArrayIndex|SV_SampleIndex|SV_StencilRef|SV_Target[0-7]?|SV_VertexID|SV_ViewportArrayIndex)\b'
+      scope: support.variable.semantic.sm4.hlsl
+    - match: (?<=\:\s|\:)(?i:SV_DispatchThreadID|SV_DomainLocation|SV_GroupID|SV_GroupIndex|SV_GroupThreadID|SV_GSInstanceID|SV_InsideTessFactor|SV_OutputControlPointID|SV_TessFactor)\b
+      scope: support.variable.semantic.sm5.hlsl
+    - match: (?<=\:\s|\:)(?i:SV_InnerCoverage|SV_StencilRef)\b
+      scope: support.variable.semantic.sm5_1.hlsl
+    - match: \b(column_major|const|export|extern|globallycoherent|groupshared|inline|inout|in|out|precise|row_major|shared|static|uniform|volatile)\b
+      scope: storage.modifier.hlsl
+    - match: \b(snorm|unorm)\b
+      scope: storage.modifier.float.hlsl
+    - match: \b(packoffset|register)\b
+      scope: storage.modifier.postfix.hlsl
+    - match: \b(centroid|linear|nointerpolation|noperspective|sample)\b
+      scope: storage.modifier.interpolation.hlsl
+    - match: \b(lineadj|line|point|triangle|triangleadj)\b
+      scope: storage.modifier.geometryshader.hlsl
+    - match: \b(string)\b
+      scope: support.type.other.hlsl
+    - match: \b(AppendStructuredBuffer|Buffer|ByteAddressBuffer|ConstantBuffer|ConsumeStructuredBuffer|InputPatch|OutputPatch)\b
+      scope: support.type.object.hlsl
+    - match: \b(RasterizerOrderedBuffer|RasterizerOrderedByteAddressBuffer|RasterizerOrderedStructuredBuffer|RasterizerOrderedTexture1D|RasterizerOrderedTexture1DArray|RasterizerOrderedTexture2D|RasterizerOrderedTexture2DArray|RasterizerOrderedTexture3D)\b
+      scope: support.type.object.rasterizerordered.hlsl
+    - match: \b(RWBuffer|RWByteAddressBuffer|RWStructuredBuffer|RWTexture1D|RWTexture1DArray|RWTexture2D|RWTexture2DArray|RWTexture3D)\b
+      scope: support.type.object.rw.hlsl
+    - match: \b(LineStream|PointStream|TriangleStream)\b
+      scope: support.type.object.geometryshader.hlsl
+    - match: \b(sampler|sampler1D|sampler2D|sampler3D|samplerCUBE|sampler_state)\b
+      scope: support.type.sampler.legacy.hlsl
+    - match: \b(SamplerState|SamplerComparisonState)\b
+      scope: support.type.sampler.hlsl
+    - match: \b(texture2D|textureCUBE)\b
+      scope: support.type.texture.legacy.hlsl
+    - match: \b(Texture1D|Texture1DArray|Texture2D|Texture2DArray|Texture2DMS|Texture2DMSArray|Texture3D|TextureCube|TextureCubeArray)\b
+      scope: support.type.texture.hlsl
+    - match: \b(cbuffer|class|interface|namespace|struct|tbuffer)\b
+      scope: storage.type.structured.hlsl
+    - match: \b(FALSE|TRUE|NULL)\b
+      scope: support.constant.property-value.fx.hlsl
+    - match: \b(BlendState|DepthStencilState|RasterizerState)\b
+      scope: support.type.fx.hlsl
+    - match: \b(technique|Technique|technique10|technique11|pass)\b
+      scope: storage.type.fx.technique.hlsl
+    - match: \b(AlphaToCoverageEnable|BlendEnable|SrcBlend|DestBlend|BlendOp|SrcBlendAlpha|DestBlendAlpha|BlendOpAlpha|RenderTargetWriteMask)\b
+      scope: meta.object-literal.key.fx.blendstate.hlsl
+    - match: \b(DepthEnable|DepthWriteMask|DepthFunc|StencilEnable|StencilReadMask|StencilWriteMask|FrontFaceStencilFail|FrontFaceStencilZFail|FrontFaceStencilPass|FrontFaceStencilFunc|BackFaceStencilFail|BackFaceStencilZFail|BackFaceStencilPass|BackFaceStencilFunc)\b
+      scope: meta.object-literal.key.fx.depthstencilstate.hlsl
+    - match: \b(FillMode|CullMode|FrontCounterClockwise|DepthBias|DepthBiasClamp|SlopeScaleDepthBias|ZClipEnable|ScissorEnable|MultiSampleEnable|AntiAliasedLineEnable)\b
+      scope: meta.object-literal.key.fx.rasterizerstate.hlsl
+    - match: \b(Filter|AddressU|AddressV|AddressW|MipLODBias|MaxAnisotropy|ComparisonFunc|BorderColor|MinLOD|MaxLOD)\b
+      scope: meta.object-literal.key.fx.samplerstate.hlsl
+    - match: \b(?i:ZERO|ONE|SRC_COLOR|INV_SRC_COLOR|SRC_ALPHA|INV_SRC_ALPHA|DEST_ALPHA|INV_DEST_ALPHA|DEST_COLOR|INV_DEST_COLOR|SRC_ALPHA_SAT|BLEND_FACTOR|INV_BLEND_FACTOR|SRC1_COLOR|INV_SRC1_COLOR|SRC1_ALPHA|INV_SRC1_ALPHA)\b
+      scope: support.constant.property-value.fx.blend.hlsl
+    - match: \b(?i:ADD|SUBTRACT|REV_SUBTRACT|MIN|MAX)\b
+      scope: support.constant.property-value.fx.blendop.hlsl
+    - match: \b(?i:ALL)\b
+      scope: support.constant.property-value.fx.depthwritemask.hlsl
+    - match: \b(?i:NEVER|LESS|EQUAL|LESS_EQUAL|GREATER|NOT_EQUAL|GREATER_EQUAL|ALWAYS)\b
+      scope: support.constant.property-value.fx.comparisonfunc.hlsl
+    - match: \b(?i:KEEP|REPLACE|INCR_SAT|DECR_SAT|INVERT|INCR|DECR)\b
+      scope: support.constant.property-value.fx.stencilop.hlsl
+    - match: \b(?i:WIREFRAME|SOLID)\b
+      scope: support.constant.property-value.fx.fillmode.hlsl
+    - match: \b(?i:NONE|FRONT|BACK)\b
+      scope: support.constant.property-value.fx.cullmode.hlsl
+    - match: \b(?i:MIN_MAG_MIP_POINT|MIN_MAG_POINT_MIP_LINEAR|MIN_POINT_MAG_LINEAR_MIP_POINT|MIN_POINT_MAG_MIP_LINEAR|MIN_LINEAR_MAG_MIP_POINT|MIN_LINEAR_MAG_POINT_MIP_LINEAR|MIN_MAG_LINEAR_MIP_POINT|MIN_MAG_MIP_LINEAR|ANISOTROPIC|COMPARISON_MIN_MAG_MIP_POINT|COMPARISON_MIN_MAG_POINT_MIP_LINEAR|COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT|COMPARISON_MIN_POINT_MAG_MIP_LINEAR|COMPARISON_MIN_LINEAR_MAG_MIP_POINT|COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR|COMPARISON_MIN_MAG_LINEAR_MIP_POINT|COMPARISON_MIN_MAG_MIP_LINEAR|COMPARISON_ANISOTROPIC|TEXT_1BIT)\b
+      scope: support.constant.property-value.fx.filter.hlsl
+    - match: \b(?i:WRAP|MIRROR|CLAMP|BORDER|MIRROR_ONCE)\b
+      scope: support.constant.property-value.fx.textureaddressmode.hlsl
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.hlsl
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.hlsl

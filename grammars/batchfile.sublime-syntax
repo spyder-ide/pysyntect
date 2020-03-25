@@ -1,0 +1,328 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Batch File
+file_extensions:
+  - bat
+  - cmd
+scope: source.batchfile
+contexts:
+  main:
+    - include: commands
+    - include: comments
+    - include: constants
+    - include: controls
+    - include: escaped_characters
+    - include: labels
+    - include: numbers
+    - include: operators
+    - include: parens
+    - include: strings
+    - include: variables
+  command_set:
+    - match: '(?<=^|[\s@])(?i:SET)(?=$|\s)'
+      captures:
+        0: keyword.command.batchfile
+      push:
+        - match: '(?=$\n|[&|><)])'
+          pop: true
+        - include: command_set_inside
+  command_set_group:
+    - match: \(
+      captures:
+        0: punctuation.section.group.begin.batchfile
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.group.end.batchfile
+          pop: true
+        - include: command_set_inside_arithmetic
+  command_set_inside:
+    - include: escaped_characters
+    - include: variables
+    - include: numbers
+    - include: parens
+    - include: command_set_strings
+    - include: strings
+    - match: "([^ ][^=]*)(=)"
+      captures:
+        1: variable.other.readwrite.batchfile
+        2: keyword.operator.assignment.batchfile
+      push:
+        - match: '(?=$\n|[&|><)])'
+          pop: true
+        - include: escaped_characters
+        - include: variables
+        - include: numbers
+        - include: parens
+        - include: strings
+    - match: '\s+/[aA]\s+'
+      push:
+        - meta_scope: meta.expression.set.batchfile
+        - match: '(?=$\n|[&|><)])'
+          pop: true
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.batchfile
+          push:
+            - meta_scope: string.quoted.double.batchfile
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.batchfile
+              pop: true
+            - include: command_set_inside_arithmetic
+            - include: command_set_group
+            - include: variables
+        - include: command_set_inside_arithmetic
+        - include: command_set_group
+    - match: '\s+/[pP]\s+'
+      push:
+        - match: '(?=$\n|[&|><)])'
+          pop: true
+        - include: command_set_strings
+        - match: "([^ ][^=]*)(=)"
+          captures:
+            1: variable.other.readwrite.batchfile
+            2: keyword.operator.assignment.batchfile
+          push:
+            - meta_scope: meta.prompt.set.batchfile
+            - match: '(?=$\n|[&|><)])'
+              pop: true
+            - include: strings
+  command_set_inside_arithmetic:
+    - include: command_set_operators
+    - include: numbers
+    - match: ","
+      scope: punctuation.separator.batchfile
+  command_set_operators:
+    - match: '([^ ]*)(\+\=|\-\=|\*\=|\/\=|%%\=|&\=|\|\=|\^\=|<<\=|>>\=)'
+      captures:
+        1: variable.other.readwrite.batchfile
+        2: keyword.operator.assignment.augmented.batchfile
+    - match: \+|\-|/|\*|%%|\||&|\^|<<|>>|~
+      scope: keyword.operator.arithmetic.batchfile
+    - match: "!"
+      scope: keyword.operator.logical.batchfile
+    - match: "([^ ][^=]*)(=)"
+      captures:
+        1: variable.other.readwrite.batchfile
+        2: keyword.operator.assignment.batchfile
+  command_set_strings:
+    - match: '(")\s*([^ ][^=]*)(=)'
+      captures:
+        1: punctuation.definition.string.begin.batchfile
+        2: variable.other.readwrite.batchfile
+        3: keyword.operator.assignment.batchfile
+      push:
+        - meta_scope: string.quoted.double.batchfile
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.batchfile
+          pop: true
+        - include: variables
+        - include: numbers
+        - include: escaped_characters
+  commands:
+    - match: '(?<=^|[\s@])(?i:adprep|append|arp|assoc|at|atmadm|attrib|auditpol|autochk|autoconv|autofmt|bcdboot|bcdedit|bdehdcfg|bitsadmin|bootcfg|brea|cacls|cd|certreq|certutil|change|chcp|chdir|chglogon|chgport|chgusr|chkdsk|chkntfs|choice|cipher|clip|cls|clscluadmin|cluster|cmd|cmdkey|cmstp|color|comp|compact|convert|copy|cprofile|cscript|csvde|date|dcdiag|dcgpofix|dcpromo|defra|del|dfscmd|dfsdiag|dfsrmig|diantz|dir|dirquota|diskcomp|diskcopy|diskpart|diskperf|diskraid|diskshadow|dispdiag|doin|dnscmd|doskey|driverquery|dsacls|dsadd|dsamain|dsdbutil|dsget|dsmgmt|dsmod|dsmove|dsquery|dsrm|edit|endlocal|eraseesentutl|eventcreate|eventquery|eventtriggers|evntcmd|expand|extract|fc|filescrn|find|findstr|finger|flattemp|fonde|forfiles|format|freedisk|fsutil|ftp|ftype|fveupdate|getmac|gettype|gpfixup|gpresult|gpupdate|graftabl|hashgen|hep|helpctr|hostname|icacls|iisreset|inuse|ipconfig|ipxroute|irftp|ismserv|jetpack|klist|ksetup|ktmutil|ktpass|label|ldifd|ldp|lodctr|logman|logoff|lpq|lpr|macfile|makecab|manage-bde|mapadmin|md|mkdir|mklink|mmc|mode|more|mount|mountvol|move|mqbup|mqsvc|mqtgsvc|msdt|msg|msiexec|msinfo32|mstsc|nbtstat|net computer|net group|net localgroup|net print|net session|net share|net start|net stop|net use|net user|net view|net|netcfg|netdiag|netdom|netsh|netstat|nfsadmin|nfsshare|nfsstat|nlb|nlbmgr|nltest|nslookup|ntackup|ntcmdprompt|ntdsutil|ntfrsutl|openfiles|pagefileconfig|path|pathping|pause|pbadmin|pentnt|perfmon|ping|pnpunatten|pnputil|popd|powercfg|powershell|powershell_ise|print|prncnfg|prndrvr|prnjobs|prnmngr|prnport|prnqctl|prompt|pubprn|pushd|pushprinterconnections|pwlauncher|qappsrv|qprocess|query|quser|qwinsta|rasdial|rcp|rd|rdpsign|regentc|recover|redircmp|redirusr|reg|regini|regsvr32|relog|ren|rename|rendom|repadmin|repair-bde|replace|reset session|rxec|risetup|rmdir|robocopy|route|rpcinfo|rpcping|rsh|runas|rundll32|rwinsta|scp|sc|schtasks|scwcmd|secedit|serverceipoptin|servrmanagercmd|serverweroptin|setspn|setx|sfc|shadow|shift|showmount|shutdown|sort|ssh|start|storrept|subst|sxstrace|ysocmgr|systeminfo|takeown|tapicfg|taskkill|tasklist|tcmsetup|telnet|tftp|time|timeout|title|tlntadmn|tpmvscmgr|tpmvscmgr|tacerpt|tracert|tree|tscon|tsdiscon|tsecimp|tskill|tsprof|type|typeperf|tzutil|uddiconfig|umount|unlodctr|ver|verifier|verif|vol|vssadmin|w32tm|waitfor|wbadmin|wdsutil|wecutil|wevtutil|where|whoami|winnt|winnt32|winpop|winrm|winrs|winsat|wlbs|mic|wscript|xcopy)(?=$|\s)'
+      scope: keyword.command.batchfile
+    - match: '(?i)(?<=^|[\s@])(echo)(?:(?=$|\.|:)|\s+(?:(on|off)(?=\s*$))?)'
+      captures:
+        1: keyword.command.batchfile
+        2: keyword.other.special-method.batchfile
+      push:
+        - match: '(?=$\n|[&|><)])'
+          pop: true
+        - include: escaped_characters
+        - include: variables
+        - include: numbers
+        - include: strings
+    - match: '(?i)(?<=^|[\s@])(setlocal)(?:\s*$|\s+(EnableExtensions|DisableExtensions|EnableDelayedExpansion|DisableDelayedExpansion)(?=\s*$))'
+      captures:
+        1: keyword.command.batchfile
+        2: keyword.other.special-method.batchfile
+    - include: command_set
+  comments:
+    - match: '(?:^|(&))\s*(?=((?::[+=,;: ])))'
+      captures:
+        1: keyword.operator.conditional.batchfile
+      push:
+        - match: \n
+          pop: true
+        - match: "((?::[+=,;: ]))"
+          captures:
+            1: punctuation.definition.comment.batchfile
+          push:
+            - meta_scope: comment.line.colon.batchfile
+            - match: (?=\n)
+              pop: true
+    - match: '(?<=^|[\s@])(?i)(REM)(\.)'
+      captures:
+        1: keyword.command.rem.batchfile
+        2: punctuation.separator.batchfile
+      push:
+        - meta_scope: comment.line.rem.batchfile
+        - match: '(?=$\n|[&|><)])'
+          pop: true
+    - match: '(?<=^|[\s@])(?i:rem)\b'
+      captures:
+        0: keyword.command.rem.batchfile
+      push:
+        - meta_scope: comment.line.rem.batchfile
+        - match: \n
+          pop: true
+        - match: "[><|]"
+          scope: invalid.illegal.unexpected-character.batchfile
+  constants:
+    - match: \b(?i:NUL)\b
+      scope: constant.language.batchfile
+  controls:
+    - match: (?i)(?<=^|\s)(?:call|exit(?=$|\s)|goto(?=$|\s|:))
+      scope: keyword.control.statement.batchfile
+    - match: (?<=^|\s)(?i)(if)\s+(?:(not)\s+)?(exist|defined|errorlevel|cmdextversion)(?=\s)
+      captures:
+        1: keyword.control.conditional.batchfile
+        2: keyword.operator.logical.batchfile
+        3: keyword.other.special-method.batchfile
+    - match: (?<=^|\s)(?i)(?:if|else)(?=$|\s)
+      scope: keyword.control.conditional.batchfile
+    - match: (?<=^|\s)(?i)for(?=\s)
+      scope: keyword.control.repeat.batchfile
+  escaped_characters:
+    - match: '%%|\^\^!|\^(?=.)|\^\n'
+      scope: constant.character.escape.batchfile
+  labels:
+    - match: '(?i)(?:^\s*|(?<=goto)\s*)(:)([^+=,;:\s].*)$'
+      captures:
+        1: punctuation.separator.batchfile
+        2: keyword.other.special-method.batchfile
+  numbers:
+    - match: '(?<=^|\s|=)(0[xX][0-9A-Fa-f]*|[+-]?\d+)(?=$|\s|<|>)'
+      scope: constant.numeric.batchfile
+  operators:
+    - match: '@(?=\S)'
+      scope: keyword.operator.at.batchfile
+    - match: (?<=\s)(?i:EQU|NEQ|LSS|LEQ|GTR|GEQ)(?=\s)|==
+      scope: keyword.operator.comparison.batchfile
+    - match: (?<=\s)(?i)(NOT)(?=\s)
+      scope: keyword.operator.logical.batchfile
+    - match: (?<!\^)&&?|\|\|
+      scope: keyword.operator.conditional.batchfile
+    - match: (?<!\^)\|
+      scope: keyword.operator.pipe.batchfile
+    - match: "<&?|>[&>]?"
+      scope: keyword.operator.redirection.batchfile
+  parens:
+    - match: \(
+      captures:
+        0: punctuation.section.group.begin.batchfile
+      push:
+        - meta_scope: meta.group.batchfile
+        - match: \)
+          captures:
+            0: punctuation.section.group.end.batchfile
+          pop: true
+        - match: ",|;"
+          scope: punctuation.separator.batchfile
+        - include: main
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.batchfile
+      push:
+        - meta_scope: string.quoted.double.batchfile
+        - match: (")|(\n)
+          captures:
+            1: punctuation.definition.string.end.batchfile
+            2: invalid.illegal.newline.batchfile
+          pop: true
+        - match: "%%"
+          scope: constant.character.escape.batchfile
+        - include: variables
+  variable:
+    - match: "%(?=[^%]+%)"
+      captures:
+        0: punctuation.definition.variable.begin.batchfile
+      push:
+        - meta_scope: variable.other.readwrite.batchfile
+        - match: (%)|\n
+          captures:
+            1: punctuation.definition.variable.end.batchfile
+          pop: true
+        - match: ":~"
+          captures:
+            0: punctuation.separator.batchfile
+          push:
+            - meta_scope: meta.variable.substring.batchfile
+            - match: (?=%|\n)
+              pop: true
+            - include: variable_substring
+        - match: ":"
+          captures:
+            0: punctuation.separator.batchfile
+          push:
+            - meta_scope: meta.variable.substitution.batchfile
+            - match: (?=%|\n)
+              pop: true
+            - include: variable_replace
+            - match: "="
+              captures:
+                0: punctuation.separator.batchfile
+              push:
+                - match: (?=%|\n)
+                  pop: true
+                - include: variable_delayed_expansion
+                - match: "[^%]+"
+                  scope: string.unquoted.batchfile
+  variable_delayed_expansion:
+    - match: "!(?=[^!]+!)"
+      captures:
+        0: punctuation.definition.variable.begin.batchfile
+      push:
+        - meta_scope: variable.other.readwrite.batchfile
+        - match: (!)|\n
+          captures:
+            1: punctuation.definition.variable.end.batchfile
+          pop: true
+        - match: ":~"
+          captures:
+            0: punctuation.separator.batchfile
+          push:
+            - meta_scope: meta.variable.substring.batchfile
+            - match: (?=!|\n)
+              pop: true
+            - include: variable_substring
+        - match: ":"
+          captures:
+            0: punctuation.separator.batchfile
+          push:
+            - meta_scope: meta.variable.substitution.batchfile
+            - match: (?=!|\n)
+              pop: true
+            - include: escaped_characters
+            - include: variable_replace
+            - include: variable
+            - match: "="
+              captures:
+                0: punctuation.separator.batchfile
+              push:
+                - match: (?=!|\n)
+                  pop: true
+                - include: variable
+                - match: "[^!]+"
+                  scope: string.unquoted.batchfile
+  variable_replace:
+    - match: '[^=%!\n]+'
+      scope: string.unquoted.batchfile
+  variable_substring:
+    - match: '([+-]?\d+)(?:(,)([+-]?\d+))?'
+      captures:
+        1: constant.numeric.batchfile
+        2: punctuation.separator.batchfile
+        3: constant.numeric.batchfile
+  variables:
+    - match: '(%)((~([fdpnxsatz]|\$PATH:)*)?\d|\*)'
+      captures:
+        1: punctuation.definition.variable.batchfile
+        2: variable.parameter.batchfile
+    - include: variable
+    - include: variable_delayed_expansion

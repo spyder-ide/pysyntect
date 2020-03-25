@@ -1,0 +1,73 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SSH Config
+file_extensions:
+  - sshconfig
+  - sshdconfig
+  - ssh_config
+  - ssh-config
+  - sshd_config
+  - sshd-config
+  - .ssh/config
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		ssh-config
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		sshconfig
+  	(?=\s|:|$)
+scope: source.ssh-config
+contexts:
+  main:
+    - include: comment
+    - include: option
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.ssh-config
+      push:
+        - meta_scope: comment.line.number-sign.ssh-config
+        - match: $
+          pop: true
+  boolean:
+    - match: (?i)(?<=\s|=)(yes|no|true|false|on|off)(?=\s|$)
+      scope: "constant.language.logical.boolean.${1:/downcase}.ssh-config"
+  equals:
+    - match: \G\s*(=)
+      captures:
+  option:
+    - match: '^\s*([^\s=]+)'
+      captures:
+        1: entity.option.name.ssh-config
+      push:
+        - meta_scope: meta.option.ssh-config
+        - meta_content_scope: meta.arguments.ssh-option
+        - match: $
+          pop: true
+        - include: equals
+        - include: string
+        - include: boolean
+        - include: scope:etc#ip
+        - include: scope:etc#int
+        - include: unquoted
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ssh-config
+      push:
+        - meta_scope: string.quoted.double.parameter.ssh-config
+        - match: '"|(?=$)'
+          captures:
+            0: punctuation.definition.string.end.ssh-config
+          pop: true
+  unquoted:
+    - match: (?!")\S+
+      scope: variable.parameter.argument.ssh-config

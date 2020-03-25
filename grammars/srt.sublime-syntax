@@ -1,0 +1,85 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SRT Subtitle
+file_extensions:
+  - srt
+scope: text.srt
+contexts:
+  main:
+    - include: subtitle
+  bold:
+    - match: (?i)<b>
+      push:
+        - meta_scope: markup.bold.srt
+        - match: (?i)</b>
+          pop: true
+        - include: sound
+        - include: person
+        - include: bold
+        - include: italic
+        - include: underline
+        - include: font
+  font:
+    - match: (?i)<font\b.*?>
+      push:
+        - meta_scope: markup.link.font.srt
+        - match: (?i)</font>
+          pop: true
+        - include: sound
+        - include: person
+        - include: bold
+        - include: italic
+        - include: underline
+        - include: font
+  italic:
+    - match: (?i)<i>
+      push:
+        - meta_scope: markup.italic.srt
+        - match: (?i)</i>
+          pop: true
+        - include: sound
+        - include: person
+        - include: bold
+        - include: italic
+        - include: underline
+        - include: font
+  person:
+    - match: '^\w+:'
+      scope: entity.name.tag.srt
+  sound:
+    - match: '\[.*?\]|\(.*?\)'
+      scope: string.quoted.other.sound.srt
+  subtitle:
+    - match: \b\d+$
+      captures:
+        0: entity.name.section.srt
+      push:
+        - meta_scope: meta.subtitle.srt
+        - match: ^\s*$
+          pop: true
+        - include: time
+        - include: sound
+        - include: person
+        - include: bold
+        - include: italic
+        - include: underline
+        - include: font
+  time:
+    - match: '^(\d{2}:\d{2}:\d{2},\d{3})\s*(-->)\s*(\d{2}:\d{2}:\d{2},\d{3})$'
+      captures:
+        1: constant.numeric.time.srt
+        2: punctuation.definition.separator.srt
+        3: constant.numeric.time.srt
+  underline:
+    - match: (?i)<u>
+      push:
+        - meta_scope: markup.underline.srt
+        - match: (?i)</u>
+          pop: true
+        - include: sound
+        - include: person
+        - include: bold
+        - include: italic
+        - include: underline
+        - include: font

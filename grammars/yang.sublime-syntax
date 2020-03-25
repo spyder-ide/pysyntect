@@ -1,0 +1,46 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: YANG
+file_extensions:
+  - yang
+scope: source.yang
+contexts:
+  main:
+    - match: //.+
+      scope: comment.line.source.yang
+    - match: /\*
+      push:
+        - meta_scope: comment.block.source.yang
+        - match: \*/
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.source.yang
+        - match: '"'
+          pop: true
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.source.yang
+        - match: "'"
+          pop: true
+    - match: '((?<=[^\w-]|^))(anyxml|argument|augment|base|belongs-to|bit|case|choice|config|contact|container|default|description|enum|error-app-tag|error-message|extension|deviation|deviate|feature|fraction-digits|grouping|identity|if-feature|import|include|input|key|leaf|leaf-list|length|list|mandatory|max-elements|min-elements|module|must|namespace|ordered-by|organization|output|path|pattern|position|prefix|presence|range|reference|refine|require-instance|revision|revision-date|status|submodule|type|typedef|unique|units|uses|value|when|yang-version|yin-element)((?=[^\w-]|$))'
+      captures:
+        2: keyword.source.yang
+    - match: '((?<=[^\w-]|^))(add|current|delete|deprecated|max|min|not-supported|obsolete|replace|system|unbounded|user)((?=[^\w-]|$))'
+      captures:
+        2: keyword.other.source.yang
+    - match: \bdecimal64|int8|int16|int32|int64|uint8|uint16|uint32|uint64|string|boolean|enumeration|bits|binary|leafref|identityref|empty|instance-identifier\b
+      scope: storage.type.source.yang
+    - match: (\b)(true|false)(\b)
+      captures:
+        2: "constant.language.source.yang}"
+    - match: (\b|\.)(\d+)(\b|\.)
+      captures:
+        1: constant.numeric.source.yang
+        2: constant.numeric.source.yang
+        3: constant.numeric.source.yang
+    - match: '(\brpc|\bnotification)(\s+)([\w_\-\d]+)'
+      captures:
+        1: keyword.source.yang
+        3: entity.name.function.source.yang

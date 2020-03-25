@@ -1,3 +1,5 @@
+use pyo3::create_exception;
+use pyo3::exceptions;
 /// PyO3 imports
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
@@ -8,7 +10,7 @@ use syntect::highlighting::{Style, ThemeSet};
 use syntect::parsing::SyntaxSet;
 use syntect::util::{as_24_bit_terminal_escaped, LinesWithEndings};
 
-
+// Class wrappers around syntect structs
 #[pyclass(name=Color)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ColorWrap {
@@ -75,9 +77,7 @@ impl StyleWrap {
 }
 
 #[pyclass(name=FontStyleConst)]
-pub struct FontStyleWrap {
-
-}
+pub struct FontStyleWrap {}
 
 #[pymethods]
 impl FontStyleWrap {
@@ -86,7 +86,7 @@ impl FontStyleWrap {
     /// Underline font style
     pub const UNDERLINE: i8 = 2;
     /// Italic font style
-    pub const ITALIC: i8= 4;
+    pub const ITALIC: i8 = 4;
 
     #[staticmethod]
     fn bold() -> PyResult<i8> {
@@ -104,11 +104,41 @@ impl FontStyleWrap {
     }
 }
 
+#[pyclass(name=SyntaxSet)]
+#[derive(Debug, Clone)]
+pub struct SyntaxSetHandle {
+    pub syntax_set: SyntaxSet,
+}
 
+#[pymethods]
+impl SyntaxSetHandle {
+    #[getter]
+    fn languages(&self) -> PyResult<Vec<&str>> {
+        let mut languages = Vec::<&str>::new();
+        for syntax in self.syntax_set.syntaxes() {
+            languages.push(&syntax.name);
+        }
+        Ok(languages)
+    }
+
+    fn __len__(&self) -> PyResult<usize> {
+        Ok(self.syntax_set.syntaxes().len())
+    }
+}
+
+// Exception classes
+create_exception!(pysyntect, LoadingError, exceptions::Exception);
+
+// Module methods
 #[pyfunction]
 /// Test function for syntect execution
-fn highlight(text: &'static str, language: &str) -> PyResult<Vec<(StyleWrap, &'static str)>> {
-    let ps = SyntaxSet::load_defaults_newlines();
+fn highlight(
+    text: &'static str,
+    language: &str,
+    syntax_set: SyntaxSetHandle,
+) -> PyResult<Vec<(StyleWrap, &'static str)>> {
+    // let ps = SyntaxSet::load_defaults_newlines();
+    let ps = syntax_set.syntax_set;
     let ts = ThemeSet::load_defaults();
 
     let syntax = ps.find_syntax_by_extension(language).unwrap();
@@ -125,14 +155,14 @@ fn highlight(text: &'static str, language: &str) -> PyResult<Vec<(StyleWrap, &'s
                 r: style.foreground.r,
                 g: style.foreground.g,
                 b: style.foreground.b,
-                a: style.foreground.a
+                a: style.foreground.a,
             };
 
             let py_background = ColorWrap {
                 r: style.background.r,
                 g: style.background.g,
                 b: style.background.b,
-                a: style.background.a
+                a: style.background.a,
             };
 
             let py_style = StyleWrap {
@@ -149,13 +179,27 @@ fn highlight(text: &'static str, language: &str) -> PyResult<Vec<(StyleWrap, &'s
     Ok(python_output)
 }
 
+#[pyfunction]
+fn load_syntax_folder(folder: &'static str) -> PyResult<SyntaxSetHandle> {
+    let syn_set = SyntaxSet::load_from_folder(folder);
+    match syn_set {
+        Ok(result) => {
+            let syntaxes = result.syntaxes();
+            let syn_handle = SyntaxSetHandle { syntax_set: result };
+            Ok(syn_handle)
+        }
+        Err(err) => Err(LoadingError::py_err(err.to_string())),
+    }
+}
 
 /// This module is a python module implemented in Rust.
 #[pymodule]
-fn pysyntect(_py: Python, m: &PyModule) -> PyResult<()> {
+fn syntect(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(highlight))?;
+    m.add_wrapped(wrap_pyfunction!(load_syntax_folder))?;
     m.add_class::<StyleWrap>()?;
     m.add_class::<ColorWrap>()?;
     m.add_class::<FontStyleWrap>()?;
+    m.add_class::<SyntaxSetHandle>()?;
     Ok(())
 }

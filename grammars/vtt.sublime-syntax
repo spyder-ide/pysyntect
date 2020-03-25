@@ -1,0 +1,197 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: WebVTT
+file_extensions:
+  - vtt
+first_line_match: ^WEBVTT(?:\s+(.*))?$
+scope: source.vtt
+contexts:
+  main:
+    - include: file_body
+  _cue_timings_and_settings_list:
+    - match: ^(.+?\s+-->\s+.+?)(?:\s+(.+))?$
+      captures:
+  alignment_cue_setting:
+    - match: '(align)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-alignment-cue-setting
+      scope: meta.alignment-cue-setting.vtt
+      captures:
+        1: support.type.alignment-cue-setting.vtt
+        2: punctuation.definition.colon.vtt
+  comment_block:
+    - match: ^(NOTE)(?:\s(.*))?$
+      comment: https://w3c.github.io/webvtt/#webvtt-comment-block
+      captures:
+        1: entity.name.section.comment.vtt
+        2: comment.line.character.vtt
+      push:
+        - meta_scope: meta.comment-block.vtt
+        - match: ^$
+          pop: true
+        - match: .+
+          scope: comment.line.character.vtt
+  cue_block:
+    - match: ^.+$
+      comment: https://w3c.github.io/webvtt/#webvtt-cue-block
+      push:
+        - meta_scope: meta.cue-block.vtt
+        - match: ^$
+          pop: true
+        - include: _cue_timings_and_settings_list
+        - include: cue_text
+  cue_bold_span: []
+  cue_class_span: []
+  cue_components: []
+  cue_identifier:
+    - match: (?:^|\G)(?!.*-->).*$
+      comment: https://w3c.github.io/webvtt/#webvtt-cue-identifier
+      scope: meta.cue-identifier.vtt
+      captures:
+        0: variable.other.cue-identifier.vtt
+  cue_italics_span: []
+  cue_language_span: []
+  cue_ruby_span: []
+  cue_settings_list: []
+  cue_text: []
+  cue_text_span: []
+  cue_timestamp: []
+  cue_timings:
+    - match: (?:^|\G)(.+?)\s+(-->)\s+(.+?)(?=$)
+      comment: https://w3c.github.io/webvtt/#webvtt-cue-timings
+      scope: meta.cue-timings.vtt
+      captures:
+        2: punctuation.separator.vtt
+  cue_underline_span: []
+  cue_voice_span: []
+  file_body:
+    - match: ^(WEBVTT)(?:\s+(.*))?$
+      comment: https://w3c.github.io/webvtt/#webvtt-file-body
+      captures:
+        1: entity.name.section.webvtt.vtt
+        2: comment.line.character.vtt
+      push:
+        - meta_scope: meta.file-body.vtt
+        - match: ""
+          pop: true
+        - include: region_definition_block
+        - include: style_block
+        - include: comment_block
+        - include: cue_block
+  html_character_reference: []
+  line_cue_setting:
+    - match: '(line)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-line-cue-setting
+      scope: meta.line-cue-setting.vtt
+      captures:
+        1: support.type.line-cue-setting.vtt
+        2: punctuation.definition.colon.vtt
+  percentage:
+    - match: (?:^|\G)\d+(?:\.\d+)?%(?=$)
+      comment: https://w3c.github.io/webvtt/#webvtt-percentage
+      scope: meta.percentage.vtt
+      captures:
+        0: constant.numeric.percentage.vtt
+  position_cue_setting:
+    - match: '(position)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-position-cue-setting
+      scope: meta.position-cue-setting.vtt
+      captures:
+        1: support.type.position-cue-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_anchor_setting:
+    - match: '(regionanchor)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-anchor-setting
+      scope: meta.region-anchor-setting.vtt
+      captures:
+        1: support.type.region-anchor-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_cue_setting:
+    - match: '(region)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-cue-setting
+      scope: meta.region-cue-setting.vtt
+      captures:
+        1: support.type.region-cue-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_definition_block:
+    - match: ^(REGION)\s*
+      comment: https://w3c.github.io/webvtt/#webvtt-region-definition-block
+      captures:
+        1: entity.name.section.region.vtt
+      push:
+        - meta_scope: meta.region-definition-block.vtt
+        - match: ^$
+          pop: true
+        - include: region_settings_list
+  region_identifier_setting:
+    - match: '(id)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-identifier-setting
+      scope: meta.region-identifier-setting.vtt
+      captures:
+        1: support.type.region-identifier-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_lines_setting:
+    - match: '(lines)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-lines-setting
+      scope: meta.region-lines-setting.vtt
+      captures:
+        1: support.type.region-lines-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_scroll_setting:
+    - match: '(scroll)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-scroll-setting
+      scope: meta.region-scroll-setting.vtt
+      captures:
+        1: support.type.region-scroll-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_settings_list: []
+  region_viewport_anchor_setting:
+    - match: '(viewportanchor)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-viewport-anchor-setting
+      scope: meta.region-viewport-anchor-setting.vtt
+      captures:
+        1: support.type.region-viewport-anchor-setting.vtt
+        2: punctuation.definition.colon.vtt
+  region_width_setting:
+    - match: '(width)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-region-width-setting
+      scope: meta.region-width-setting.vtt
+      captures:
+        1: support.type.region-width-setting.vtt
+        2: punctuation.definition.colon.vtt
+  size_cue_setting:
+    - match: '(size)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-size-cue-setting
+      scope: meta.size-cue-setting.vtt
+      captures:
+        1: support.type.size-cue-setting.vtt
+        2: punctuation.definition.colon.vtt
+  style_block:
+    - match: ^(STYLE)\s*
+      comment: https://w3c.github.io/webvtt/#webvtt-style-block
+      captures:
+        1: entity.name.section.style.vtt
+      push:
+        - meta_scope: meta.style-block.vtt
+        - match: ^$
+          pop: true
+        - match: .*-->.*
+          scope: invalid.illegal.vtt
+        - include: scope:source.css
+  timestamp:
+    - match: '(?:^|\G)(?:(\d{2,})(:))?([0-5]\d)(:)([0-5]\d\.\d{3})(?=$)'
+      comment: https://w3c.github.io/webvtt/#webvtt-timestamp
+      scope: meta.timestamp.vtt
+      captures:
+        1: constant.numeric.time.hour.vtt
+        2: punctuation.separator.colon.vtt
+        3: constant.numeric.time.minute.vtt
+        4: punctuation.separator.colon.vtt
+        5: constant.numeric.time.second.vtt
+  vertical_text_cue_setting:
+    - match: '(vertical)(:)([^\s]+)'
+      comment: https://w3c.github.io/webvtt/#webvtt-vertical-text-cue-setting
+      scope: meta.vertical-text-cue-setting.vtt
+      captures:
+        1: support.type.vertical-text-cue-setting.vtt
+        2: punctuation.definition.colon.vtt

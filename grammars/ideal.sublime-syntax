@@ -1,0 +1,162 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.ideal
+contexts:
+  main:
+    - include: comment
+    - include: strings
+    - include: number
+    - include: libfile
+    - include: variables
+    - include: box
+    - include: function-call
+    - include: keywords
+    - include: operators
+    - include: punctuation
+  comment:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.ideal
+        - match: \*/
+          pop: true
+  box:
+    - match: '(\w+)[ \t]*(\{)'
+      captures:
+        0: meta.box.definition.ideal
+        1: entity.function.box.name.ideal
+        2: punctuation.definition.bracket.curly.ideal
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.bracket.curly.ideal
+          pop: true
+        - include: main
+  external:
+    - include: scope:source.pic#tags
+    - match: '^(?=[.''][ \t]*(?:\w|\\))'
+      push:
+        - match: (?<!\\)$|(\\".*)$
+          pop: true
+        - include: scope:text.roff
+  function-call:
+    - match: (\w+)(\()
+      captures:
+        1: entity.function.name.ideal
+        2: punctuation.definition.bracket.round.ideal
+      push:
+        - meta_scope: meta.function-call.ideal
+        - match: (?=\))
+          pop: true
+        - include: main
+  keywords:
+    - match: \b(at|box|conn|construct|to|put|using|opaque(?:\s+exterior)?)\b(?:\s+(?:\w+)\s*(:)\s*?)?
+      scope: keyword.operator.$1.ideal
+      captures:
+        2: punctuation.separator.dictionary.key-value.ideal
+    - match: \b(left|right|spline)\b
+      scope: entity.function.box.name.ideal
+  libfile:
+    - match: '((\.{3})libfile)\b'
+      scope: meta.libfile.include.ideal
+      captures:
+        1: keyword.control.directive.include.ideal
+        2: punctuation.definition.directive.include.ideal
+  number:
+    - match: '(?<![A-Za-z])\d+(?:\.\d+)?'
+      scope: constant.numeric.ideal
+  operators:
+    - match: "="
+      scope: keyword.operator.assignment.ideal
+    - match: "[-+*/~]"
+      scope: keyword.operator.arithmetic.ideal
+  punctuation:
+    - match: \.
+      scope: punctuation.delimiter.full-stop.period.ideal
+    - match: ","
+      scope: punctuation.delimiter.object.comma.ideal
+    - match: ;
+      scope: punctuation.terminator.statement.ideal
+    - match: \)
+      scope: punctuation.definition.bracket.round.ideal
+    - match: '\]'
+      scope: punctuation.definition.bracket.square.ideal
+    - match: '\}'
+      scope: punctuation.definition.bracket.curly.ideal
+    - match: \(
+      captures:
+        0: punctuation.definition.bracket.round.ideal
+      push:
+        - match: \)
+          captures:
+            0: punctuation.definition.bracket.round.ideal
+          pop: true
+        - include: main
+    - match: '\['
+      captures:
+        0: punctuation.definition.bracket.square.ideal
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.bracket.square.ideal
+          pop: true
+        - include: main
+    - match: '\{'
+      captures:
+        0: punctuation.definition.bracket.curly.ideal
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.bracket.curly.ideal
+          pop: true
+        - include: main
+    - match: <
+      captures:
+        0: punctuation.definition.bracket.angle.ideal
+      push:
+        - match: ">"
+          captures:
+            0: punctuation.definition.bracket.angle.ideal
+          pop: true
+  strings:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.ideal
+      push:
+        - meta_scope: string.quoted.single.ideal
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.ideal
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ideal
+      push:
+        - meta_scope: string.quoted.double.ideal
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ideal
+          pop: true
+  tags:
+    - match: '^([.''])[ \t]*(IS)\b\s*(\\["#].*$)?'
+      captures:
+        0: meta.function.begin.ideal.section.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: source.embedded.ideal
+        - match: '^([.''])[ \t]*(IE)\b'
+          captures:
+            0: meta.function.end.ideal.section.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: main
+  variables:
+    - match: \b(var)\b
+      captures:
+        1: storage.type.var.ideal
+      push:
+        - match: (?=;)
+          pop: true
+        - include: punctuation

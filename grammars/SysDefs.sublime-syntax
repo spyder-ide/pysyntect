@@ -1,0 +1,38 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Opal SysDefs
+file_extensions:
+  - SysDefs
+scope: source.opalsysdefs
+contexts:
+  main:
+    - match: (#).*$
+      scope: comment.line.number-sign.opalsysdefs
+      captures:
+        1: punctuation.definition.comment.opalsysdefs
+    - match: '^\s*([A-Z_]+)\s*(\+?=)'
+      captures:
+        1: variable.parameter.opalsysdefs
+        2: punctuation.separator.keyvaluepair.opalsysdefs
+      push:
+        - meta_scope: meta.keyvaluepair.opalsysdefs
+        - match: \n|(?=#)
+          pop: true
+        - include: value
+    - match: .*
+      scope: invalid.illegal.justkidding.noseriously.whoknows.opalsysdefs
+  value:
+    - match: (\$)(\()
+      captures:
+        1: keyword.dollar.opalsysdefs
+        2: punctuation.definition.parameters.begin.opalsysdefs
+      push:
+        - meta_scope: meta.structure.thingy.opalsysdefs
+        - meta_content_scope: string.other.opalsysdefs
+        - match: (\))
+          captures:
+            1: punctuation.definition.parameters.end.opalsysdefs
+          pop: true
+    - match: '([\w\?!\_])*'
+      scope: string.other.opalsysdefs

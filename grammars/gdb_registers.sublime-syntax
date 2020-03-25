@@ -1,0 +1,11 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GDB Registers
+scope: source.gdbregs
+contexts:
+  main:
+    - match: '\b.+:'
+      scope: keyword.gdbregs
+    - match: '\b[-$]*[0-9a-fx]+'
+      scope: constant.other.gdbregs

@@ -1,0 +1,57 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Pep8
+file_extensions:
+  - pep
+scope: source.pep8
+contexts:
+  main:
+    - include: strings
+    - include: comment-single-line
+    - include: variable
+    - include: constant
+    - include: storage
+    - include: keyword
+    - include: entity
+  character:
+    - match: '(''[^\\'']''|''\\.'')'
+      scope: string.character.pep8
+  comment-single-line:
+    - match: ;.*
+      scope: comment.singleline.pep8
+  comments:
+    - include: comment-single-line
+  constant:
+    - match: "-?0(x|X)[0-9A-Fa-f]+"
+      scope: constant.numeric.hex.pep8
+    - match: "-?([0-9]+)"
+      scope: constant.numeric.int.pep8
+  entity:
+    - match: ", *(i|d|x|n|(sx?f?))"
+      scope: entity.other.attribute-name.pep8
+    - match: ( |\t)*
+      scope: entity.whitespaces.pep8
+  keyword:
+    - match: '([cC][aA][lL][lL])|([sS][tT][oO][pP])|([bB][rR]((([lL]|[gG])([tT]|[eE]))|([eE][qQ])|([nN][eE])|[vV]|[cC])?)|([rR][eE][tT]([0-7]|([tT][rR])))\b'
+      scope: keyword.control.pep8
+    - match: '(([aA][dD][dD])|([sS][uU][bB])|([nN][oO][tT])|([nN][eE][gG])|([aA][sS]([lL]|[rR]))|([rR][oO]([lL]|[rR]))|([oO][rR])|([cC][pP]))([aA]|[xX])\b'
+      scope: keyword.operator.pep8
+    - match: '([mM][oO][vV]([sS][pP]|[fF][lL][gG])[aA])|([nN][oO][pP][0-3]?)|((([aA][dD][dD])|([sS][uU][bB]))[sS][pP])|([dD][eE][cC]([iI]|[oO]))|((([lL][dD])|([sS][tT]))([bB][yY][tT][eE])?([aA]|[xX]))|([cC][hH][aA][rR]([iI]|[oO]))|([sS][tT][rR][oO])\b'
+      scope: keyword.misc.pep8
+  simple-string:
+    - match: \"
+      push:
+        - meta_scope: string.quoted.double.pep8
+        - match: \"
+          pop: true
+        - match: '([^\\]|\\.)'
+          scope: string.char.pep8
+  storage:
+    - match: "[.](([bB][uU][rR][nN])|([eE][qQ][uU][aA][tT][eE])|([bB][lL][oO][cC][kK])|([eE][nN][dD])|([bB][yY][tT][eE])|([wW][oO][rR][dD])|([aA][dD][dD][rR][sS][sS])|([aA][sS][cC][iI][iI]))"
+      scope: storage.type.pep8
+  strings:
+    - include: simple-string
+  variable:
+    - match: "[a-z][a-zA-Z0-9_]* *[:]?"
+      scope: variable.other.pep8

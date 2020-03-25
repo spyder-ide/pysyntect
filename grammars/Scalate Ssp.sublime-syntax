@@ -1,0 +1,33 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ssp (Scalate)
+file_extensions:
+  - ssp
+scope: text.html.ssp
+contexts:
+  main:
+    - match: "<%+#"
+      captures:
+        0: punctuation.definition.comment.ssp
+      push:
+        - meta_scope: comment.block.ssp
+        - match: "%>"
+          captures:
+            0: punctuation.definition.comment.ssp
+          pop: true
+    - match: "<%+(?!>)[-=]?"
+      captures:
+        0: punctuation.section.embedded.scala
+      push:
+        - meta_scope: source.scala.embedded.html
+        - match: "-?%>"
+          captures:
+            0: punctuation.section.embedded.scala
+          pop: true
+        - match: (#).*?(?=-?%>)
+          scope: comment.line.number-sign.scala
+          captures:
+            1: punctuation.definition.comment.scala
+        - include: scope:source.scala
+    - include: scope:text.html.basic

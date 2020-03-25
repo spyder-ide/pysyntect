@@ -1,0 +1,67 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: nearley
+file_extensions:
+  - ne
+scope: source.ne
+contexts:
+  main:
+    - match: "@include|@builtin|@lexer"
+      scope: keyword.control.ne
+    - match: '([\w+?]+)(\[.+\])?\s+((-|=)+>)'
+      captures:
+        1: entity.name.type.ne
+        2: variable.parameter.ne
+        3: keyword.operator.ne
+    - match: '\$[\w+?]+'
+      scope: variable.parameter.ne
+    - match: '%[\w+?]+'
+      scope: storage.type.ne
+    - match: "null"
+      scope: constant.language.ne
+    - match: '([\w+?]+\[)'
+      captures:
+        1: entity.name.function
+        2: entity.name.function
+      push:
+        - match: '(\])'
+          captures:
+            1: entity.name.function
+            2: entity.name.function
+          pop: true
+        - include: main
+    - match: '[\w+?]+'
+      scope: entity.name.type.ne
+    - match: (\|)|(:\+)|(:\*)|(:\?)|(\()|(\))
+      scope: keyword.operator.ne
+    - match: "#"
+      push:
+        - meta_scope: comment.line.ne
+        - match: \n
+          pop: true
+    - match: '\['
+      push:
+        - meta_scope: string.regex.ne
+        - match: '\]'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ne
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.ne
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ne
+    - match: "(@?{%)"
+      captures:
+        1: comment.block.ne
+        2: comment.block.ne
+      push:
+        - match: "(%})"
+          captures:
+            1: comment.block.ne
+            2: comment.block.ne
+          pop: true
+        - include: scope:source.js

@@ -1,0 +1,17 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: HTML (Factor)
+file_extensions:
+  - furnace
+  - fhtml
+scope: text.html.factor
+contexts:
+  main:
+    - match: <%\s
+      push:
+        - meta_scope: source.factor.embedded.html
+        - match: (?<=\s)%>
+          pop: true
+        - include: scope:source.factor
+    - include: scope:text.html.basic

@@ -1,0 +1,70 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: source.js.regexp
+contexts:
+  main:
+    - include: regexp
+  regex-character-class:
+    - match: '\\[wWsSdDtrnvf]|\.'
+      scope: constant.character.character-class.regexp
+    - match: '\\([0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4})'
+      scope: constant.character.numeric.regexp
+    - match: '\\c[A-Z]'
+      scope: constant.character.control.regexp
+    - match: \\.
+      scope: constant.character.escape.backslash.regexp
+  regexp:
+    - match: '\\[bB]|\^|\$'
+      scope: keyword.control.anchor.regexp
+    - match: '\\[1-9]\d*|\\k<[a-zA-Z_$][\w$]*>'
+      scope: keyword.other.back-reference.regexp
+    - match: '[?+*]|\{(\d+,\d+|\d+,|,\d+|\d+)\}\??'
+      scope: keyword.operator.quantifier.regexp
+    - match: \|
+      scope: keyword.operator.or.regexp
+    - match: (\()(?:(\?=)|(\?!)|(\?<=)|(\?<!))
+      captures:
+        1: punctuation.definition.group.regexp
+        2: meta.assertion.look-ahead.regexp
+        3: meta.assertion.negative-look-ahead.regexp
+        4: meta.assertion.look-behind.regexp
+        5: meta.assertion.negative-look-behind.regexp
+      push:
+        - meta_scope: meta.group.assertion.regexp
+        - match: (\))
+          captures:
+            1: punctuation.definition.group.regexp
+          pop: true
+        - include: regexp
+    - match: '\(((\?:)|(\?<[a-zA-Z_$][\w$]*>))?'
+      captures:
+        0: punctuation.definition.group.regexp
+      push:
+        - meta_scope: meta.group.regexp
+        - match: \)
+          captures:
+            0: punctuation.definition.group.regexp
+          pop: true
+        - include: regexp
+    - match: '(\[)(\^)?'
+      captures:
+        1: punctuation.definition.character-class.regexp
+        2: keyword.operator.negation.regexp
+      push:
+        - meta_scope: constant.other.character-class.set.regexp
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.character-class.regexp
+          pop: true
+        - match: '(?:.|(\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\c[A-Z])|(\\.))\-(?:[^\]\\]|(\\(?:[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}))|(\\c[A-Z])|(\\.))'
+          scope: constant.other.character-class.range.regexp
+          captures:
+            1: constant.character.numeric.regexp
+            2: constant.character.control.regexp
+            3: constant.character.escape.backslash.regexp
+            4: constant.character.numeric.regexp
+            5: constant.character.control.regexp
+            6: constant.character.escape.backslash.regexp
+        - include: regex-character-class
+    - include: regex-character-class

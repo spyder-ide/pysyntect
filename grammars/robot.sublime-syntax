@@ -1,0 +1,55 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Robot Framework .txt
+comment: Robot Framework syntax highlighting for txt files.
+file_extensions:
+  - txt
+scope: text.robot
+contexts:
+  main:
+    - match: (?i)^\*+\s*(settings?|metadata|(user )?keywords?|test ?cases?|variables?)
+      comment: start of a table
+      push:
+        - meta_scope: string.robot.header
+        - match: $
+          pop: true
+    - match: '(?i)^\s*\[?Documentation\]?'
+      push:
+        - meta_scope: comment
+        - match: ^(?!\s*+\.\.\.)
+          pop: true
+    - match: '(?i)\[(Arguments|Setup|Teardown|Precondition|Postcondition|Template|Return|Timeout)\]'
+      comment: testcase settings
+      scope: storage.type.method.robot
+    - match: '(?i)\[Tags\]'
+      comment: test tags
+      push:
+        - meta_scope: storage.type.method.robot
+        - match: ^(?!\s*+\.\.\.)
+          pop: true
+        - match: ^\s*\.\.\.
+          scope: comment
+    - match: '\b([0-9]*(\.[0-9]+)?)\b'
+      scope: constant.numeric.robot
+    - match: '((?<!\\)|(?<=\\\\))[$@&%]\{'
+      comment: "${variables}. one backslash escapes the variable, two do not"
+      push:
+        - meta_scope: entity.name.class
+        - match: '\}'
+          pop: true
+        - include: main
+        - match: .
+          scope: entity.name.class
+    - match: '(^| {2,}|	|\| {1,})(?<!\\)#'
+      push:
+        - meta_scope: comment.robot
+        - match: $
+          pop: true
+    - match: '(^[^ \t\*\n\|]+)|((?<=^\|)\s+[^ \t\*\n\|]+)'
+      push:
+        - meta_scope: keyword.control.robot
+        - match: '(?=\s{2})|\t|$|\s+(?=\|)'
+          pop: true
+    - match: (?i)^\s*(Given|And|Then|When|But)
+      scope: keyword.control.robot

@@ -1,0 +1,256 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+scope: injections.etc
+contexts:
+  main:
+    - match: (?<!\w)@?(PINHACK)\b
+      scope: "storage.type.class.${1:/downcase}"
+  scopeHack:
+    - match: '\A(?:\xC2\xAD|\xAD){50}'
+      push:
+        - match: (?=A)B
+          pop: true
+        - match: "^ {5}(PRIMER PREVIEW - How grammar scopes look on GitHub):"
+          scope: markup.bold
+          captures:
+            1: constant.other.reference.link
+        - match: '^\s*Last updated:\s*(\d{4}-\d{2}-\d{2})$'
+          scope: comment.line
+        - match: ^│ +(TEXTMATE.*) +│$
+          scope: constant.other.reference.link
+          captures:
+            1: markup.heading
+        - match: ^│ +│$
+          captures:
+            0: constant.other.reference.link
+        - match: ^│\s+(brackethighlighter.angle\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.angle
+        - match: ^│\s+(brackethighlighter.curly\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.curly
+        - match: ^│\s+(brackethighlighter.quote\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.quote
+        - match: ^│\s+(brackethighlighter.round\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.round
+        - match: ^│\s+(brackethighlighter.square\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.square
+        - match: ^│\s+(brackethighlighter.tag\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.tag
+        - match: ^│\s+(brackethighlighter.unmatched\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: brackethighlighter.unmatched
+        - match: ^│\s+(carriage-return\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: carriage-return
+        - match: ^│\s+(comment\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: comment
+        - match: ^│\s+(constant\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: constant
+        - match: ^│\s+(constant.character.escape\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: constant.character.escape
+        - match: ^│\s+(constant.other.reference.link\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: constant.other.reference.link
+        - match: ^│\s+(entity\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: entity
+        - match: ^│\s+(entity.name\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: entity.name
+        - match: ^│\s+(entity.name.constant\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: entity.name.constant
+        - match: ^│\s+(entity.name.tag\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: entity.name.tag
+        - match: ^│\s+(invalid.broken\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: invalid.broken
+        - match: ^│\s+(invalid.deprecated\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: invalid.deprecated
+        - match: ^│\s+(invalid.illegal\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: invalid.illegal
+        - match: ^│\s+(invalid.unimplemented\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: invalid.unimplemented
+        - match: ^│\s+(keyword\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: keyword
+        - match: ^│\s+(keyword.operator.symbole\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: keyword.operator.symbole
+        - match: ^│\s+(keyword.other.mark\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: keyword.other.mark
+        - match: ^│\s+(markup.bold\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.bold
+        - match: ^│\s+(markup.changed\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.changed
+        - match: ^│\s+(markup.deleted\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.deleted
+        - match: ^│\s+(markup.heading\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.heading
+        - match: ^│\s+(markup.ignored\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.ignored
+        - match: ^│\s+(markup.inserted\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.inserted
+        - match: ^│\s+(markup.italic\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.italic
+        - match: ^│\s+(markup.list\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.list
+        - match: ^│\s+(markup.quote\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.quote
+        - match: ^│\s+(markup.raw\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.raw
+        - match: ^│\s+(markup.untracked\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: markup.untracked
+        - match: ^│\s+(message.error\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: message.error
+        - match: ^│\s+(meta.diff.header\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.diff.header
+        - match: ^│\s+(meta.diff.header.from-file\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.diff.header.from-file
+        - match: ^│\s+(meta.diff.header.to-file\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.diff.header.to-file
+        - match: ^│\s+(meta.diff.range\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.diff.range
+        - match: ^│\s+(meta.module-reference\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.module-reference
+        - match: ^│\s+(meta.output\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.output
+        - match: ^│\s+(meta.property-name\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.property-name
+        - match: ^│\s+(meta.separator\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: meta.separator
+        - match: ^│\s+(punctuation.definition.changed\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: punctuation.definition.changed
+        - match: ^│\s+(punctuation.definition.comment\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: punctuation.definition.comment
+        - match: ^│\s+(punctuation.definition.deleted\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: punctuation.definition.deleted
+        - match: ^│\s+(punctuation.definition.inserted\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: punctuation.definition.inserted
+        - match: ^│\s+(punctuation.definition.string\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: punctuation.definition.string
+        - match: ^│\s+(punctuation.section.embedded\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: punctuation.section.embedded
+        - match: ^│\s+(source\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: source
+        - match: ^│\s+(source.regexp\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: source.regexp
+        - match: ^│\s+(source.ruby.embedded\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: source.ruby.embedded
+        - match: ^│\s+(storage\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: storage
+        - match: ^│\s+(storage.modifier.import\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: storage.modifier.import
+        - match: ^│\s+(storage.modifier.package\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: storage.modifier.package
+        - match: ^│\s+(storage.type\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: storage.type
+        - match: ^│\s+(storage.type.java\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: storage.type.java
+        - match: ^│\s+(string\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string
+        - match: ^│\s+(string.comment\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string.comment
+        - match: ^│\s+(string.other.link\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string.other.link
+        - match: ^│\s+(string.regexp\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string.regexp
+        - match: ^│\s+(string.regexp.arbitrary-repitition\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string.regexp.arbitrary-repitition
+        - match: ^│\s+(string.regexp.character-class\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string.regexp.character-class
+        - match: ^│\s+(string.unquoted.import.ada\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: string.unquoted.import.ada
+        - match: ^│\s+(sublimelinter.gutter-mark\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: sublimelinter.gutter-mark
+        - match: ^│\s+(sublimelinter.mark.error\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: sublimelinter.mark.error
+        - match: ^│\s+(sublimelinter.mark.warning\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: sublimelinter.mark.warning
+        - match: ^│\s+(support\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: support
+        - match: ^│\s+(support.constant\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: support.constant
+        - match: ^│\s+(support.variable\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: support.variable
+        - match: ^│\s+(variable\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: variable
+        - match: ^│\s+(variable.language\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: variable.language
+        - match: ^│\s+(variable.other\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: variable.other
+        - match: ^│\s+(variable.other.constant\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: variable.other.constant
+        - match: ^│\s+(variable.parameter.function\s+\S+\s+░▒▓█+)\s+│$
+          captures:
+            1: variable.parameter.function
+        - match: '^│\s+(([a-z][-a-z.]+)\s+\S+\s+░▒▓█+)\s+│$'
+          captures:
+            1: $2
+        - match: ^#.*$
+          scope: comment.line

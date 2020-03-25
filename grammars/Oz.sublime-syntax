@@ -1,0 +1,61 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Oz
+file_extensions:
+  - oz
+scope: source.oz
+contexts:
+  main:
+    - match: (%).*$\n?
+      scope: comment.line.percentage.oz
+    - match: /\*
+      push:
+        - meta_scope: comment.block.documentation.oz
+        - match: \*/
+          pop: true
+    - match: |-
+        (?x)\b(
+            andthen|at|attr|case|catch|class|choice|cond|
+            declare|define|do|dis|else|elsecase|elseif|
+            end|export|feat|finally|for|from|fun|functor|
+            if|in|import|lex|local|lock|meth|mode|not|of|
+            or|orelse|parser|prepare|proc|prod|prop|raise|require|
+            scanner|skip|syn|then|thread|token|try)\b
+        |
+            ^\s*\[\]
+      scope: keyword.control.oz
+    - match: "=|:="
+      scope: keyword.operator.assignement.oz
+    - match: <|=<|==|\\=|>=|>
+      scope: keyword.operator.comparison.oz
+    - match: (\*|\+|\-|/|~)|\b(div|mod)\b
+      scope: keyword.operator.arithmetic.oz
+    - match: \b(\d+)\b
+      scope: constant.numeric.oz
+    - match: \b(nil|true|false)\b
+      scope: constant.language.oz
+    - match: \b\|\b
+      scope: keyword.operator.list.oz
+    - match: |-
+        (?x)
+        \b(fun|proc)\b\s+
+        \{(\w+)
+           ((?:\s\w+)*)
+        \}
+      scope: meta.function.oz
+      captures:
+        1: keyword.control.proc.oz
+        2: entity.name.function.oz
+        3: variable.parameter.function.oz
+    - match: '\[|\]'
+      scope: punctuation.section.array.oz
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.simple.oz
+        - match: "'"
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.oz
+    - match: '(@)[A-Z]\w*'
+      scope: variable.other.readwrite.cell.oz

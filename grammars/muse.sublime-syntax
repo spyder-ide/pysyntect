@@ -1,0 +1,721 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Muse
+file_extensions:
+  - muse
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		muse
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		muse
+  	(?=\s|:|$)
+scope: text.muse
+contexts:
+  main:
+    - include: comment
+    - include: heading
+    - include: pageBreak
+    - include: divider
+    - include: anchorLine
+    - include: term
+    - include: list
+    - include: verse
+    - include: table
+    - include: quote
+    - include: footnote
+    - include: inline
+    - include: alignCentre
+    - include: alignRight
+    - include: alignLeft
+  comment:
+    - match: ^(;)\s
+      captures:
+        1: punctuation.definition.comment.begin.muse
+      push:
+        - meta_scope: comment.line.semicolon.muse
+        - match: (?=$)
+          pop: true
+  alignCentre:
+    - match: '^(\s{6,19})(?=\S)'
+      push:
+        - meta_scope: meta.paragraph.align.center.muse
+        - match: ^(?!\1|\s*$)
+          pop: true
+        - include: anchor
+        - include: inline
+  alignLeft:
+    - match: ^\s?(?=\S)
+      push:
+        - meta_scope: meta.paragraph.align.left.muse
+        - match: '(?=^>\s|^\s*$|^\s{2,}\S|^\s(?:-|(?:\d+|[a-z]+|[A-Z]+)\.\s))'
+          pop: true
+        - include: anchor
+        - include: inline
+  alignRight:
+    - match: '^(\s{20,})(?=\S)'
+      push:
+        - meta_scope: meta.paragraph.align.right.muse
+        - match: ^(?!\1|\s*$)
+          pop: true
+        - include: anchor
+        - include: inline
+  anchor:
+    - match: '(?:\G|^)\s*((#)[a-zA-Z][-a-zA-Z0-9]*)'
+      captures:
+        1: keyword.control.anchor.muse
+        2: punctuation.definition.anchor.muse
+  anchorLine:
+    - match: '^\s*((#)[a-zA-Z][-a-zA-Z0-9]*)\s*$'
+      captures:
+        1: keyword.control.anchor.muse
+        2: punctuation.definition.anchor.muse
+  directives:
+    - match: "^((#)([a-zA-Z]+))"
+      captures:
+        1: variable.assignment.directive.muse
+        2: punctuation.definition.directive.muse
+      push:
+        - meta_scope: meta.directive.$3.muse
+        - meta_content_scope: entity.other.$3.muse
+        - match: (?!\G)(?=^(?:#|\s*$))
+          pop: true
+        - match: '\G(?<=#pubdate|#date)\s+(\d{4}(?:-\d{2}-\d{2})?)(?=\s|$)'
+          captures:
+            1: constant.other.date.muse
+        - include: link
+  divider:
+    - match: '^\s*(-{4,})\s*$'
+      captures:
+        1: constant.character.horizontal.line.muse
+  emphasis:
+    - match: '(?<=\W|^)(\*{3})(?=\S)'
+      captures:
+        1: punctuation.definition.emphasis.begin.muse
+      push:
+        - meta_scope: markup.bold.italic.strong.emphasis.muse
+        - match: '(?<=\S)\1(?!\*+\w)(?=\W|$)|(?=^[ \t]*$)'
+          captures:
+            0: punctuation.definition.emphasis.end.muse
+          pop: true
+        - include: inlineInnards
+    - match: '(?<=\W|^)(\*{2})(?=\S)'
+      captures:
+        1: punctuation.definition.emphasis.begin.muse
+      push:
+        - meta_scope: markup.bold.strong.emphasis.muse
+        - match: '(?<=\S)\1(?!\*+\w)(?=\W|$)|(?=^[ \t]*$)'
+          captures:
+            0: punctuation.definition.emphasis.end.muse
+          pop: true
+        - include: inlineInnards
+    - match: (?<=\W|^)\*(?=\S)
+      captures:
+        0: punctuation.definition.emphasis.begin.muse
+      push:
+        - meta_scope: markup.italic.emphasis.muse
+        - match: '(?<=\S)\*(?!\*+\w)(?=\W|$)|(?=^[ \t]*$)'
+          captures:
+            0: punctuation.definition.emphasis.end.muse
+          pop: true
+        - include: inlineInnards
+  example:
+    - match: "{{{"
+      captures:
+        0: keyword.operator.example.begin.muse
+      push:
+        - meta_scope: meta.example.muse
+        - meta_content_scope: markup.raw.code.muse
+        - match: "}}}"
+          captures:
+            0: keyword.operator.example.end.muse
+          pop: true
+  footnote:
+    - match: '^(\[\d\]|\{\d\})(\s+)(?=\S)'
+      captures:
+        2: punctuation.whitespace.separator.muse
+      push:
+        - meta_scope: meta.footnote.muse
+        - meta_content_scope: markup.list.footnote.muse
+        - match: '^(?!\s{3}\2)(?:\s*$|\s*?(?=\s\S))'
+          pop: true
+        - include: inline
+    - match: '^(\[\d{2}\]|\{\d{2}\})(\s+)(?=\S)'
+      captures:
+        2: punctuation.whitespace.separator.muse
+      push:
+        - meta_scope: meta.footnote.muse
+        - meta_content_scope: markup.list.footnote.muse
+        - match: '^(?!\s{4}\2)(?:\s*$|\s*?(?=\s\S))'
+          pop: true
+        - include: inline
+    - match: '^(\[\d{3}\]|\{\d{3}\})(\s+)(?=\S)'
+      captures:
+        2: punctuation.whitespace.separator.muse
+      push:
+        - meta_scope: meta.footnote.muse
+        - meta_content_scope: markup.list.footnote.muse
+        - match: '^(?!\s{5}\2)(?:\s*$|\s*?(?=\s\S))'
+          pop: true
+        - include: inline
+  footnoteReference:
+    - match: '(\[)(\d+)(\])'
+      scope: entity.footnote.$2.primary.muse
+      captures:
+        1: punctuation.definition.footnote.begin.muse
+        3: punctuation.definition.footnote.end.muse
+    - match: '(\{)(\d+)(\})'
+      scope: entity.footnote.$2.secondary.muse
+      captures:
+        1: punctuation.definition.footnote.begin.muse
+        3: punctuation.definition.footnote.end.muse
+  heading:
+    - match: '^(\*{1,5})( )(.*)'
+      captures:
+        1: keyword.operator.heading.bullet.muse
+        2: punctuation.whitespace.separator.muse
+        3: markup.heading.muse
+  inline:
+    - include: tags
+    - include: example
+    - include: emphasis
+    - include: literal
+    - include: link
+    - include: footnoteReference
+    - include: nbsp
+    - include: underline
+  inlineInnards:
+    - match: '(?:(?=\G|^)|(?<=[\w*]))\*+(?=\w)'
+    - include: inline
+  link:
+    - match: '(\[)(?=\[.*?\]\])'
+      captures:
+        1: punctuation.definition.link.begin.muse
+      push:
+        - meta_scope: meta.link.muse
+        - match: '\]'
+          captures:
+            0: punctuation.definition.link.end.muse
+          pop: true
+        - match: '\G(\[)'
+          captures:
+            1: punctuation.definition.link.target.begin.muse
+          push:
+            - meta_scope: meta.link.target.muse
+            - match: '\]'
+              captures:
+                0: punctuation.definition.link.target.end.muse
+              pop: true
+            - match: '\G\s*([^\s\]]+)'
+              captures:
+                1: constant.other.reference.link.muse
+            - match: '(?<=\s)(?:([\d.]+)([rlf])?|([rlf]))'
+              captures:
+                1: constant.numeric.width.muse
+                2: storage.modifier.align.muse
+                3: storage.modifier.align.muse
+        - match: '(?<=\])(\[)'
+          captures:
+            1: punctuation.definition.link.label.begin.muse
+          push:
+            - meta_scope: meta.link.label.muse
+            - meta_content_scope: entity.name.link.label.muse
+            - match: '\]'
+              captures:
+                0: punctuation.definition.link.label.end.muse
+              pop: true
+            - include: inline
+  list:
+    - match: '^(\s+)(?=-|(?:\d+|[a-z]+|[A-Z]+)\.)'
+      captures:
+        1: punctuation.whitespace.leading.muse
+      push:
+        - meta_scope: markup.list.muse
+        - match: (?=^(?!\1)(?!\s*$))|(?=^\S)
+          pop: true
+        - match: (?<=\S)\s*$\s*
+          push:
+            - match: (?=^\s*$|^(?=\S))
+              pop: true
+            - include: listInnards
+        - include: listInnards
+  listInnards:
+    - include: listMarker
+    - include: term
+    - include: inline
+  listMarker:
+    - match: (?:\G|^\s+)(-)\s
+      captures:
+        1: keyword.operator.list.unnumbered.marker.muse
+    - match: '(?:\G|^\s+)((?:\d+|[a-z]+|[A-Z]+)\.)\s'
+      captures:
+        1: keyword.operator.list.numbered.marker.muse
+  literal:
+    - match: (?<=\W|^)=(?=\S)
+      captures:
+        0: punctuation.definition.literal.begin.muse
+      push:
+        - meta_scope: markup.raw.literal.muse
+        - match: '(?!\G)(?<=\S)=(?=\W|$)|(?=^[ \t]*$)'
+          captures:
+            0: punctuation.definition.literal.end.muse
+          pop: true
+  nbsp:
+    - match: ~~
+      scope: constant.character.non-breaking-space.muse
+  pageBreak:
+    - match: '^(\s{5})((?:\s+\*){5})'
+      captures:
+        1: punctuation.whitespace.separator.muse
+        2: meta.separator.page-break.muse
+  quote:
+    - match: '^(\s{2,5})(?=\S)'
+      push:
+        - meta_scope: markup.quote.paragraph.muse
+        - match: ^(?!\1|\s*$)
+          pop: true
+        - include: anchor
+        - include: inline
+  table:
+    - match: '^(?=\s+(?:\|\+.*?\+\||\S.*?\s\|{1,3}\s+\S))'
+      push:
+        - meta_scope: markup.table.muse
+        - match: (?=\s*$)
+          pop: true
+        - match: ^\s+(\|\+)(.*)(\+\|)
+          scope: markup.table.caption.muse
+          captures:
+            1: keyword.operator.caption.begin.muse
+            2: constant.other.caption.muse
+            3: keyword.operator.caption.end.muse
+        - match: ^\s+(\S.*?\s\|\|\|\s.*)\s*$
+          scope: markup.table.footer.muse
+          captures:
+        - match: ^\s+(\S.*?\s\|\|\s.*)\s*$
+          scope: markup.table.header.muse
+          captures:
+        - match: ^\s+(\S.*?\s\|\s.*)\s*$
+          scope: markup.table.body.muse
+          captures:
+  tags:
+    - match: (<)br(>)
+      scope: meta.tag.br.muse
+      captures:
+        0: entity.name.tag.br.muse
+        1: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+    - match: (<)(center|right)(>)
+      captures:
+        0: entity.name.tag.$2.muse
+        1: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.$2.muse
+        - meta_content_scope: meta.paragraph.align.$2.muse
+        - match: (</)\2(>)
+          captures:
+            0: entity.name.tag.$2.muse
+            1: punctuation.definition.tag.begin.muse
+            3: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: (<)(code|example|verbatim)(>)
+      captures:
+        0: entity.name.tag.$2.muse
+        1: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.$2.muse
+        - meta_content_scope: markup.raw.code.muse
+        - match: (</)\2(>)
+          captures:
+            0: entity.name.tag.$2.muse
+            1: punctuation.definition.tag.begin.muse
+            3: punctuation.definition.tag.end.muse
+          pop: true
+    - match: (<)comment(>)
+      captures:
+        0: entity.name.tag.comments.muse
+        1: punctuation.definition.tag.begin.muse
+        2: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.comment-block.muse
+        - meta_content_scope: comment.block.muse
+        - match: (</)comment(>)
+          captures:
+            0: entity.name.tag.comments.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+    - match: (<)em(>)
+      captures:
+        0: entity.name.tag.em.muse
+        1: punctuation.definition.tag.begin.muse
+        2: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.em.muse
+        - meta_content_scope: markup.italic.emphasis.muse
+        - match: (</)em(>)
+          captures:
+            0: entity.name.tag.em.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: (<)strong(>)
+      captures:
+        0: entity.name.tag.strong.muse
+        1: punctuation.definition.tag.begin.muse
+        2: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.strong.muse
+        - meta_content_scope: markup.bold.strong.emphasis.muse
+        - match: (</)strong(>)
+          captures:
+            0: entity.name.tag.strong.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: (<)del(>)
+      captures:
+        0: entity.name.tag.del.muse
+        1: punctuation.definition.tag.begin.muse
+        2: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.del.muse
+        - meta_content_scope: markup.deleted.muse
+        - match: (</)del(>)
+          captures:
+            0: entity.name.tag.del.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: (<)sup(>)
+      captures:
+        0: entity.name.tag.sup.muse
+        1: punctuation.definition.tag.begin.muse
+        2: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.sup.muse
+        - meta_content_scope: markup.superscript.muse
+        - match: (</)sup(>)
+          captures:
+            0: entity.name.tag.sup.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: (<)sub(>)
+      captures:
+        0: entity.name.tag.sub.muse
+        1: punctuation.definition.tag.begin.muse
+        2: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.sub.muse
+        - meta_content_scope: markup.subscript.muse
+        - match: (</)sub(>)
+          captures:
+            0: entity.name.tag.sub.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: ^\s*((<)verse(>))
+      captures:
+        1: entity.name.tag.verse.muse
+        2: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.verse.muse
+        - meta_content_scope: markup.quote.verse.muse
+        - match: (</)verse(>)
+          captures:
+            0: entity.name.tag.verse.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: ^\s*((<)biblio(>))
+      captures:
+        1: entity.name.tag.biblio.muse
+        2: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.biblio.muse
+        - meta_content_scope: meta.citation.muse
+        - match: (</)biblio(>)
+          captures:
+            0: entity.name.tag.biblio.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: ^\s*((<)play(>))
+      captures:
+        1: entity.name.tag.play.muse
+        2: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.play.muse
+        - meta_content_scope: meta.play.muse
+        - match: (</)play(>)
+          captures:
+            0: entity.name.tag.play.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - match: ^\s*((<)quote(>))
+      captures:
+        1: entity.name.tag.quote.muse
+        2: punctuation.definition.tag.begin.muse
+        3: punctuation.definition.tag.end.muse
+      push:
+        - meta_scope: meta.tag.quote.muse
+        - meta_content_scope: markup.quote.block.muse
+        - match: (</)quote(>)
+          captures:
+            0: entity.name.tag.quote.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: inline
+    - include: unprocessed
+  term:
+    - match: ^\s+(\S.*?)\s+(::)\s+
+      captures:
+        1: entity.name.term.muse
+        2: keyword.operator.key-value.separator.muse
+  underline:
+    - match: '(?<=\W|^)_(?=[^\s_])'
+      captures:
+        0: punctuation.definition.emphasis.begin.muse
+      push:
+        - meta_scope: constant.other.reference.link.muse
+        - match: '(?<=[^\s_])_(?=\W|$)|(?=^[ \t]*$)'
+          captures:
+            0: punctuation.definition.emphasis.end.muse
+          pop: true
+        - include: inline
+  unprocessed:
+    - include: unprocessedLatex
+    - include: unprocessedHTML
+    - include: unprocessedXML
+    - include: unprocessedTexinfo
+    - include: unprocessedDefault
+  unprocessedDefault:
+    - match: '^\s*((<)literal(?:\s+((style)\s*(=)\s*(("|''|\b)([^>\s]+)(\7))))?\s*(>))'
+      captures:
+        0: meta.tag.literal.muse
+        1: entity.name.tag.literal.muse
+        10: punctuation.definition.tag.end.muse
+        2: punctuation.definition.tag.begin.muse
+        3: meta.attribute-with-value.style.muse
+        4: entity.other.attribute-name.style.muse
+        5: punctuation.separator.key-value.muse
+        6: string.quoted.muse
+        7: punctuation.definition.string.begin.muse
+        9: punctuation.definition.string.end.muse
+      push:
+        - meta_scope: meta.unprocessed.$8-output.muse
+        - meta_content_scope: markup.raw.code.muse
+        - match: (</)literal(>)
+          captures:
+            0: entity.name.tag.literal.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+  unprocessedHTML:
+    - match: |-
+        (?x) ^\s* (
+        	(<) literal \s+
+        	(
+        		(style) \s* (=) \s*
+        		(
+        			("|'|\b)
+        			( blosxom-html
+        			| blosxom-xhtml
+        			| journal-html
+        			| html
+        			| xhtml
+        			) (\7)
+        		)
+        	) \s* (>)
+        )
+      captures:
+        0: meta.tag.literal.muse
+        1: entity.name.tag.literal.muse
+        10: punctuation.definition.tag.end.muse
+        2: punctuation.definition.tag.begin.muse
+        3: meta.attribute-with-value.style.muse
+        4: entity.other.attribute-name.style.muse
+        5: punctuation.separator.key-value.muse
+        6: string.quoted.muse
+        7: punctuation.definition.string.begin.muse
+        9: punctuation.definition.string.end.muse
+      push:
+        - meta_scope: meta.unprocessed.$8-output.muse
+        - meta_content_scope: text.embedded.html.basic
+        - match: (</)literal(>)
+          captures:
+            0: entity.name.tag.literal.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: scope:text.html.basic
+  unprocessedLatex:
+    - match: |-
+        (?x) ^\s* (
+        	(<) literal \s+
+        	(
+        		(style) \s* (=) \s*
+        		(
+        			("|'|\b)
+        			( book-latex
+        			| book-pdf
+        			| chapbook-latex
+        			| chapbook-pdf
+        			| context-pdf
+        			| context-slides-pdf
+        			| context-slides
+        			| context
+        			| journal-book-latex
+        			| journal-book-pdf
+        			| journal-latex
+        			| journal-pdf
+        			| journal-xhtml
+        			| latexcjk
+        			| latex
+        			| lecture-notes-pdf
+        			| lecture-notes
+        			| pdfcjk
+        			| pdf
+        			| poem-latex
+        			| poem-pdf
+        			| slides-pdf
+        			| slides
+        			) (\7)
+        		)
+        	) \s* (>)
+        )
+      captures:
+        0: meta.tag.literal.muse
+        1: entity.name.tag.literal.muse
+        10: punctuation.definition.tag.end.muse
+        2: punctuation.definition.tag.begin.muse
+        3: meta.attribute-with-value.style.muse
+        4: entity.other.attribute-name.style.muse
+        5: punctuation.separator.key-value.muse
+        6: string.quoted.muse
+        7: punctuation.definition.string.begin.muse
+        9: punctuation.definition.string.end.muse
+      push:
+        - meta_scope: meta.unprocessed.$8-output.muse
+        - meta_content_scope: text.embedded.latex
+        - match: (</)literal(>)
+          captures:
+            0: entity.name.tag.literal.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: scope:text.tex.latex
+  unprocessedTexinfo:
+    - match: |-
+        (?x) ^\s* (
+        	(<) literal \s+
+        	(
+        		(style) \s* (=) \s*
+        		(
+        			("|'|\b)
+        			( info-pdf
+        			| info
+        			| texi
+        			) (\7)
+        		)
+        	) \s* (>)
+        )
+      captures:
+        0: meta.tag.literal.muse
+        1: entity.name.tag.literal.muse
+        10: punctuation.definition.tag.end.muse
+        2: punctuation.definition.tag.begin.muse
+        3: meta.attribute-with-value.style.muse
+        4: entity.other.attribute-name.style.muse
+        5: punctuation.separator.key-value.muse
+        6: string.quoted.muse
+        7: punctuation.definition.string.begin.muse
+        9: punctuation.definition.string.end.muse
+      push:
+        - meta_scope: meta.unprocessed.$8-output.muse
+        - meta_content_scope: text.embedded.texinfo
+        - match: (</)literal(>)
+          captures:
+            0: entity.name.tag.literal.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: scope:text.texinfo
+  unprocessedXML:
+    - match: |-
+        (?x) ^\s* (
+        	(<) literal \s+
+        	(
+        		(style) \s* (=) \s*
+        		(
+        			("|'|\b)
+        			( docbook
+        			| journal-rdf
+        			| journal-rss-entry
+        			| journal-rss
+        			| xml
+        			) (\7)
+        		)
+        	) \s* (>)
+        )
+      captures:
+        0: meta.tag.literal.muse
+        1: entity.name.tag.literal.muse
+        10: punctuation.definition.tag.end.muse
+        2: punctuation.definition.tag.begin.muse
+        3: meta.attribute-with-value.style.muse
+        4: entity.other.attribute-name.style.muse
+        5: punctuation.separator.key-value.muse
+        6: string.quoted.muse
+        7: punctuation.definition.string.begin.muse
+        9: punctuation.definition.string.end.muse
+      push:
+        - meta_scope: meta.unprocessed.$8-output.muse
+        - meta_content_scope: text.embedded.xml
+        - match: (</)literal(>)
+          captures:
+            0: entity.name.tag.literal.muse
+            1: punctuation.definition.tag.begin.muse
+            2: punctuation.definition.tag.end.muse
+          pop: true
+        - include: scope:text.xml
+  verse:
+    - match: ^(\s*)(>)(\s)
+      captures:
+        1: punctuation.whitespace.leading.muse
+        2: keyword.operator.verse-line.muse
+        3: punctuation.whitespace.separator.muse
+      push:
+        - meta_scope: markup.quote.verse.muse
+        - match: ^(?!\1\2\3)
+          pop: true
+        - match: ^(\s*)(>)(\s)
+          captures:
+            1: punctuation.whitespace.leading.muse
+            2: keyword.operator.verse-line.muse
+            3: punctuation.whitespace.separator.muse
+        - include: inline

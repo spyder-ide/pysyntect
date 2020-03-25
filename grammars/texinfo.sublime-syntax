@@ -1,0 +1,748 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Texinfo
+file_extensions:
+  - texinfo
+  - texi
+  - txi
+first_line_match: |-
+  (?x)
+  	# TeX directive
+  	^\s*\\input\s+texinfo\s*$
+  	|
+  	# Modeline
+  	(?i:
+  		# Emacs
+  		-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  			texinfo
+  		(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  		|
+
+  		# Vim
+  		(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\r\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\r\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  			texinfo
+  		(?=\s|:|$)
+  	)
+scope: text.texinfo
+contexts:
+  main:
+    - include: comments
+    - include: dashes
+    - include: alias
+    - include: menu
+    - include: booleanCommands
+    - include: symbolCommands
+    - include: set
+    - include: definitions
+    - include: quotation
+    - include: boldText
+    - include: italicText
+    - include: verbatim
+    - include: codeBlocks
+    - include: conditionals
+    - include: blockCommands
+    - include: lineCommands
+    - include: ignored
+    - include: rawTex
+    - include: rawHTML
+    - include: rawXML
+    - include: command
+  alias:
+    - match: '((@)alias)\s+([^=\s]+)\s*(=)\s*([^=\s]+)'
+      scope: meta.command.alias.texinfo
+      captures:
+        1: keyword.operator.command.alias.texinfo
+        2: punctuation.definition.function.texinfo
+        3: entity.name.function.alias.texinfo
+        4: punctuation.separator.separator.texinfo
+        5: entity.name.function.source.texinfo
+  blockCommands:
+    - match: |-
+        (?x) ((@)
+        (cartouche|copying|direntry|display|documentdescription|enumerate
+        |float|flushleft|flushright|format|ftable|group|itemize|multitable
+        |raggedright|smalldisplay|smallformat|smallindentedblock|table
+        |titlepage|vtable))
+        (?=\s|$)(.*)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.block.texinfo
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.operator.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+  boldText:
+    - match: "((@)(b|strong))({)"
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: punctuation.section.scope.begin.texinfo
+      push:
+        - meta_scope: meta.command.$3.braced.texinfo
+        - meta_content_scope: markup.bold.texinfo
+        - match: "}"
+          captures:
+            0: punctuation.section.scope.end.texinfo
+          pop: true
+        - include: main
+    - match: |-
+        (?x) ^ ((@)
+        (appendixsection|appendixsec|appendixsubsec|appendixsubsubsec|appendix
+        |chapheading|chapter|heading|majorheading|section|subheading|subsection
+        |subsubheading|subsubsection|top|unnumberedsec|unnumberedsubsec
+        |unnumberedsubsubsec|unnumbered))
+        (?=\s|$)
+      captures:
+        0: markup.bold.texinfo
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - meta_content_scope: markup.heading.string.unquoted.texinfo
+        - match: $
+          pop: true
+        - include: main
+  booleanCommands:
+    - match: ((@)headings)\s+(?:(on)|(off)|(single|double))\b
+      scope: meta.command.headings.texinfo
+      captures:
+        1: keyword.operator.command.headings.texinfo
+        2: punctuation.defining.function.texinfo
+        3: constant.language.boolean.true.texinfo
+        4: constant.language.boolean.false.texinfo
+        5: constant.language.heading-type.$5.texinfo
+    - match: ((@)setchapternewpage)\s+(?:(on)|(off)|(odd))\b
+      scope: meta.command.setchapternewpage.texinfo
+      captures:
+        1: keyword.operator.command.headings.texinfo
+        2: punctuation.defining.function.texinfo
+        3: constant.language.boolean.true.texinfo
+        4: constant.language.boolean.false.texinfo
+        5: constant.language.odd.texinfo
+    - match: ((@)(allowcodebreaks))\s+(true|false)(?=\s|$)
+      scope: meta.command.$3.texinfo
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: constant.language.boolean.$4.texinfo
+    - match: |-
+        (?x) ((@)
+        (codequotebacktick|codequoteundirected|deftypefnnewline
+        |frenchspacing|validatemenus|xrefautomaticsectiontitle))
+        \s+ (?:(on)|(off)) \b
+      scope: meta.command.$3.texinfo
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: constant.language.boolean.true.texinfo
+        5: constant.language.boolean.false.texinfo
+  codeBlocks:
+    - match: ((@)(lisp|smalllisp))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.block.texinfo
+        - meta_content_scope: source.embedded.emacs.lisp
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.operator.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: scope:source.emacs.lisp
+        - include: main
+    - match: ((@)(example|smallexample|verbatim))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.block.texinfo
+        - meta_content_scope: markup.raw.texinfo
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.operator.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+  comma:
+    - match: ","
+      scope: punctuation.separator.delimiter.comma.texinfo
+  command:
+    - match: '((@)(\w+))({)'
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: punctuation.section.scope.begin.texinfo
+      push:
+        - meta_scope: meta.command.braced.texinfo
+        - match: "}"
+          captures:
+            0: punctuation.section.scope.end.texinfo
+          pop: true
+        - include: param
+        - include: comma
+        - include: main
+    - match: (@)(\w+)
+      scope: keyword.operator.command.$2.texinfo
+      captures:
+        1: punctuation.definition.function.texinfo
+  comments:
+    - match: "((@)c(?:omment)?)(?=$|[^-A-Za-z0-9])"
+      captures:
+        1: keyword.operator.command.start-comment.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: comment.line.at-sign.texinfo
+        - match: $
+          pop: true
+    - match: \x7F
+      captures:
+        0: punctuation.whitespace.delete.texinfo
+      push:
+        - meta_scope: comment.line.tex-style.texinfo
+        - match: $
+          pop: true
+  conditionals:
+    - match: ((@)(ifclear|ifcommanddefined|ifcommandnotdefined|ifset))\s+(\S+)
+      captures:
+        1: keyword.control.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: variable.parameter.texinfo
+      push:
+        - meta_scope: meta.command.$3.conditional.block.texinfo
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.control.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+    - match: |-
+        (?x) ((@)
+        (ifdocbook|ifhtml|ifinfo|ifnotdocbook|ifnothtml|ifnotinfo|ifnotplaintext
+        |ifnottex|ifnotxml|ifplaintext|iftex|ifxml))
+        (?=\s|$)
+      captures:
+        1: keyword.control.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: variable.parameter.texinfo
+      push:
+        - meta_scope: meta.command.$3.conditional.block.texinfo
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.control.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+  dashes:
+    - match: "---"
+      scope: constant.character.dash.em-dash.texinfo
+    - match: "--"
+      scope: constant.character.dash.en-dash.texinfo
+  definitions:
+    - match: ((@)(defcodeindex|defindex|defopt|defoptx|defvar|defvarx))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: '\G\s*(?:({)[^}]*(})|\S+)'
+          scope: entity.name.var.texinfo
+          captures:
+            1: punctuation.definition.begin.texinfo
+            2: punctuation.definition.end.texinfo
+        - include: main
+    - match: ((@)(defcvx|defcv|defopx|defop))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.other.inherited-class.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+            7: entity.name.var.texinfo
+            8: punctuation.definition.begin.texinfo
+            9: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deffnx|deffn|deftpx|deftp|defvrx|defvr))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.name.var.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(definfoenclose))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: '\G\s*(({)[^}]*(})|[^\s,]+)'
+          captures:
+            1: entity.name.var.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+        - match: '[^\s,@]+'
+          scope: string.unquoted.texinfo
+        - include: comma
+    - match: ((@)(defivarx|defivar|defmethodx|defmethod))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: entity.other.inherited-class.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.name.var.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(defmacx|defmac|defunx|defun|defspecx|defspec))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: '\G\s*(?:({)[^}]*(})|\S+)'
+          scope: entity.name.function.texinfo
+          captures:
+            1: punctuation.definition.begin.texinfo
+            2: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deftypecvx|deftypecv|deftypevrx|deftypevr))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.category.texinfo
+            10: entity.name.var.texinfo
+            11: punctuation.definition.begin.texinfo
+            12: punctuation.definition.end.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.other.inherited-class.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+            7: storage.type.var.data-type.texinfo
+            8: punctuation.definition.begin.texinfo
+            9: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deftypefnx|deftypefn))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.category.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: storage.type.var.data-type.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+            7: entity.name.var.texinfo
+            8: punctuation.definition.begin.texinfo
+            9: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deftypefunx|deftypefun))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.data-type.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.name.var.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deftypemethodx|deftypemethod|deftypeivarx|deftypeivar))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: entity.other.inherited-class.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: storage.type.var.data-type.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+            7: entity.name.var.texinfo
+            8: punctuation.definition.begin.texinfo
+            9: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deftypeopx|deftypeop))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.category.texinfo
+            10: entity.name.var.texinfo
+            11: punctuation.definition.begin.texinfo
+            12: punctuation.definition.end.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.other.inherited-class.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+            7: storage.type.var.data-type.texinfo
+            8: punctuation.definition.begin.texinfo
+            9: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+    - match: ((@)(deftypevarx|deftypevar))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - match: $
+          pop: true
+        - match: |-
+            (?x)
+            \G \s* (({)[^}]*(})|\S+)
+            (?: \s+ (({)[^}]*(})|\S+))?
+          captures:
+            1: storage.type.var.data-type.texinfo
+            2: punctuation.definition.begin.texinfo
+            3: punctuation.definition.end.texinfo
+            4: entity.name.var.texinfo
+            5: punctuation.definition.begin.texinfo
+            6: punctuation.definition.end.texinfo
+        - include: param
+        - include: main
+  ignored:
+    - match: ((@)ignore)(?=\s|$)
+      captures:
+        1: keyword.operator.command.ignore.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.ignore.block.texinfo
+        - meta_content_scope: comment.block.ignored.texinfo
+        - match: ((@)end\s+ignore)\b
+          captures:
+            1: keyword.operator.command.end-ignore.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+    - match: ^((@)bye)(?=\s|$)
+      captures:
+        1: keyword.operator.command.bye.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.bye.block.texinfo
+        - meta_content_scope: comment.block.ignored.texinfo
+        - match: (?=A)B
+          pop: true
+        - include: main
+  italicText:
+    - match: "((@)(i|emph|sc|slanted))({)"
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+        4: punctuation.section.scope.begin.texinfo
+      push:
+        - meta_scope: meta.command.$3.braced.texinfo
+        - meta_content_scope: markup.italic.texinfo
+        - match: "}"
+          captures:
+            0: punctuation.section.scope.end.texinfo
+          pop: true
+        - include: main
+  lineCommands:
+    - match: |-
+        (?x) ^ ((@)
+        (author|centerchap|center|cindex|clear|defcodeindex|defcvx|defcv|deffnx
+        |deffn|defindex|definfoenclose|defivarx|defivar|defmacx|defmac|defmethodx
+        |defmethod|defoptx|defopt|defopx|defop|defspecx|defspec|deftpx|deftp
+        |deftypecvx|deftypecv|deftypefnx|deftypefn|deftypefunx|deftypefun
+        |deftypeivarx|deftypeivar|deftypemethodx|deftypemethod|deftypeopx
+        |deftypeop|deftypevarx|deftypevar|deftypevrx|deftypevr|defunx|defun
+        |defvarx|defvar|defvrx|defvr|dircategory|documentencoding|documentlanguage
+        |enumerate|evenfooting|even|everyfooting|everyexampleindent|exdent|findex
+        |firstparagraphindent|fonttextsize|footnotestyle|ftable|include|itemize
+        |kbdinputstyle|kindex|macro|multitable|need|node|oddfooting|oddpagesizes
+        |paragraphindent|part|pindex|printindex|setfilename|settitle|set
+        |shorttitlepage|sortas|sp|strong|subtitle|sub|sup|syncodeindex|synindex
+        |table|tindex|title|unmacro|urefbreakstyle|verbatiminclude|vindex|vskip|vtable))
+        (?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.line.texinfo
+        - meta_content_scope: markup.raw.texinfo
+        - match: $
+          pop: true
+        - match: \G(?<=@macro)\s*(\S+)
+          scope: entity.name.function.macro.texinfo
+        - match: '\G(?:\s*[-+]?[0-9]+(?:\.[0-9]+)?,?)+(?=\s*$)'
+          captures:
+        - match: (@)\|
+          scope: keyword.operator.command.separator.texinfo
+          captures:
+            1: punctuation.definition.function.texinfo
+        - include: param
+        - include: comma
+        - include: main
+  menu:
+    - match: ((@)(detailmenu|direntry|menu))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.block.texinfo
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.operator.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - match: ^\*\s
+          captures:
+            0: punctuation.definition.list.menu.texinfo
+          push:
+            - meta_scope: markup.list.texinfo
+            - match: ^(?=\S)
+              pop: true
+            - match: \G
+              push:
+                - meta_content_scope: entity.name.tag.entry-name.texinfo
+                - match: '::?|(?=\s*$)'
+                  captures:
+                    0: punctuation.separator.key-value.menu.texinfo
+                  pop: true
+                - include: main
+            - match: '(?<=[^:]:)\s*'
+              push:
+                - meta_content_scope: entity.name.node-name.texinfo
+                - match: (\.)|(?=\s*$)
+                  captures:
+                    1: punctuation.terminator.full-stop.period.texinfo
+                  pop: true
+                - include: main
+            - match: (?<=::|\.)
+              push:
+                - meta_scope: string.unquoted.description.texinfo
+                - match: ^(?=\S)
+                  pop: true
+                - include: main
+        - match: '^(?=[^\s*])(?!@end\s)'
+          push:
+            - meta_scope: constant.other.menu-comment.texinfo
+            - match: $|(?=\s*@end\s)
+              pop: true
+            - include: main
+        - include: main
+  param:
+    - match: '[^\s{}@,]+|(?<=\s)({)[^\s{}@,]+(})'
+      scope: variable.parameter.texinfo
+      captures:
+        1: punctuation.definition.begin.texinfo
+        2: punctuation.definition.end.texinfo
+  quotation:
+    - match: ((@)(quotation|smallquotation))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.$3.block.texinfo
+        - meta_content_scope: markup.quote.texinfo
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.operator.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+  rawHTML:
+    - match: ((@)html)(?=\s|$)
+      captures:
+        1: keyword.operator.command.html.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.raw-html.block.texinfo
+        - meta_content_scope: source.embedded.html
+        - match: ((@)end\s+html)\b
+          captures:
+            1: keyword.operator.command.end-html.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+        - include: scope:text.html.basic
+  rawTex:
+    - match: ((@)tex)(?=\s|$)
+      captures:
+        1: keyword.operator.command.tex.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.raw-tex.block.texinfo
+        - meta_content_scope: source.embedded.tex
+        - match: ((@)end\s+tex)\b
+          captures:
+            1: keyword.operator.command.end-tex.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+        - include: scope:text.tex.latex
+  rawXML:
+    - match: ((@)(docbook|xml))(?=\s|$)
+      captures:
+        1: keyword.operator.command.$3.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - meta_scope: meta.command.raw-$3.block.texinfo
+        - meta_content_scope: source.embedded.xml
+        - match: ((@)end\s+\3)\b
+          captures:
+            1: keyword.operator.command.end-$3.texinfo
+            2: punctuation.definition.function.texinfo
+          pop: true
+        - include: main
+        - include: scope:text.xml
+  set:
+    - match: ((@)set)(?=\s|$)
+      captures:
+        1: keyword.operator.command.set.texinfo
+        2: punctuation.definition.function.texinfo
+      push:
+        - match: $
+          pop: true
+        - match: \G\s*(\S+)
+          captures:
+            1: entity.name.var.texinfo
+        - include: param
+        - include: main
+  symbolCommands:
+    - match: '(@)[-!"''&*./:=?@\\^`{}~]'
+      scope: keyword.operator.command.non-alphabetic.texinfo
+      captures:
+        1: punctuation.definition.function.texinfo
+    - match: (@)(?:( |\t)|$)
+      scope: keyword.operator.command.whitespace.texinfo
+      captures:
+        1: punctuation.definition.function.texinfo
+    - match: "((@),)({)"
+      captures:
+        1: keyword.operator.command.cedilla-accent.texinfo
+        2: punctuation.definition.function.texinfo
+        3: punctuation.section.scope.begin.texinfo
+      push:
+        - meta_scope: meta.command.braced.texinfo
+        - match: "}"
+          captures:
+            0: punctuation.section.scope.end.texinfo
+          pop: true
+        - match: '[^\s{}@,]+'
+          scope: constant.character.texinfo
+        - include: comma
+        - include: main
+  verbatim:
+    - match: "((@)verb)({)([^}])"
+      captures:
+        1: keyword.operator.command.verb.texinfo
+        2: punctuation.definition.function.texinfo
+        3: punctuation.section.scope.begin.texinfo
+        4: punctuation.arbitrary.delimiter.begin.texinfo
+      push:
+        - meta_scope: meta.command.braced.verb.texinfo
+        - meta_content_scope: string.quoted.other.verbatim.texinfo
+        - match: '(\4)(})'
+          captures:
+            0: punctuation.section.scope.end.texinfo
+            1: punctuation.arbitrary.delimiter.end.texinfo
+          pop: true

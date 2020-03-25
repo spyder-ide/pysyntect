@@ -1,0 +1,351 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: PureScript
+file_extensions:
+  - purs
+scope: source.purescript
+contexts:
+  main:
+    - match: '(`)(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(`)'
+      scope: keyword.operator.function.infix.purescript
+      captures:
+        1: punctuation.definition.entity.purescript
+        2: punctuation.definition.entity.purescript
+    - match: \b(module)(?!')\b
+      captures:
+        1: keyword.other.purescript
+      push:
+        - meta_scope: meta.declaration.module.purescript
+        - match: (where)
+          captures:
+            1: keyword.other.purescript
+          pop: true
+        - include: comments
+        - include: module_name
+        - include: module_exports
+        - match: "[a-z]+"
+          scope: invalid.purescript
+    - match: \b(class)(?!')\b
+      captures:
+        1: storage.type.class.purescript
+      push:
+        - meta_scope: meta.declaration.typeclass.purescript
+        - match: \b(where)\b|$
+          captures:
+            1: keyword.other.purescript
+          pop: true
+        - include: type_signature
+    - match: \b(else\s+)?(instance)(?!')\b
+      captures:
+        1: keyword.other.purescript
+        2: keyword.other.purescript
+      push:
+        - meta_scope: meta.declaration.instance.purescript
+        - meta_content_scope: meta.type-signature.purescript
+        - match: \b(where)\b|$
+          captures:
+            1: keyword.other.purescript
+          pop: true
+        - include: type_signature
+    - match: '^(\s*)(foreign)\s+(import)\s+(data)\s+([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)'
+      captures:
+        2: keyword.other.purescript
+        3: keyword.other.purescript
+        4: keyword.other.purescript
+        5: entity.name.type.purescript
+        6: keyword.other.double-colon.purescript
+      push:
+        - meta_scope: meta.foreign.data.purescript
+        - meta_content_scope: meta.kind-signature.purescript
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: double_colon
+        - include: kind_signature
+    - match: '^(\s*)(foreign)\s+(import)\s+([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)'
+      captures:
+        2: keyword.other.purescript
+        3: keyword.other.purescript
+        4: entity.name.function.purescript
+      push:
+        - meta_scope: meta.foreign.purescript
+        - meta_content_scope: meta.type-signature.purescript
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: double_colon
+        - include: type_signature
+    - match: \b(import)(?!')\b
+      captures:
+        1: keyword.other.purescript
+      push:
+        - meta_scope: meta.import.purescript
+        - match: ($|(?=--))
+          pop: true
+        - include: module_name
+        - include: module_exports
+        - match: \b(as|hiding)\b
+          captures:
+            1: keyword.other.purescript
+    - match: ^(\s)*(data|newtype)\s+(.+?)\s*(?=\=|$)
+      captures:
+        2: storage.type.data.purescript
+        3: meta.type-signature.purescript
+      push:
+        - meta_scope: meta.declaration.type.data.purescript
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: comments
+        - match: "="
+          captures:
+            0: keyword.operator.assignment.purescript
+        - match: '(?:(?:\b([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)\s+)(?:(?<ctorArgs>(?:(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*|(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|(?:(?:[\w()''→⇒\[\],]|->|=>)+\s*)+))(?:\s*(?:\s+)\s*\g<ctorArgs>)?)?))'
+          captures:
+            2: meta.type-signature.purescript
+        - match: \|
+          captures:
+            0: punctuation.separator.pipe.purescript
+        - include: record_types
+    - match: ^(\s)*(type)\s+(.+?)\s*(?=\=|$)
+      captures:
+        2: storage.type.data.purescript
+        3: meta.type-signature.purescript
+      push:
+        - meta_scope: meta.declaration.type.type.purescript
+        - meta_content_scope: meta.type-signature.purescript
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - match: "="
+          captures:
+            0: keyword.operator.assignment.purescript
+        - include: type_signature
+        - include: record_types
+        - include: comments
+    - match: '\b(derive|where|data|type|newtype|infix[lr]?|foreign)(?!'')\b'
+      scope: keyword.other.purescript
+    - match: '\?(?:[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*|[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)'
+      scope: entity.name.function.typed-hole.purescript
+    - match: \b(data|type|newtype)(?!')\b
+      scope: storage.type.purescript
+    - match: \b(do|ado|if|then|else|case|of|let|in)(?!')\b
+      scope: keyword.control.purescript
+    - match: '\b(([0-9]+_?)*[0-9]+\.[0-9]+([eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+)\b'
+      scope: constant.numeric.float.purescript
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.purescript
+    - match: '\b(([0-9]+_?)*[0-9]+|0([xX][0-9a-fA-F]+|[oO][0-7]+))\b'
+      scope: constant.numeric.purescript
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.purescript
+      push:
+        - meta_scope: string.quoted.triple.purescript
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.purescript
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.purescript
+      push:
+        - meta_scope: string.quoted.double.purescript
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.purescript
+          pop: true
+        - include: characters
+        - match: \\\s
+          captures:
+            0: markup.other.escape.newline.begin.purescript
+          push:
+            - match: \\
+              captures:
+                0: markup.other.escape.newline.end.purescript
+              pop: true
+            - match: \S+
+              scope: invalid.illegal.character-not-allowed-here.purescript
+    - match: \\$
+      scope: markup.other.escape.newline.purescript
+    - match: '('')((?:[ -\[\]-~]|(\\(?:NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\"''\&]))|(\\o[0-7]+)|(\\x[0-9A-Fa-f]+)|(\^[A-Z@\[\]\\\^_])))('')'
+      scope: string.quoted.single.purescript
+      captures:
+        1: punctuation.definition.string.begin.purescript
+        7: punctuation.definition.string.end.purescript
+    - include: function_type_declaration
+    - match: '\((?<paren>(?:[^()]|\(\g<paren>\))*)(::|∷)(?<paren2>(?:[^()]|\(\g<paren2>\))*)\)'
+      captures:
+        2: keyword.other.double-colon.purescript
+        3: meta.type-signature.purescript
+    - match: ^(\s*)(?:(::|∷))
+      captures:
+        2: keyword.other.double-colon.purescript
+      push:
+        - match: '^(?!\1[ \t]*|[ \t]*$)'
+          pop: true
+        - include: type_signature
+    - include: data_ctor
+    - include: comments
+    - include: infix_op
+    - match: \<-|-\>
+      scope: keyword.other.arrow.purescript
+    - match: '[\p{S}\p{P}&&[^(),;\[\]`{}_"'']]+'
+      scope: keyword.operator.purescript
+    - match: ","
+      scope: punctuation.separator.comma.purescript
+  block_comment:
+    - match: '\{-\s*\|'
+      captures:
+        0: punctuation.definition.comment.documentation.purescript
+      push:
+        - meta_scope: comment.block.documentation.purescript
+        - include: block_comment
+        - match: '-\}'
+          captures:
+            0: punctuation.definition.comment.documentation.purescript
+          pop: true
+    - match: '\{-'
+      captures:
+        0: punctuation.definition.comment.purescript
+      push:
+        - meta_scope: comment.block.purescript
+        - include: block_comment
+        - match: '-\}'
+          pop: true
+  characters:
+    - match: '(?:[ -\[\]-~]|(\\(?:NUL|SOH|STX|ETX|EOT|ENQ|ACK|BEL|BS|HT|LF|VT|FF|CR|SO|SI|DLE|DC1|DC2|DC3|DC4|NAK|SYN|ETB|CAN|EM|SUB|ESC|FS|GS|RS|US|SP|DEL|[abfnrtv\\\"''\&]))|(\\o[0-7]+)|(\\x[0-9A-Fa-f]+)|(\^[A-Z@\[\]\\\^_]))'
+      captures:
+        1: constant.character.escape.purescript
+        2: constant.character.escape.octal.purescript
+        3: constant.character.escape.hexadecimal.purescript
+        4: constant.character.escape.control.purescript
+  class_constraint:
+    - match: '(?:(?:([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)\s+)(?:(?<classConstraint>(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*|(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)(?:\s*(?:\s+)\s*\g<classConstraint>)?)))'
+      scope: meta.class-constraint.purescript
+      captures:
+  comments:
+    - match: '(^[ \t]+)?(?=--+\s+\|)'
+      captures:
+        1: punctuation.whitespace.comment.leading.purescript
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: (--+)\s+(\|)
+          captures:
+            1: punctuation.definition.comment.purescript
+            2: punctuation.definition.comment.documentation.purescript
+          push:
+            - meta_scope: comment.line.double-dash.documentation.purescript
+            - match: \n
+              pop: true
+    - match: '(^[ \t]+)?(?=--+(?![\p{S}\p{P}&&[^(),;\[\]`{}_"'']]))'
+      captures:
+        1: punctuation.whitespace.comment.leading.purescript
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "--"
+          captures:
+            0: punctuation.definition.comment.purescript
+          push:
+            - meta_scope: comment.line.double-dash.purescript
+            - match: \n
+              pop: true
+    - include: block_comment
+  data_ctor:
+    - match: '\b[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*'
+      scope: entity.name.tag.purescript
+  double_colon:
+    - match: (?:::|∷)
+      scope: keyword.other.double-colon.purescript
+  function_type_declaration:
+    - match: '^(\s*)([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)\s*(?:(::|∷)(?!.*<-))'
+      captures:
+        2: entity.name.function.purescript
+        3: keyword.other.double-colon.purescript
+      push:
+        - meta_scope: meta.function.type-declaration.purescript
+        - meta_content_scope: meta.type-signature.purescript
+        - match: '^(?!\1[ \t]|[ \t]*$)'
+          pop: true
+        - include: double_colon
+        - include: type_signature
+  generic_type:
+    - match: '\b(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*'
+      scope: variable.other.generic-type.purescript
+  infix_op:
+    - match: '(?:\((?!--+\))[\p{S}\p{P}&&[^(),;\[\]`{}_"'']]+\))'
+      scope: entity.name.function.infix.purescript
+  kind_signature:
+    - match: \*
+      scope: keyword.other.star.purescript
+    - match: "!"
+      scope: keyword.other.exclaimation-point.purescript
+    - match: "#"
+      scope: keyword.other.pound-sign.purescript
+    - match: "->|→"
+      scope: keyword.other.arrow.purescript
+  module_exports:
+    - match: \(
+      push:
+        - meta_scope: meta.declaration.exports.purescript
+        - match: \)
+          pop: true
+        - include: comments
+        - match: '\b(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*'
+          scope: entity.name.function.purescript
+        - include: type_name
+        - match: ","
+          scope: punctuation.separator.comma.purescript
+        - include: infix_op
+        - match: \(.*?\)
+          scope: meta.other.constructor-list.purescript
+  module_name:
+    - match: '(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)*[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.?'
+      scope: support.other.module.purescript
+  record_field_declaration:
+    - match: '([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)\s*(::|∷)'
+      captures:
+        2: keyword.other.double-colon.purescript
+      push:
+        - meta_scope: meta.record-field.type-declaration.purescript
+        - meta_content_scope: meta.type-signature.purescript
+        - match: '(?=([\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)\s*(::|∷)|})'
+          pop: true
+        - include: type_signature
+        - include: record_types
+  record_types:
+    - match: '\{'
+      captures:
+        0: keyword.operator.type.record.begin.purescript
+      push:
+        - meta_scope: meta.type.record.purescript
+        - match: '\}'
+          captures:
+            0: keyword.operator.type.record.end.purescript
+          pop: true
+        - match: ","
+          scope: punctuation.separator.comma.purescript
+        - include: record_field_declaration
+        - include: comments
+  type_name:
+    - match: '\b[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*'
+      scope: entity.name.type.purescript
+  type_signature:
+    - match: '(?:(?:\()(?:(?<classConstraints>(?:(?:(?:([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)\s+)(?:(?<classConstraint>(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*|(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)(?:\s*(?:\s+)\s*\g<classConstraint>)?))))(?:\s*(?:,)\s*\g<classConstraints>)?))(?:\))(?:\s*(=>|<=|⇐|⇒)))'
+      scope: meta.class-constraints.purescript
+      captures:
+        4: keyword.other.big-arrow.purescript
+    - match: '((?:(?:([\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*)\s+)(?:(?<classConstraint>(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*|(?:[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*(?:\.[\p{Lu}\p{Lt}][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)*\.)?[\p{Ll}_][\p{Ll}_\p{Lu}\p{Lt}\p{Nd}'']*)(?:\s*(?:\s+)\s*\g<classConstraint>)?))))\s*(=>|<=|⇐|⇒)'
+      scope: meta.class-constraints.purescript
+      captures:
+        4: keyword.other.big-arrow.purescript
+    - match: "->|→"
+      scope: keyword.other.arrow.purescript
+    - match: "=>|⇒"
+      scope: keyword.other.big-arrow.purescript
+    - match: <=|⇐
+      scope: keyword.other.big-arrow-left.purescript
+    - match: forall|∀
+      scope: keyword.other.forall.purescript
+    - include: generic_type
+    - include: type_name
+    - include: comments

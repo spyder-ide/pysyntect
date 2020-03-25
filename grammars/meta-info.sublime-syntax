@@ -1,0 +1,78 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: META.info
+file_extensions:
+  - META.info
+  - META6.json
+scope: source.meta-info
+contexts:
+  main:
+    - include: value
+  array:
+    - match: '\['
+      captures:
+        0: punctuation.definition.array.begin.json
+      push:
+        - meta_scope: meta.structure.array.json
+        - match: '\]'
+          captures:
+            0: punctuation.definition.array.end.json
+          pop: true
+        - include: value
+        - match: ","
+          scope: punctuation.separator.array.json
+        - match: '[^\s\]]'
+          scope: invalid.illegal.expected-array-separator.json
+  constant:
+    - match: \b(?:true|false|null)\b
+      scope: constant.language.json
+  fields:
+    - match: '(?x) "(?: perl|name|version|description|author(?:s)?|provides|depends|emulates| supersedes|superseded-by|excludes|build-depends|test-depends|resource| support|email|mailinglist|bugtracker|source|source-url|source-type| irc|phone|production|license|tags|auth )"'
+      scope: entity.name.function.field.meta-info
+  number:
+    - match: '-?(?=[1-9]|0(?!\d))\d+(\.\d+)?([eE][+-]?\d+)?'
+      comment: handles integer and decimal numbers
+      scope: constant.numeric.json
+  object:
+    - match: '\{'
+      comment: a JSON object
+      captures:
+        0: punctuation.definition.dictionary.begin.json
+      push:
+        - meta_scope: meta.structure.dictionary.json
+        - match: '\}'
+          captures:
+            0: punctuation.definition.dictionary.end.json
+          pop: true
+        - include: fields
+        - include: string
+        - match: ":"
+          captures:
+            0: punctuation.separator.dictionary.key-value.json
+          push:
+            - meta_scope: meta.structure.dictionary.value.json
+            - match: '(,)|(?=\})'
+              captures:
+                1: punctuation.separator.dictionary.pair.json
+              pop: true
+            - include: value
+            - match: '[^\s,]'
+              scope: invalid.illegal.expected-dictionary-separator.json
+        - match: '[^\s\}]'
+          scope: invalid.illegal.expected-dictionary-separator.json
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.json
+      push:
+        - meta_scope: string.quoted.double.json
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.json
+          pop: true
+        - match: '(?x)\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})'
+          scope: constant.character.escape.json
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.json
+  value: []

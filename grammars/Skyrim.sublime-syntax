@@ -1,0 +1,599 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Papyrus - Skyrim
+file_extensions:
+  - psc
+scope: source.papyrus.skyrim
+contexts:
+  main:
+    - match: ^\s*$
+      comment: Empty line
+      scope: meta.emptyline.papyrus
+    - include: commentDocumentation
+    - include: commentBlock
+    - include: commentLine
+    - include: scriptHeader
+    - include: import
+    - include: state
+    - include: endState
+    - include: event
+    - include: endEvent
+    - include: return
+    - include: if
+    - include: elseif
+    - include: else
+    - include: endIf
+    - include: while
+    - include: endWhile
+    - include: property
+    - include: endProperty
+    - include: function
+    - include: endFunction
+    - include: variable
+    - include: assign
+    - include: expression
+    - include: whitespace
+    - include: unmatched
+  addExpression:
+    - match: (\+|\-)
+      comment: Addition or subtraction
+      scope: keyword.operator.papyrus
+    - include: multExpression
+  andExpression:
+    - match: \&\&
+      comment: AND
+      scope: keyword.operator.papyrus
+    - include: boolExpression
+  arrayAtom:
+    - match: '\['
+      comment: Array
+      push:
+        - meta_scope: meta.array.papyrus
+        - match: '\]'
+          pop: true
+        - include: expression
+    - include: atom
+  arrayFuncOrId:
+    - include: funcOrId
+    - match: '\['
+      comment: Array element access
+      push:
+        - meta_scope: meta.arrayelement.papyrus
+        - match: '\]'
+          pop: true
+        - include: expression
+  assign:
+    - match: ^\s*
+      comment: Assign statement
+      push:
+        - meta_scope: meta.assign.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: assignmentOperators
+        - include: expression
+        - include: endOfLine
+  assignmentOperators:
+    - match: (\=|\+\=|\-\=|\*\=|\/\=|\%\=)
+      comment: Assignment operators
+      scope: keyword.operator.papyrus
+  atom:
+    - match: '(?i)\b(new)\s+([_a-z][0-9_a-z]*)\['
+      comment: New array
+      captures:
+        1: keyword.operator.papyrus
+        2: storage.type.papyrus
+      push:
+        - meta_scope: meta.newarray.papyrus
+        - match: '\]'
+          pop: true
+        - include: integer
+    - match: \(
+      comment: Parenthesis
+      push:
+        - meta_scope: meta.parenthesis.papyrus
+        - match: '(\)|[\n\r])'
+          pop: true
+        - include: expression
+    - include: funcOrId
+  baseTypes:
+    - match: (?i)\b(bool|float|int|string)\b
+      comment: Type
+      scope: storage.type.papyrus
+  bool:
+    - match: (?i)\b(true|false|none)\b
+      comment: Boolean literal
+      scope: constant.language.boolean.papyrus
+  boolExpression:
+    - match: (\=\=|\!\=|\<\=|\>\=|\<|\>)
+      comment: Comparison operators
+      scope: keyword.operator.papyrus
+    - include: addExpression
+  brackets:
+    - match: '\[\]'
+      comment: Brackets
+      scope: meta.array.papyrus
+  castAtom:
+    - match: '(?i)\b(as)\s+([_a-z][0-9_a-z]*)\b'
+      comment: Cast
+      scope: meta.cast.papyrus
+      captures:
+        1: keyword.operator.papyrus
+        2: storage.type.papyrus
+    - include: dotAtom
+  comma:
+    - match: \,
+      comment: Comma
+      scope: meta.comma.papyrus
+  commentBlock:
+    - match: ;/
+      comment: Comment block
+      push:
+        - meta_scope: comment.block.papyrus
+        - match: /;
+          pop: true
+  commentDocumentation:
+    - match: '^\s*\{'
+      comment: Documentation comment
+      push:
+        - meta_scope: comment.documentation.papyrus
+        - match: '\}'
+          pop: true
+  commentLine:
+    - match: ;.*$
+      comment: Single line comment
+      scope: comment.line.papyrus
+  comments:
+    - include: commentBlock
+    - include: commentLine
+    - include: commentDocumentation
+  constants:
+    - include: bool
+    - include: float
+    - include: integer
+    - include: string
+  dotAtom:
+    - match: \.
+      comment: Dot
+      scope: keyword.operator.papyrus
+    - include: constants
+    - include: arrayAtom
+    - include: arrayFuncOrId
+  else:
+    - match: (?i)^\s*(else)\b
+      comment: Else statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.else.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  elseif:
+    - match: (?i)^\s*(elseif)\b
+      comment: ElseIf statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.elseif.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: expression
+        - include: endOfLine
+  endEvent:
+    - match: (?i)^\s*(endevent)\b
+      comment: EndEvent statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.endevent.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  endFunction:
+    - match: (?i)^\s*(endfunction)\b
+      comment: EndFunction statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.endfunction.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  endIf:
+    - match: (?i)^\s*(endif)\b
+      comment: EndIf statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.endif.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  endOfLine:
+    - include: commentBlock
+    - include: commentLine
+    - include: whitespace
+    - include: multiline
+    - include: unmatched
+  endProperty:
+    - match: (?i)^\s*(endproperty)\b
+      comment: EndProperty statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.endproperty.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  endState:
+    - match: (?i)^\s*(endstate)\b
+      comment: EndState statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.endstate.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  endWhile:
+    - match: (?i)^\s*(endwhile)\b
+      comment: EndWhile statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.endwhile.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  event:
+    - match: (?i)^\s*(event)\s+
+      comment: Event declaration
+      captures:
+        1: keyword.control.eventstart.papyrus
+        2: entity.name.function.papyrus
+      push:
+        - meta_scope: meta.event.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: eventParameters
+        - include: eventFlags
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: illegalBaseTypes
+        - include: functionIdentifier
+        - include: endOfLine
+  eventFlags:
+    - match: (?i)(?<=\))\s*(native)\b
+      comment: Event flags
+      scope: keyword.other.papyrus
+  eventParameter:
+    - include: eventParameterIdentifier
+    - include: typeIdentifier
+    - include: brackets
+  eventParameterIdentifier:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\s*(?=(\,|\)))'
+      comment: Event parameter identifier
+      scope: variable.parameter.papyrus
+  eventParameters:
+    - match: \(
+      comment: Event parameters
+      push:
+        - meta_scope: meta.eventparameters.papyrus
+        - match: \)
+          pop: true
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: eventParameter
+        - include: comma
+        - include: multiline
+        - include: whitespace
+        - include: unmatched
+  expression:
+    - match: \|\|
+      comment: OR
+      scope: keyword.operator.papyrus
+    - include: andExpression
+    - include: endOfLine
+  float:
+    - include: unaryMinus
+    - match: \b(\d+\.\d+)\b
+      comment: Float literal
+      scope: constant.numeric.float.papyrus
+  funcOrId:
+    - match: (?i)\b(length)\b
+      comment: Length
+      scope: keyword.other.papyrus
+    - include: functionCall
+    - include: illegalKeywords
+    - include: illegalBaseTypes
+    - include: specialVariables
+    - include: identifier
+  function:
+    - match: '(?i)^\s*(?:([_a-z][0-9_a-z]*)(?:\[\])?\s+)?(function)\s+'
+      comment: Function declaration
+      captures:
+        1: storage.type.papyrus
+        2: keyword.control.functionstart.papyrus
+        3: entity.name.function.papyrus
+      push:
+        - meta_scope: meta.function.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: functionParameters
+        - include: functionFlags
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: illegalBaseTypes
+        - include: functionIdentifier
+        - include: endOfLine
+  functionCall:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\('
+      comment: Function call
+      captures:
+        1: variable.other.papyrus
+      push:
+        - meta_scope: meta.functioncall.papyrus
+        - match: \)
+          pop: true
+        - include: functionCallParameters
+  functionCallParameter:
+    - match: '(?i)\b(?:([_a-z][0-9_a-z]*)\s*(\=)(?!\=))?'
+      comment: Specific parameter
+      scope: meta.functioncallparameter.papyrus
+      captures:
+        1: variable.parameter.papyrus
+        2: keyword.operator.papyrus
+    - include: expression
+  functionCallParameters:
+    - include: comma
+    - include: functionCallParameter
+  functionFlags:
+    - match: (?i)\b(native|global)\b
+      comment: Function flags
+      scope: keyword.other.papyrus
+  functionIdentifier:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\s*(?=\()'
+      comment: Function/event identifier
+      scope: entity.name.function.papyrus
+  functionParameter:
+    - include: functionParameterIdentifier
+    - include: typeIdentifier
+    - include: brackets
+  functionParameterIdentifier:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\s*(?=(\,|\)|\=))'
+      comment: Event parameter identifier
+      scope: variable.parameter.papyrus
+  functionParameters:
+    - match: \(
+      comment: Function parameters
+      push:
+        - meta_scope: meta.functionparameters.papyrus
+        - match: \)
+          pop: true
+        - match: (\=)
+          comment: Assignment operator
+          scope: keyword.operator.assignment.papyrus
+        - include: constants
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: functionParameter
+        - include: comma
+        - include: multiline
+        - include: whitespace
+        - include: unmatched
+  identifier:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\b'
+      comment: Identifier
+      scope: variable.other.papyrus
+  if:
+    - match: (?i)^\s*(if)\b
+      comment: If statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.if.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: expression
+        - include: endOfLine
+  illegalBaseTypes:
+    - match: (?i)\b(bool|float|int|string)\b
+      comment: Type
+      scope: meta.invalid.papyrus
+  illegalKeywords:
+    - match: (?i)\b(as|auto|autoreadonly|else|elseif|endevent|endfunction|endif|endproperty|endstate|endwhile|event|extends|false|function|global|if|import|length|native|new|none|property|return|scriptname|state|true|while)\b
+      comment: Keywords
+      scope: meta.invalid.papyrus
+  illegalSpecialVariables:
+    - match: (?i)\b(parent|self)\b
+      comment: Special variables
+      scope: meta.invalid.papyrus
+  import:
+    - match: (?i)^\s*(import)\s+
+      comment: Import statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.import.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: illegalBaseTypes
+        - include: typeIdentifier
+        - include: endOfLine
+  integer:
+    - include: unaryMinus
+    - match: '(?i)\b(0x[0-9a-f]+|\d+)\b'
+      comment: Integer literal
+      scope: constant.numeric.integer.papyrus
+  keywords:
+    - match: (?i)\b(as|auto|autoreadonly|else|elseif|endevent|endfunction|endif|endproperty|endstate|endwhile|event|extends|false|function|global|if|import|length|native|new|none|property|return|scriptname|state|true|while)\b
+      comment: Keywords
+      scope: keyword.other.papyrus
+  multExpression:
+    - match: (\*|/|\%)
+      comment: Multiplication, division, or modulus
+      scope: keyword.operator.papyrus
+    - include: unaryExpression
+  multiline:
+    - match: \\
+      comment: Multiline
+      captures:
+        0: keyword.operator.papyrus
+      push:
+        - meta_scope: meta.multiline.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: commentBlock
+        - include: commentLine
+        - include: whitespace
+        - include: unmatched
+  parameterIdentifier:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\b'
+      comment: Parameter identifier
+      scope: variable.parameter.papyrus
+  property:
+    - match: '(?i)^\s*([_a-z][0-9_a-z]*)(?:\[\])?\s+(property)\s+'
+      comment: Property declaration
+      captures:
+        1: storage.type.papyrus
+        2: keyword.other.papyrus
+      push:
+        - meta_scope: meta.property.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - match: (\=)
+          comment: Assignment operator
+          scope: keyword.operator.assignment.papyrus
+        - include: constants
+        - include: propertyFlags
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: illegalBaseTypes
+        - include: identifier
+        - include: endOfLine
+  propertyFlags:
+    - match: (?i)\b(auto|autoreadonly|conditional|hidden)\b
+      comment: Property flags
+      scope: keyword.other.papyrus
+  return:
+    - match: (?i)^\s*(return)\b
+      comment: Return statements
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.return.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: expression
+        - include: endOfLine
+  scriptHeader:
+    - match: (?i)^\s*(scriptname)\s+
+      comment: Scriptheader
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.scriptheader.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - match: (?i)\b(extends)\b
+          comment: Script parent declaration
+          scope: keyword.other.papyrus
+        - match: (?i)\b(hidden|conditional)\b
+          comment: Script flags
+          scope: keyword.other.papyrus
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: illegalBaseTypes
+        - include: typeIdentifier
+        - include: endOfLine
+  specialVariables:
+    - match: (?i)\b(parent|self)\b
+      comment: Special variables
+      scope: keyword.other.papyrus
+  state:
+    - match: (?i)^\s*(?:(auto)\s+)?(state)\s+
+      comment: State declaration
+      captures:
+        1: keyword.other.papyrus
+        2: keyword.other.papyrus
+      push:
+        - meta_scope: meta.state.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: illegalKeywords
+        - include: illegalSpecialVariables
+        - include: illegalBaseTypes
+        - include: identifier
+        - include: endOfLine
+  string:
+    - match: \"
+      comment: String literal
+      push:
+        - meta_scope: string.quoted.double
+        - match: \"
+          pop: true
+        - match: (\\.)
+          comment: Escape sequences
+          scope: constant.character.escape.papyrus
+  typeIdentifier:
+    - match: '(?i)\b([_a-z][0-9_a-z]*)\b'
+      comment: Type identifier
+      scope: storage.type.papyrus
+  unaryExpression:
+    - match: (\-|\!)
+      comment: Unary minus or NOT
+      scope: keyword.operator.papyrus
+    - include: castAtom
+  unaryMinus:
+    - match: \-(?=\d)
+      comment: Unary minus
+      scope: keyword.operator.papyrus
+  unmatched:
+    - match: '([^\n\r])'
+      comment: Unmatched
+      scope: meta.invalid.papyrus
+  variable:
+    - match: '(?i)^\s*([_a-z][0-9_a-z]*)(?:\[\])?\s+([_a-z][0-9_a-z]*)(?:\s*(\=)\s*)'
+      comment: Variable declaration with a default value
+      captures:
+        1: storage.type.papyrus
+        2: variable.other.papyrus
+        3: keyword.operator.papyrus
+      push:
+        - meta_scope: meta.variable.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: constants
+        - match: (?i)(?:\b(conditional)\b)
+          scope: keyword.other.papyrus
+        - include: expression
+        - include: endOfLine
+    - match: '(?i)^\s*([_a-z][0-9_a-z]*)(?:\[\])?\s+([_a-z][0-9_a-z]*)(?:\s+(conditional)\b)?'
+      comment: Scriptwide variable declaration without a default value
+      captures:
+        1: storage.type.papyrus
+        2: variable.other.papyrus
+        3: keyword.other.papyrus
+      push:
+        - meta_scope: meta.variable.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: endOfLine
+  while:
+    - match: (?i)^\s*(while)\b
+      comment: While statement
+      captures:
+        1: keyword.other.papyrus
+      push:
+        - meta_scope: meta.while.papyrus
+        - match: '([\n\r])'
+          pop: true
+        - include: expression
+        - include: endOfLine
+  whitespace:
+    - match: '([ \t])'
+      comment: Whitespace
+      scope: meta.whitespace.papyrus

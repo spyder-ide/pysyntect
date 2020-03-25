@@ -1,0 +1,51 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: desktop
+file_extensions:
+  - desktop
+scope: source.desktop
+contexts:
+  main:
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.desktop
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.defdesktoption.comment.desktop
+          push:
+            - meta_scope: comment.line.number-sign.desktop
+            - match: \n
+              pop: true
+    - match: '\b([a-zA-Z0-9_.-]+)\b\s*(=)'
+      captures:
+        1: keyword.other.defdesktoption.desktop
+        2: punctuation.separator.key-value.desktop
+    - match: '^(\[)(.*?)(\])'
+      scope: entity.name.section.group-title.desktop
+      captures:
+        1: punctuation.defdesktoption.entity.desktop
+        3: punctuation.defdesktoption.entity.desktop
+    - match: "'"
+      captures:
+        0: punctuation.defdesktoption.string.begin.desktop
+      push:
+        - meta_scope: string.quoted.single.desktop
+        - match: "'"
+          captures:
+            0: punctuation.defdesktoption.string.end.desktop
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.desktop
+    - match: '"'
+      captures:
+        0: punctuation.defdesktoption.string.begin.desktop
+      push:
+        - meta_scope: string.quoted.double.desktop
+        - match: '"'
+          captures:
+            0: punctuation.defdesktoption.string.end.desktop
+          pop: true

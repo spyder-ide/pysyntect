@@ -1,0 +1,45 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Java Properties
+file_extensions:
+  - properties
+scope: source.java-properties
+contexts:
+  main:
+    - match: ^\s*$
+      comment: Ignore blank lines
+    - include: comment-line
+    - include: property-name
+    - include: property-definition
+  comment-line:
+    - match: '^(\s*)([#!])(.+)?$\n?'
+      scope: comment.line.java-properties
+      captures:
+        1: punctuation.whitespace.comment.leading.java-properties
+        2: punctuation.definition.comment.java-properties
+  property-definition:
+    - match: '^(\s*)((?:\\[ \t]|\\:|\\=|[^:=\s])+)(?:\s*([:=]))?\s*'
+      captures:
+        1: punctuation.whitespace.leading.java-properties
+        2: support.constant.java-properties
+        3: punctuation.separator.key-value.java-properties
+      push:
+        - meta_scope: meta.key-value.java-properties
+        - meta_content_scope: string.unquoted.java-properties
+        - match: '(?<!\\{1})$\n'
+          pop: true
+        - match: ^\s*
+          comment: Leading space on a continued line is ignored
+          scope: punctuation.whitespace.leading.java-properties
+        - match: '(\\{1})(?=$\n)'
+          scope: punctuation.separator.continuation.java-properties
+        - match: '\\(?:[\\ntfr\"'']|u[0-9A-Fa-f]{4})'
+          scope: constant.character.escape.java-properties
+  property-name:
+    - match: '^(\s*)((?:\\[ \t]|\\:|\\=|[^:=\s])+)(?:\s*([:=]))?\s*$\n'
+      comment: A property name with no value
+      scope: meta.key-value.java-properties
+      captures:
+        1: punctuation.whitespace.comment.leading.java-properties
+        2: support.constant.java-properties

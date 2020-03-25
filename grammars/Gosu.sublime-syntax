@@ -1,0 +1,88 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Gosu
+file_extensions:
+  - gs
+  - gsp
+  - gsx
+  - gst
+  - proto
+scope: source.gosu.2
+contexts:
+  main:
+    - match: \b(List|Map)\b
+      scope: support.class.gosu.2
+    - match: \b(where|find|each)\b
+      scope: support.function.gosu.2
+    - match: '\b(abstract|assert|break|case|catch|class|continue|do|else|enum|extends|final|finally|for|if|implements|uses|typeis|interface|new|package|private|protected|public|return|static|super|switch|throw|try|void|while|enhancement|protocol|function|block|as|represents|delegate|readonly|property|get|set|using|var|print|construct|in|override|and|or|not|params|typeloader|classpath|index|typeof|@[a-zA-Z]+)\b'
+      scope: keyword.control.gosu.2
+    - match: \b(Boolean|String|Double|Long|Integer)\b
+      scope: storage.type.gosu.2
+    - match: \b(null|true|false|this)\b
+      scope: constant.language.gosu.2
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?\b'
+      scope: constant.numeric.gosu.2
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.gosu.2
+      push:
+        - meta_scope: string.quoted.double.gosu.2
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.gosu.2
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.gosu.2
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.gosu.2
+      push:
+        - meta_scope: string.quoted.single.gosu.2
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.gosu.2
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.gosu.2
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.gosu.2
+      push:
+        - meta_scope: comment.block.gosu.2
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.gosu.2
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.gosu.2
+      captures:
+        1: punctuation.definition.comment.gosu.2
+    - match: \b(instanceof)\b
+      scope: keyword.operator.gosu.2
+    - match: "[-!%&*+=/?:]"
+      scope: keyword.operator.symbolic.gosu.2
+    - match: '^[ \t]*(#)[a-zA-Z]+'
+      scope: meta.preprocessor.gosu.2
+      captures:
+        1: punctuation.definition.preprocessor.gosu.2
+    - match: '\b(function)\s+([a-zA-Z_]\w*)\s*(\()'
+      captures:
+        1: storage.type.function.gosu.2
+        2: entity.name.function.gosu.2
+        3: punctuation.definition.parameters.begin.gosu.2
+      push:
+        - meta_scope: meta.function.gosu.2
+        - match: \)
+          captures:
+            0: punctuation.definition.parameters.end.gosu.2
+          pop: true
+        - match: '[^,)\n]+'
+          scope: variable.parameter.function.gosu.2
+    - match: '\b(class)\s+([a-zA-Z_](?:\w|\.)*)(?:\s+(extends)\s+([a-zA-Z_](?:\w|\.)*))?'
+      scope: meta.class.gosu.2
+      captures:
+        1: storage.type.class.gosu.2
+        2: entity.name.type.class.gosu.2
+        3: storage.modifier.extends.gosu.2
+        4: entity.other.inherited-class.gosu.2

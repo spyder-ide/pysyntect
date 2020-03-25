@@ -1,0 +1,453 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CFML (do not use)
+scope: text.cfml.basic
+contexts:
+  main:
+    - match: '(?:^\s+)?(<)((?i:cfscript))(?![^>]*/>)'
+      captures:
+        0: meta.tag.block.cf.script.cfml
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.script.cfml
+        3: punctuation.definition.tag.end.cfml
+      push:
+        - match: (</)((?i:cfscript))(>)(?:\s*\n)?
+          captures:
+            0: meta.tag.block.cf.script.cfml
+            1: punctuation.definition.tag.begin.cfml
+            2: entity.name.tag.cf.script.cfml
+            3: punctuation.definition.tag.end.cfml
+          pop: true
+        - match: (>)
+          captures:
+            0: meta.tag.block.cf.script.cfml
+            1: punctuation.definition.tag.end.cfml
+          push:
+            - meta_content_scope: source.cfscript.embedded.cfml
+            - match: (?=</(?i:cfscript))
+              pop: true
+            - include: scope:source.cfscript
+    - match: (</?)((?i:cffunction))\b
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.function.cfml
+      push:
+        - meta_scope: meta.tag.block.cf.function.cfml
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: func-name-attribute
+        - include: tag-stuff
+    - match: (<)(?i:(cfset|cfreturn))\b
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.inline.declaration.cfml
+      push:
+        - meta_scope: meta.tag.inline.cf.any.cfml
+        - meta_content_scope: source.cfscript.embedded.cfml
+        - match: ((?:\s?/)?>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: cfcomments
+        - include: scope:source.cfscript
+    - match: |-
+        (?x)
+        	(<)
+        		(?i:
+        			(cf(queryparam|location|forward|import|param|break|abort|flush
+        				|setting|test|dump|content|include|catch|continue
+        				|file|log|object|invoke|throw|property|htmlhead
+        				|header|argument|exit|trace)
+        			)
+        			\b
+        		)
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.inline.other.cfml
+      push:
+        - meta_scope: meta.tag.inline.cf.any.cfml
+        - match: ((?:\s?/)?>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: tag-stuff
+    - match: '(?:^\s+)?(<)((?i:cfquery))\b(?![^>]*/>)'
+      captures:
+        0: meta.tag.block.cf.query.cfml
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.query.cfml
+        3: punctuation.definition.tag.end.cfml
+      push:
+        - match: (</)((?i:cfquery))(>)(?:\s*\n)?
+          captures:
+            0: meta.tag.block.cf.query.cfml
+            1: punctuation.definition.tag.begin.cfml
+            2: entity.name.tag.cf.query.cfml
+            3: punctuation.definition.tag.end.cfml
+          pop: true
+        - match: (?<=cfquery)\s
+          push:
+            - meta_scope: meta.tag.block.cf.output.cfml
+            - match: (?=>)
+              pop: true
+            - include: qry-name-attribute
+            - include: tag-stuff
+        - match: (>)
+          captures:
+            0: meta.tag.block.cf.query.cfml
+            1: punctuation.definition.tag.end.cfml
+          push:
+            - meta_content_scope: source.sql.embedded.cfml
+            - match: (?=</(?i:cfquery))
+              pop: true
+            - include: string-double-quoted
+            - include: string-single-quoted
+            - include: embedded-tags
+            - match: (</?)((?i:(?:cfqueryparam))\b)
+              captures:
+                1: punctuation.definition.tag.begin.cfml
+                2: entity.name.tag.cf.inline.param.cfml
+              push:
+                - meta_scope: meta.tag.inline.cf.query-param.cfml
+                - match: ((?:\s?/)?>)
+                  captures:
+                    1: punctuation.definition.tag.end.cfml
+                  pop: true
+                - include: tag-stuff
+            - include: nest-hash
+            - include: scope:source.sql
+    - include: embedded-tags
+    - match: |-
+        (?x)
+        	(</?)
+        	(?i:
+        		(cf((output)|(savecontent)|([\w\-_.]+)))
+        	)
+        	\b
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.block.other.cfml
+      push:
+        - meta_scope: meta.tag.block.cf.other.cfml
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: tag-stuff
+  cfcomments:
+    - match: <!---.*?--->
+      scope: comment.line.cfml
+    - match: <!---
+      captures:
+        0: punctuation.definition.comment.cfml
+      push:
+        - meta_scope: comment.block.cfml
+        - match: "--->"
+          captures:
+            0: punctuation.definition.comment.cfml
+          pop: true
+        - include: cfcomments
+  cfmail:
+    - match: '(?:^\s+)?(<)((?i:cfmail))\b(?![^>]*/>)'
+      captures:
+        0: meta.tag.block.cf.mail.cfml
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.mail.cfml
+        3: punctuation.definition.tag.end.cfml
+      push:
+        - match: (</)((?i:cfmail))(>)(?:\s*\n)?
+          captures:
+            0: meta.tag.block.cf.mail.cfml
+            1: punctuation.definition.tag.begin.cfml
+            2: entity.name.tag.cf.mail.cfml
+            3: punctuation.definition.tag.end.cfml
+          pop: true
+        - match: (?<=cfmail)\s
+          push:
+            - meta_scope: meta.tag.block.cf.mail.cfml
+            - match: (?=>)
+              pop: true
+            - include: tag-stuff
+        - match: (>)
+          captures:
+            0: meta.tag.block.cf.mail.cfml
+            1: punctuation.definition.tag.end.cfml
+          push:
+            - meta_content_scope: meta.scope.between-mail-tags.cfml
+            - match: (?=</(?i:cfmail))
+              pop: true
+            - include: nest-hash
+            - include: scope:text.html.cfm
+  cfoutput:
+    - match: '(?:^\s+)?(<)((?i:cfoutput))\b(?![^>]*/>)'
+      captures:
+        0: meta.tag.block.cf.output.cfml
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.output.cfml
+        3: punctuation.definition.tag.end.cfml
+      push:
+        - match: (</)((?i:cfoutput))(>)(?:\s*\n)?
+          captures:
+            0: meta.tag.block.cf.output.cfml
+            1: punctuation.definition.tag.begin.cfml
+            2: entity.name.tag.cf.output.cfml
+            3: punctuation.definition.tag.end.cfml
+          pop: true
+        - match: (?<=cfoutput)\s
+          push:
+            - meta_scope: meta.tag.block.cf.output.cfml
+            - match: (?=>)
+              pop: true
+            - include: tag-stuff
+        - match: (>)
+          captures:
+            0: meta.tag.block.cf.output.cfml
+            1: punctuation.definition.tag.end.cfml
+          push:
+            - meta_content_scope: meta.scope.between-output-tags.cfml
+            - match: (?=</(?i:cfoutput))
+              pop: true
+            - include: nest-hash
+            - include: scope:text.html.cfm
+  conditionals:
+    - match: (</?)((?i:cfif))\b
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.conditional.cfml
+      push:
+        - meta_scope: meta.tag.block.cf.conditional.cfml
+        - meta_content_scope: source.cfscript.embedded.cfml
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: scope:source.cfscript
+    - match: (</?)(?i:(cfelseif|cfelse))
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.conditional.cfml
+      push:
+        - meta_scope: meta.tag.inline.cf.conditional.cfml
+        - meta_content_scope: source.cfscript.embedded.cfml
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: scope:source.cfscript
+  embedded-tags:
+    - include: cfcomments
+    - include: conditionals
+    - include: flow-control
+    - include: exception-handling
+    - include: cfoutput
+    - include: cfmail
+  entities:
+    - match: "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.cfml
+      captures:
+        1: punctuation.definition.entity.cfml
+        3: punctuation.definition.entity.cfml
+    - match: "&"
+      scope: invalid.illegal.bad-ampersand.cfml
+  exception-handling:
+    - match: |-
+        (?x)
+        	(</?)
+        	(?i:
+        		(cftry)|(cfcatch)|(cflock)|(cffinally|cferror|cfrethrow|cfthrow)
+        	)
+        	\b
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.exception.try.cfml
+        3: entity.name.tag.cf.exception.catch.cfml
+        4: entity.name.tag.cf.lock.cfml
+        5: entity.name.tag.cf.exception.other.cfml
+      push:
+        - meta_scope: meta.tag.block.cf.exceptions.cfml
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: tag-stuff
+  flow-control:
+    - match: |-
+        (?x)
+        	(</?)
+        	(?i:
+        		(cfloop)|(cfswitch)|(cf(?:default)?case)
+        	)
+        	\b
+      captures:
+        1: punctuation.definition.tag.begin.cfml
+        2: entity.name.tag.cf.flow-control.loop.cfml
+        3: entity.name.tag.cf.flow-control.switch.cfml
+        4: entity.name.tag.cf.flow-control.case.cfml
+      push:
+        - meta_scope: meta.tag.block.cf.flow-control.cfml
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.cfml
+          pop: true
+        - include: tag-stuff
+  func-name-attribute:
+    - match: \b(name)\b\s*(=)
+      captures:
+        1: entity.other.attribute-name.cfml
+        2: punctuation.separator.key-value.cfml
+      push:
+        - meta_scope: meta.attribute-with-value.name.cfml
+        - match: (?<='|")
+          captures:
+            1: entity.other.attribute-name.cfml
+            2: punctuation.separator.key-value.cfml
+          pop: true
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.cfml
+          push:
+            - meta_scope: string.quoted.double.cfml
+            - meta_content_scope: meta.toc-list.function.cfml
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.cfml
+              pop: true
+            - include: entities
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.cfml
+          push:
+            - meta_scope: string.quoted.single.cfml
+            - meta_content_scope: meta.toc-list.function.cfml
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.cfml
+              pop: true
+            - include: entities
+  nest-hash:
+    - match: "##"
+      scope: string.escaped.hash.cfml
+    - match: |-
+        (?x)
+        (\#)
+        (?!		# zero width negative lookahead assertion
+        	(
+        		([\w$]+	# assertion for plain variables or function names including currency symbol "$"
+        			(
+        				(\[.*\])				# asserts a match for anything in square brackets
+        				|
+        				(\(.*\))				# or anything in parens
+        				|
+        				(\.[\w$]+)				# or zero or more "dot" notated variables
+        				|
+        				(\s*[\+\-\*\/&]\s*[\w$]+)	# or simple arithmentic operators + concatenation
+        				|
+        				(\s*&\s*["|'].+["|']) 	# or concatenation with a quoted string
+        			)*		# asserts preceeding square brackets, parens, dot notated vars or arithmetic zero or more times
+        		)
+        		|
+        		(\(.*\))	 # asserts a match for anything in parens
+        	)\#		# asserts closing hash
+        )
+      scope: invalid.illegal.unescaped.hash.cfml
+    - match: |-
+        (?x)
+        (\#)
+        (?=		# zero width negative lookahead assertion
+        	(
+        		([\w$]+	# assertion for plain variables or function names including currency symbol "$"
+        			(
+        				(\[.*\])				# asserts a match for anything in square brackets
+        				|
+        				(\(.*\))				# or anything in parens
+        				|
+        				(\.[\w$]+)				# or zero or more "dot" notated variables
+        				|
+        				(\s*[\+\-\*\/&]\s*[\w$]+)	# or simple arithmentic operators + concatenation
+        				|
+        				(\s*&\s*["|'].+["|']) 	# or concatenation with a quoted string
+        			)*		# asserts preceeding square brackets, parens, dot notated vars or arithmetic zero or more times
+        		)
+        		|
+        		(\(.*\))	 # asserts a match for anything in parens
+        	)\#		# asserts closing hash
+        )
+      captures:
+        1: punctuation.definition.hash.begin.cfml
+      push:
+        - meta_scope: meta.name.interpolated.hash.cfml
+        - meta_content_scope: source.cfscript.embedded.cfml
+        - match: (#)
+          captures:
+            1: punctuation.definition.hash.end.cfml
+          pop: true
+        - include: scope:source.cfscript
+  qry-name-attribute:
+    - match: \b(name)\b\s*(=)
+      captures:
+        1: entity.other.attribute-name.cfml
+        2: punctuation.separator.key-value.cfml
+      push:
+        - meta_scope: meta.attribute-with-value.name.cfml
+        - match: (?<='|")
+          captures:
+            1: entity.other.attribute-name.cfml
+            2: punctuation.separator.key-value.cfml
+          pop: true
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.cfml
+          push:
+            - meta_scope: string.quoted.double.cfml
+            - meta_content_scope: meta.toc-list.query.cfml
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.cfml
+              pop: true
+            - include: entities
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.cfml
+          push:
+            - meta_scope: string.quoted.single.cfml
+            - meta_content_scope: meta.toc-list.query.name.cfml
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.cfml
+              pop: true
+            - include: entities
+  string-double-quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.cfml
+      push:
+        - meta_scope: string.quoted.double.cfml
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.cfml
+          pop: true
+        - include: nest-hash
+        - include: entities
+  string-single-quoted:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.cfml
+      push:
+        - meta_scope: string.quoted.single.cfml
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.cfml
+          pop: true
+        - include: nest-hash
+        - include: entities
+  tag-generic-attribute:
+    - match: '\b([a-zA-Z\-:]+)'
+      scope: entity.other.attribute-name.cfml
+  tag-stuff:
+    - include: cfcomments
+    - include: tag-generic-attribute
+    - include: string-double-quoted
+    - include: string-single-quoted

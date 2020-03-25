@@ -1,0 +1,63 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: DirectX 3D File
+file_extensions:
+  - x
+first_line_match: \Axof 0303(?:txt|bin|tzip|bzip)\b
+scope: source.direct-x
+contexts:
+  name:
+    - match: (?!\d)\w+
+      scope: variable.other.direct-x
+  main:
+    - include: header
+    - include: template
+    - include: uuid
+    - include: keywords
+    - include: templateTypes
+    - include: name
+    - include: scope:etc#ellipsis
+    - include: scope:etc#commentHash
+    - include: scope:etc#commentSlash
+    - include: scope:etc
+  header:
+    - match: ^\s*(xof)\s*(\d+)\s*(txt|bin|tzip|bzip)\s*(.*)
+      scope: meta.signature.header.direct-x
+      captures:
+        1: keyword.control.magic-number.direct-x
+        2: constant.numeric.integer.int.version-number.direct-x
+        3: storage.type.var.format.direct-x
+  keywords:
+    - match: |-
+        (?ix) \b
+        (ARRAY|BINARY_RESOURCE|BINARY|CHAR|CSTRING|DOUBLE|DWORD|FLOAT
+        |SDWORD|STRING|SWORD|TEMPLATE|UCHAR|ULONGLONG|UNICODE|WORD)\b
+      scope: keyword.operator.reserved.direct-x
+  template:
+    - match: '\b([A-Za-z_]\w*)\s+((?!\d)\w+)\s*({)'
+      captures:
+        1: storage.type.function.template.direct-x
+        2: entity.name.function.direct-x
+        3: punctuation.section.scope.begin.direct-x
+      push:
+        - meta_scope: meta.template.direct-x
+        - match: "}"
+          captures:
+            0: punctuation.section.scope.end.direct-x
+          pop: true
+        - include: main
+  templateTypes:
+    - match: |-
+        (?ix) \b
+        (AnimTicksPerSecond|AnimationKey|AnimationOptions|AnimationSet|Animation|Boolean2d|Boolean|ColorRGBA?|CompressedAnimationSet
+        |Coords2d|DeclData|EffectDWord|EffectFloats|EffectInstance|EffectParamDWord|EffectParamFloats|EffectParamString|EffectString
+        |FVFData|FaceAdjacency|FloatKeys|FrameTransformMatrix|Frame|Guid|IndexedColor|MaterialWrap|Material|Matrix4x4|MeshFaceWraps
+        |MeshFace|MeshMaterialList|MeshNormals|MeshTextureCoords|MeshVertexColors|Mesh|PMAttributeRange|PMInfo|PMVSplitRecord
+        |PatchMesh9|PatchMesh|Patch|SkinWeights|Templates|TextureFilename|TimedFloatKeys|Vector|VertexDuplicationIndices
+        |VertexElement|XSkinMeshHeader) \b
+      scope: storage.type.var.template.direct-x
+  uuid:
+    - match: '(<)([-\sA-Fa-f0-9]+)(>)'
+      scope: meta.uuid.direct-x
+      captures:

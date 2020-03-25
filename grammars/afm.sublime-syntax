@@ -1,0 +1,516 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Adobe Font Metrics
+file_extensions:
+  - afm
+  - amfm
+  - acfm
+  - amm
+first_line_match: \AStart(?:Comp|Master)?FontMetrics\s+(?:\d+(?:\.\d+)?)\s*$
+scope: source.afm
+contexts:
+  name:
+    - match: '[^;\s]+'
+      scope: string.unquoted.parameter.identifier.afm
+  main:
+    - include: comment
+    - include: real
+    - include: integer
+    - include: array
+    - include: globalInfo
+    - include: kerningData
+    - include: charMetrics
+    - include: compositesData
+    - include: amfmSpecific
+    - include: primaryFonts
+    - include: reserved
+    - include: userDefined
+  comment:
+    - match: ^Comment(?=\s|$)
+      captures:
+        0: keyword.operator.start-comment.afm
+      push:
+        - meta_content_scope: comment.line.afm
+        - match: $
+          pop: true
+  amfmSpecific:
+    - match: ^(Start(Descendent|Direction|Axis|Master))(?:\s+(\S.*))?
+      captures:
+        1: "keyword.control.start.${2:/downcase}.afm"
+      push:
+        - meta_scope: "meta.${2:/downcase}.afm"
+        - match: ^End\2\s*$
+          captures:
+            0: "keyword.control.end.${2:/downcase}.afm"
+          pop: true
+        - include: main
+  array:
+    - match: '\['
+      captures:
+        0: punctuation.definition.list.bracket.square.begin.afm
+      push:
+        - match: '\]|(?=$)'
+          captures:
+            0: punctuation.definition.list.bracket.square.end.afm
+          pop: true
+        - include: array
+        - include: numbers
+        - include: psLiteral
+  bestGuessHighlights:
+    - match: \G\s*(true|false)(?=\s|$)
+      captures:
+    - match: '^(?:\s+[-+]?[.\d]+)+\s*$'
+      captures:
+    - match: '^\s*(\[.*\])\s*$'
+      captures:
+    - match: '^\s*<[A-Fa-f0-9]+>\s*$'
+      captures:
+    - match: '(?:(?:^|\s+)/[^\s\[\];]+)+\s*$'
+      captures:
+    - match: ^.+$
+      scope: variable.assignment.afm
+      captures:
+        0: string.unquoted.afm
+  boolean:
+    - match: (?<!\w)(true|false)(?!\w)
+      scope: constant.language.boolean.$1.afm
+  bracketedString:
+    - match: \(
+      captures:
+        0: punctuation.definition.bracket.round.begin.afm
+      push:
+        - meta_scope: string.quoted.double.bracketed.afm
+        - match: \)|(?=$)
+          captures:
+            0: punctuation.definition.bracket.round.end.afm
+          pop: true
+        - include: bracketedString
+  charMetricInnards:
+    - include: delimiter
+    - match: '\G(CH)\s+(<[^>\s]++>)\s*(?=;|$)'
+      scope: meta.character.code.hexadecimal.afm
+      captures:
+        1: variable.assignment.codepoint.afm
+    - match: '\G(C)\s+([-+]?\d+)\s*(?=;|$)'
+      scope: meta.character.code.decimal.afm
+      captures:
+        1: variable.assignment.codepoint.afm
+    - match: '(?<=\s|^|;)(W[01]?|VV)(?=\s|;|$)'
+      captures:
+        1: variable.assignment.character-width.afm
+      push:
+        - meta_scope: meta.metric.character.width.afm
+        - match: (?=;|$)
+          pop: true
+        - include: numbers
+    - match: '(?<=\s|^|;)(W[01]?(X|Y))(?:\s+([-+]?[\d.]+)\s*)(?=\s|$|;)'
+      scope: meta.metric.character.width.afm
+      captures:
+        1: "variable.assignment.${2:/downcase}-width.afm"
+    - match: '(?<=\s|^|;)(N)(?:\s+([^;\s]+))?\s*(?=\s|$|;)'
+      scope: meta.metric.character.name.afm
+      captures:
+        1: variable.assignment.character.name.afm
+        2: string.unquoted.parameter.identifier.afm
+    - match: (?<=\s|^|;)(B)(?=\s|$|;)
+      captures:
+        1: variable.assignment.metric.afm
+      push:
+        - meta_scope: meta.metric.bounding-box.afm
+        - match: (?=$|;)
+          pop: true
+        - include: numbers
+    - match: (?<=\s|^|;)(L)(?=\s|$|;)
+      captures:
+        1: variable.assignment.metric.afm
+      push:
+        - meta_scope: meta.metric.next-ligature.afm
+        - match: (?=$|;)
+          pop: true
+        - include: name
+  charMetrics:
+    - match: ^(StartCharMetrics)(?:\s+(\d+))?\s*$
+      captures:
+        1: keyword.control.start.metrics.afm
+        2: constant.numeric.decimal.integer.afm
+      push:
+        - meta_scope: meta.metrics-list.afm
+        - match: ^EndCharMetrics\s*$
+          captures:
+            0: keyword.control.end.metrics.afm
+          pop: true
+        - include: comment
+        - match: ^\s*(?=C\s+-\d)
+          push:
+            - meta_scope: meta.unencoded.character.metrics.afm
+            - match: $
+              pop: true
+            - include: charMetricInnards
+        - match: ^\s*
+          push:
+            - meta_scope: meta.character.metrics.afm
+            - match: $
+              pop: true
+            - include: charMetricInnards
+  compositesData:
+    - match: '^(StartComposites)(?:\s+([-+]?\d+))?\s*$'
+      captures:
+        1: keyword.control.start.metrics.afm
+      push:
+        - meta_scope: meta.composites.afm
+        - match: ^EndComposites
+          captures:
+            0: keyword.control.end.metrics.afm
+          pop: true
+        - include: comment
+        - match: ^CC(?=\s|$|;)
+          captures:
+            0: keyword.operator.char-comp.afm
+          push:
+            - meta_scope: meta.composition.afm
+            - match: $
+              pop: true
+            - include: delimiter
+            - match: '\G\s+([^;\s]+)(?:\s+([-+]?\d+))?'
+              captures:
+                1: string.unquoted.parameter.identifier.afm
+            - match: '(?<=;|\s)(PCC)\s+([^;\s]+)'
+              captures:
+                1: keyword.operator.char-comp.afm
+                2: string.unquoted.parameter.identifier.afm
+            - include: numbers
+  delimiter:
+    - match: ;
+      scope: punctuation.delimiter.metrics.semicolon.afm
+  globalInfo:
+    - match: ^(Font|Full|Family)Name(?=\s|$)
+      captures:
+        0: "keyword.operator.${1:/downcase}-name.afm"
+      push:
+        - meta_scope: "meta.${1:/downcase}-name.afm"
+        - match: ^|$
+          pop: true
+        - include: paramName
+    - match: ^MetricsSets(?=\s|$)
+      captures:
+        0: keyword.operator.metrics-sets.afm
+      push:
+        - meta_scope: meta.writing-directions.afm
+        - match: ^|$
+          pop: true
+        - include: paramInteger
+    - match: ^IsFixedPitch(?=\s|$)
+      captures:
+        0: keyword.operator.is-fixed-pitch.afm
+      push:
+        - meta_scope: meta.is-monospaced-font.afm
+        - match: ^|$
+          pop: true
+        - include: paramBoolean
+    - match: ^Notice(?=\s|$)
+      captures:
+        0: keyword.operator.notice.afm
+      push:
+        - meta_scope: meta.notice.afm
+        - match: ^|$
+          pop: true
+        - include: paramString
+    - match: ^Version(?=\s|$)
+      captures:
+        0: keyword.operator.version.afm
+      push:
+        - meta_scope: meta.revision.afm
+        - match: ^|$
+          pop: true
+        - include: paramString
+    - match: ^Weight(?=\s|$)
+      captures:
+        0: keyword.operator.weight.afm
+      push:
+        - meta_scope: meta.weight.afm
+        - match: ^|$
+          pop: true
+        - include: paramString
+    - match: ^ItalicAngle(?=\s|$)
+      captures:
+        0: keyword.operator.italic-angle.afm
+      push:
+        - meta_scope: meta.italic-angle.afm
+        - match: ^|$
+          pop: true
+        - include: paramNumber
+    - match: ^FontBBox(?=\s|$)
+      captures:
+        0: keyword.operator.font-bbox.afm
+      push:
+        - meta_scope: meta.bounding-box.afm
+        - match: ^|$
+          pop: true
+        - include: paramNumbers
+    - match: ^EncodingScheme(?=\s|$)
+      captures:
+        0: keyword.operator.encoding-scheme.afm
+      push:
+        - meta_scope: meta.encoding-scheme.afm
+        - match: ^|$
+          pop: true
+        - include: paramString
+    - match: ^Underline(Position|Thickness)(?=\s|$)
+      captures:
+        0: "keyword.operator.underline-${1:/downcase}.afm"
+      push:
+        - meta_scope: "meta.underline-property.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: paramNumber
+    - match: ^(Cap|X)Height(?=\s|$)
+      captures:
+        0: "keyword.operator.${1:/downcase}-height.afm"
+      push:
+        - meta_scope: "meta.metric.${1:/downcase}-height.afm"
+        - match: ^|$
+          pop: true
+        - include: paramNumber
+    - match: ^(Descender|Ascender)(?=\s|$)
+      captures:
+        0: "keyword.operator.${1:/downcase}.afm"
+      push:
+        - meta_scope: "meta.metric.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: paramNumber
+    - match: ^(CharacterSet|AxisType|AxisLabel)(?=\s|$)
+      captures:
+        0: keyword.operator.metadata.afm
+      push:
+        - meta_scope: "meta.metric.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: paramString
+    - match: ^(Characters|EscChar|MappingScheme)(?=\s|$)
+      captures:
+        1: keyword.operator.metadata.afm
+      push:
+        - meta_scope: "meta.metadata.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: paramNumber
+    - match: ^(IsBaseFont|IsFixedV|IsCIDFont)(?=\s|$)
+      captures:
+        1: keyword.operator.metadata.afm
+      push:
+        - meta_scope: "meta.metadata.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: paramBoolean
+    - match: '^(CharWidth|VVector|Masters|Axes|Std[HV]W)(?=\s|$)'
+      captures:
+        1: keyword.operator.metadata.afm
+      push:
+        - meta_scope: "meta.metadata.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: paramNumbers
+    - match: ^(WeightVector|BlendDesign(Positions|Map)|BlendAxisTypes)(?=\s|$)
+      captures:
+        1: keyword.operator.metadata.afm
+      push:
+        - meta_scope: "meta.metadata.${1:/downcase}.afm"
+        - match: ^|$
+          pop: true
+        - include: array
+        - include: numbers
+        - include: psLiteral
+  hex:
+    - match: '(<)(?:[A-Fa-f0-9]+|([^>\s]+))(>)'
+      scope: constant.numeric.integer.hexadecimal.afm
+      captures:
+        1: punctuation.definition.hex.bracket.angle.begin.afm
+        2: invalid.illegal.syntax.bad-characters.afm
+        3: punctuation.definition.hex.bracket.angle.end.afm
+  integer:
+    - match: '(?<!\w)[-+]?(?=0)\d+'
+      scope: constant.numeric.integer.octal.afm
+    - match: '(?<!\w)[-+]?\d+'
+      scope: constant.numeric.integer.decimal.afm
+  kerningData:
+    - match: ^(StartKernData)\s*$
+      captures:
+        1: keyword.control.start.metrics.afm
+      push:
+        - meta_scope: meta.kerning-data.afm
+        - match: ^EndKernData\s*$
+          captures:
+            0: keyword.control.end.metrics.afm
+          pop: true
+        - match: '^(StartTrackKern)(?:\s+([-+]?\d+))?\s*$'
+          captures:
+            1: keyword.control.start.metrics.afm
+          push:
+            - match: ^EndTrackKern\s*$
+              captures:
+                0: keyword.control.end.metrics.afm
+              pop: true
+            - include: comment
+            - include: kerningTrack
+        - match: '^(StartKernPairs[0-1]?)(?:\s+([-+]?\d+))?\s*$'
+          captures:
+            1: keyword.control.start.metrics.afm
+          push:
+            - match: ^EndKernPairs\s*$
+              captures:
+                0: keyword.control.end.metrics.afm
+              pop: true
+            - include: comment
+            - include: kerningPairs
+  kerningPairs:
+    - match: ^KPH(?=\s|$)
+      captures:
+        0: keyword.operator.kern-pair.afm
+      push:
+        - meta_scope: meta.kerning-pair.by-codepoint.afm
+        - match: ^|$
+          pop: true
+        - match: '\G((?:\s+<[^>\s]*>)+)\s+'
+          captures:
+        - include: numbers
+    - match: '^KP[XY]?(?=\s|$)'
+      captures:
+        0: keyword.operator.kern-pair.afm
+      push:
+        - meta_scope: meta.kerning-pair.by-name.afm
+        - match: ^|$
+          pop: true
+        - match: '\G((?:\s+\S+){1,2})'
+          captures:
+        - include: numbers
+  kerningTrack:
+    - match: ^(TrackKern)(?=\s|$)
+      captures:
+        1: keyword.operator.track-kern.afm
+      push:
+        - match: ^|$
+          pop: true
+        - include: numbers
+  numbers:
+    - include: real
+    - include: integer
+  paramBoolean:
+    - match: \G\s+(true|false)\s*$
+      captures:
+    - include: paramInvalid
+  paramInteger:
+    - match: '\G\s+([-+]?[0-9]+)\s*$'
+      captures:
+    - include: paramInvalid
+  paramInvalid:
+    - match: \G\s+(\S+.+)\s*$
+      captures:
+        1: invalid.illegal.syntax.type.afm
+  paramName:
+    - match: \G\s+(\S+.*)\s*$
+      captures:
+        1: entity.name.identifier.afm
+  paramNumber:
+    - match: '\G\s+([-+]?(?:\d*\.\d+|\d+))\s*$'
+      captures:
+    - include: paramInvalid
+  paramNumbers:
+    - include: real
+    - include: integer
+    - match: '(?![-+0-9.])\S+'
+      scope: invalid.illegal.syntax.type.afm
+  paramString:
+    - match: \G\s+(\S.*)\s*$
+      scope: variable.assignment.afm
+      captures:
+        1: string.unquoted.afm
+  paramVar:
+    - match: \G\s+(\S.*)\s*$
+      captures:
+        1: variable.assignment.afm
+  primaryFontLine:
+    - match: (?<=^|\s|;)(?:PC|PL|PN)(?=\s*;)
+      scope: invalid.illegal.syntax.empty-field.afm
+    - match: (?<=^|\s|;)PC(?=\s|$)
+      captures:
+        0: variable.assignment.metadata.afm
+      push:
+        - meta_scope: meta.primary-coordinates.afm
+        - match: "(?=;|$|[A-Z])"
+          pop: true
+        - include: real
+        - include: integer
+    - match: '(?<=\s|;)(P[LN])\s+'
+      captures:
+        1: variable.assignment.metadata.afm
+      push:
+        - match: (?=;|$)
+          pop: true
+        - include: bracketedString
+        - include: delimiter
+    - include: delimiter
+  primaryFonts:
+    - match: '^(StartPrimaryFonts)(?:\s+([-+]?\d+))?\s*$'
+      captures:
+        1: keyword.control.start.font-list.afm
+      push:
+        - meta_scope: meta.primary-fonts.afm
+        - match: \bEndPrimaryFonts(?=\s|$)|(?!P)(?=\w)
+          captures:
+            0: keyword.control.end.font-list.afm
+          pop: true
+        - include: comment
+        - include: delimiter
+        - include: primaryFontLine
+  psLiteral:
+    - match: '(/)[^\s\[\];]+'
+      scope: support.language.constant.literal.afm
+      captures:
+        1: punctuation.definition.literal.slash.afm
+  real:
+    - match: '(?<!\w)[-+]?\d*\.\d+'
+      scope: constant.numeric.float.afm
+  reserved:
+    - match: '^([A-Z][A-Za-z0-9]+)(?=\s)(.*)$'
+      captures:
+        1: variable.other.reserved.afm
+  resources:
+    - match: ^(StartFontMetrics)\s+(\d+(?:\.\d+)?)?\s*$
+      captures:
+        1: keyword.control.start.file.afm
+        2: constant.numeric.float.decimal.version-number.afm
+      push:
+        - meta_scope: meta.metrics.file-resource.afm
+        - match: ^(EndFontMetrics)\s*$
+          captures:
+            1: keyword.control.end.file.afm
+          pop: true
+        - include: main
+    - match: ^(StartCompFontMetrics)\s+(\d+(?:\.\d+)?)?\s*$
+      captures:
+        1: keyword.control.start.file.afm
+        2: constant.numeric.float.decimal.version-number.afm
+      push:
+        - meta_scope: meta.composite.metrics.file-resource.afm
+        - match: ^(EndCompFontMetrics)\s*$
+          captures:
+            1: keyword.control.end.file.afm
+          pop: true
+        - include: main
+    - match: ^(StartMasterFontMetrics)\s+(\d+(?:\.\d+)?)?\s*$
+      captures:
+        1: keyword.control.start.file.afm
+        2: constant.numeric.float.decimal.version-number.afm
+      push:
+        - meta_scope: meta.master.metrics.file-resource.afm
+        - match: ^(EndMasterFontMetrics)\s*$
+          captures:
+            1: keyword.control.end.file.afm
+          pop: true
+        - include: main
+  userDefined:
+    - match: '^([a-z][A-Za-z0-9]+)(?=\s)(.*)$'
+      captures:
+        1: variable.other.custom.afm

@@ -1,0 +1,349 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Monkey
+file_extensions:
+  - monkey
+scope: source.monkey
+contexts:
+  main:
+    - match: ;
+      scope: punctuation.terminator.line.monkey
+    - include: mnky_comment_quote
+    - include: mnky_comment_block
+    - include: mnky_global_variable
+    - include: mnky_local_variable
+    - include: mnky_constant
+    - include: mnky_attributes
+    - include: mnky_commands
+    - include: mnky_function
+    - include: mnky_method
+    - match: '(?i)\b(import)\s+((?:[a-zA-Z_]\w*\.?)+)'
+      scope: import.module.monkey
+      captures:
+        1: keyword.other.import.monkey
+        2: string.unquoted.module.monkey
+    - match: (?i)\b(import)\s+(("))
+      captures:
+        1: keyword.other.import.monkey
+        2: punctuation.definition.string.begin.monkey
+        3: string.quoted.double.monkey
+      push:
+        - meta_scope: import.file.monkey
+        - meta_content_scope: string.quoted.double.monkey
+        - match: (")
+          captures:
+            0: punctuation.definition.string.end.monkey
+            1: string.quoted.double.monkey
+          pop: true
+        - include: mnky_string_content
+    - match: '(?i)\b(class)\s+([a-zA-Z_]\w*)(?:\s+(extends)\s+([a-zA-Z_]\w*))?(?:\s+(final|abstract))?'
+      captures:
+        1: storage.type.class.monkey
+        2: entity.name.type.monkey
+        3: storage.modifier.extends.monkey
+        4: entity.other.inherited-class.monkey
+        5: storage.modifier.class.monkey
+      push:
+        - meta_scope: type.monkey
+        - match: (?i)\b(end(\s?class)?)\b
+          captures:
+            1: storage.type.class.monkey
+          pop: true
+        - include: mnky_comment_quote
+        - include: mnky_comment_block
+        - include: mnky_constants
+        - include: mnky_string_quoted
+        - include: mnky_attributes
+        - include: mnky_null
+        - include: mnky_types
+        - include: mnky_typename
+        - include: mnky_global_variable
+        - include: mnky_local_variable
+        - include: mnky_constant
+        - include: mnky_function
+        - include: mnky_method
+        - include: mnky_field
+        - include: mnky_constructor
+    - match: \s*\b(c(ase|ontinue)|do|e(lse(\s?if)?|nd(class|for(each)?|function|if|method|select|while)|xit)|for(\s?each)?|if|return|select|then|wend|while)\b
+      scope: control.keywords.monkey
+    - include: mnky_control_keywords
+    - match: (?i)\b(while)\b
+      captures:
+        1: keyword.control.while.monkey
+      push:
+        - meta_scope: control.while.monkey
+        - match: (?i)\b(end(\s?while)?|wend)\b
+          captures:
+            1: keyword.control.while.end.monkey
+          pop: true
+        - include: main
+    - match: (?i)\b(if|then|else|else(\s?if)?)\b
+      captures:
+        1: keyword.control.if.monkey
+      push:
+        - meta_scope: control.if.monkey
+        - match: (?i)\b(end(\s?if)?)\b
+          captures:
+            1: keyword.control.if.end.monkey
+          pop: true
+        - match: (?i)\b(then)\b
+          scope: keyword.control.then.monkey
+        - match: (?i)\b(else(\s?if)?)\b
+          scope: keyword.control.else-if.monkey
+        - match: (?i)\b(else)\b
+          scope: keyword.control.else.monkey
+        - include: main
+    - match: (?i)\b(if)\b
+      captures:
+        1: keyword.control.if.monkey
+      push:
+        - meta_scope: control.if-then.monkey
+        - match: $
+          captures:
+            1: keyword.control.if.end.monkey
+          pop: true
+        - match: (?i)\b(then)\b
+          scope: keyword.control.then.monkey
+        - include: main
+    - match: (?i)\b(for)\b
+      captures:
+        1: keyword.control.for.monkey
+      push:
+        - meta_scope: control.for.monkey
+        - match: (?i)\b(next)\b
+          captures:
+            1: keyword.control.for.end.monkey
+          pop: true
+        - match: (?i)\beachin\b
+          scope: keyword.control.for.eachin.monkey
+        - match: (?i)\bto\b
+          scope: keyword.control.for.to.monkey
+        - match: (?i)\buntil\b
+          scope: keyword.control.for.until.monkey
+        - match: (?i)\bstep\b
+          scope: keyword.control.for.step.monkey
+        - include: main
+    - match: (?i)\b(repeat)\b
+      captures:
+        1: keyword.control.repeat.monkey
+      push:
+        - meta_scope: control.repeat.monkey
+        - match: (?i)\b(until|forever)\b
+          captures:
+            1: keyword.control.repeat.end.monkey
+          pop: true
+        - include: main
+    - match: (?i)\b(select)\b
+      captures:
+        1: keyword.control.select.monkey
+      push:
+        - meta_scope: control.select.monkey
+        - match: (?i)\b(end(\s?select)?)\b
+          captures:
+            1: keyword.control.select.end.monkey
+          pop: true
+        - match: (?i)\b(case)\b
+          scope: control.select.case.monkey
+          captures:
+            1: keyword.control.select.case.monkey
+        - match: (?i)\b(default)\b
+          scope: control.select.default.monkey
+          captures:
+            1: keyword.control.select.default.monkey
+        - include: main
+    - match: (?i)\b(mod|shl|shr|and|or|not)\b
+      scope: keyword.operator.monkey
+    - match: ':?[\^+\-&~|=><]'
+      scope: keyword.operator.monkey
+    - match: (?i)\b(private|public)\b
+      scope: keyword.other.scope.monkey
+    - match: (?i)\b(strict)\b
+      scope: keyword.other.strictness.monkey
+    - include: mnky_null
+    - include: mnky_types
+    - include: mnky_constants
+    - include: mnky_string_quoted
+    - match: (?i)\b(self)\b
+      scope: variable.language.self.monkey
+    - match: (?i)\b(super)\b
+      scope: variable.language.super.monkey
+    - include: mnky_constructor
+    - include: mnky_array
+    - include: mnky_typename
+  mnky_array:
+    - match: '(\[)'
+      captures:
+        1: keyword.operator.array.monkey
+      push:
+        - meta_scope: array.monkey
+        - match: '(\])'
+          captures:
+            1: keyword.operator.array.monkey
+          pop: true
+        - include: main
+  mnky_attributes:
+    - match: '(\{)'
+      captures:
+        1: storage.modifier.attributes.braces.monkey
+      push:
+        - meta_scope: attributes.monkey
+        - match: '(\})'
+          captures:
+            1: storage.modifier.attributes.braces.monkey
+          pop: true
+        - match: '\b([a-zA-Z_]\w*)\s*(=)\s*'
+          captures:
+            1: entity.other.attribute-name.monkey
+          push:
+            - meta_scope: attribute.monkey
+            - match: '(?=\s|\}|[a-zA-Z_])'
+              pop: true
+            - include: mnky_string_quoted
+            - include: mnky_numbers
+        - match: '\b([a-zA-Z_]\w*)(?:\s*((?!=)|(?=\})))'
+          scope: attribute.monkey
+          captures:
+            1: entity.other.attribute-name.monkey
+  mnky_boolean:
+    - match: (?i)\b(true|false)\b
+      scope: constant.language.boolean.monkey
+  mnky_char:
+    - match: \b(CHAR_(TAB|BACKSPACE|ENTER|ESCAPE|PAGE(UP|DOWN)|END|HOME|LEFT|UP|RIGHT|DOWN|INSERT|DELETE))\b
+      scope: constant.language.char.monkey
+  mnky_commands:
+    - match: (?i)\b(A(bstract|Cos|Sin|Tan|Tan2|bs|ccel(X|Y|Z)|dd(First|Last)|pp|rray)|B(ackwards|ool)|C(ase|eil|hannelState|l(amp|s)|o(mpare|nst|nt(ains|inue)|py|s|unt)|lear)|D(e(faultFlags|vice(Height|Width))|iscard|raw(Circle|Ellipse|Image|ImageRect|Line|Oval|Point|Poly|Rect|Text))|E(achin|xt(ends|ern)|nd|ndsWith|rror|xit)|F(alse|i(eld|nd|ndLast|rst)|loat(Map|Set)|loor|or(ever)|rames|romChar)|G(et|et(Alpha|Blend|Char|Color|Font|Matrix|Scissor)|lobal|rabImage)|H(andle(X|Y)|eight)|I(m(age|p(lements|ort))|n(clude|line|t(erface|Map|Set))|sEmpty)|Jo(in|y(Down|Hit|X|Y|Z))|Key|Key(Down|Hit|s)|L(ast|ength|ist|o(g|ad(Image|Sound|State|String)|cal))|M(ap|ax|ethod|i(llisecs|n)|o(d(ule)|use(Down|Hit|X|Y))|in)|N(ative|e(w|xt)|o(de)|ull)|O(bject(Enumerator)|n(Create|Loading|Render|Resume|Suspend|Update))|P(laySound|o(pMatrix|w)|r(i(nt|vate)|operty)|u(blic|shMatrix))|R(e(move|move(Each|First|Last)|p(eat|lace)|turn)|nd|otate)|S(aveState|cale|e(ed|lect|lf|t(Alpha|Blend|Channel(Pan|Rate|Volume)|Color|Font|Handle|Image|List|Matrix|Scissor|UpdateRate))|gn|h(l|r)|in|ound|plit|qrt|t(artsWith|ep|opChannel|ri(ct|ng(Map|Set)))|uper)|T(an|hen|o(Lower|Upper|uch(Down|Hit|X|Y))|r(ans(form|late)|im|ue))|Until|V(alue|alue(ForKey|s)|oid)|Width)\b
+      scope: keyword.other.commands.monkey
+  mnky_comment_block:
+    - match: (?i)(?<=\s|^|;)\#rem\b
+      push:
+        - meta_scope: comment.block.rem.monkey
+        - match: (?i)(?<=\s|^|;)\#end\b
+          pop: true
+        - include: mnky_url_content
+  mnky_comment_quote:
+    - match: "'"
+      push:
+        - meta_scope: comment.line.apostrophe.monkey
+        - match: $
+          pop: true
+        - include: mnky_url_content
+  mnky_constant:
+    - match: '(?i)\b(const)\s+([a-zA-Z_]\w*)\b'
+      scope: constant.monkey
+      captures:
+        1: keyword.other.new.monkey
+        2: constant.monkey
+  mnky_constants:
+    - include: mnky_pi
+    - include: mnky_boolean
+    - include: mnky_numbers
+    - include: mnky_joy
+    - include: mnky_key
+    - include: mnky_mouse
+    - include: mnky_char
+    - include: mnky_env
+  mnky_constructor:
+    - match: '(?i)\b(new)\s+([a-zA-Z_]\w*)\b'
+      scope: call.constructor.monkey
+      captures:
+        1: keyword.other.new.monkey
+        2: storage.type.class.monkey
+  mnky_control_keywords:
+    - match: (?i)\b(throw|return|exit|continue)\b
+      scope: keyword.control.monkey
+  mnky_env:
+    - match: \b(TARGET|LANG)\b
+      scope: constant.language.env.monkey
+  mnky_field:
+    - match: '(?i)\b(field)\s+([a-zA-Z_]\w*)+\b'
+      scope: variable.field.monkey
+      captures:
+        1: keyword.other.variable.field.monkey
+  mnky_function:
+    - match: '(?i)\b(function)\s+([a-zA-Z_]\w*)\b'
+      captures:
+        1: storage.type.function.monkey
+        2: entity.name.function.monkey
+      push:
+        - meta_scope: function.monkey
+        - match: (?i)\b(end(\s?function)?)\b
+          captures:
+            1: storage.type.function.monkey
+          pop: true
+        - include: main
+  mnky_global_variable:
+    - match: '(?i)\b(global)\s+([a-zA-Z_]\w*)\b'
+      scope: variable.monkey
+      captures:
+        1: storage.modifier.global.monkey
+  mnky_joy:
+    - match: \bJOY_(A|B|X|Y|LB|RB|BACK|START|LEFT|UP|RIGHT|DOWN)\b
+      scope: constant.language.joy.monkey
+  mnky_key:
+    - match: '\bKEY_(BACKSPACE|TAB|ENTER|ESCAPE|SPACE|SHIFT|CONTROL|PAGEUP|PAGEDOWN|END|HOME|LEFT|UP|RIGHT|DOWN|INSERT|DELETE|F([0-9]|1[0-2])|[0-9]|[A-Z]|TILDE|MINUS|EQUALS|OPENBRACKET|CLOSEBRACKET|BACKSLASH|SEMICOLON|QUOTES|COMMA|PERIOD|SLASH|(L|R|M)MB)|TOUCH([0-9]|[1-2][0-9]|3[0-2])\b'
+      scope: constant.language.key.monkey
+  mnky_local_variable:
+    - match: '(?i)\b(local)\s+([a-zA-Z_]\w*)\b'
+      scope: variable.monkey
+      captures:
+        1: keyword.other.variable.local.monkey
+  mnky_method:
+    - match: '(?i)\b(method)\s+([a-zA-Z_]\w*)\b'
+      captures:
+        1: storage.type.method.monkey
+        2: entity.name.method.monkey
+      push:
+        - meta_scope: method.monkey
+        - match: (?i)\b(end(\s?method)?)\b
+          captures:
+            1: storage.type.method.monkey
+          pop: true
+        - include: main
+  mnky_mouse:
+    - match: \bMOUSE_(LEFT|RIGHT|MIDDLE)\b
+      scope: constant.language.mouse.monkey
+  mnky_null:
+    - match: (?i)\bnull\b
+      scope: constant.language.null.monkey
+  mnky_numbers:
+    - match: '(\$[0-9a-fA-F]{1,16})'
+      scope: constant.numeric.integer.hexadecimal.monkey
+    - match: |-
+        (?x) (?<! \$ ) (
+        	\b ([0-9]+ \. [0-9]+) |
+        	(\. [0-9]+)
+        )
+      scope: constant.numeric.float.monkey
+    - match: '(?x)\b(([0-9]+))'
+      scope: constant.numeric.integer.monkey
+  mnky_pi:
+    - match: \b(HALF|TWO)?PI\b
+      scope: constant.language.monkey
+  mnky_string_content:
+    - match: '\~[^"]'
+      scope: constant.character.escape.monkey
+    - include: mnky_url_content
+  mnky_string_quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.monkey
+      push:
+        - meta_scope: string.quoted.double.monkey
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.monkey
+          pop: true
+        - include: mnky_string_content
+  mnky_typename:
+    - match: '(?xi)(?: \: \s* ([a-zA-Z_]\w*) | ([!#%]|@{1,2}|\$[zw]?) )'
+      scope: typename.monkey
+      captures:
+        1: storage.type.monkey
+        2: storage.type.monkey
+  mnky_types:
+    - match: (?i)\b(array|bool|int|float|string)\b
+      scope: storage.type.monkey
+  mnky_url_content:
+    - match: '[a-zA-Z_]\w*://[^ "''()\[\]]*(?=$|\b)'
+      scope: url.monkey

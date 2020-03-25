@@ -1,0 +1,317 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Vim Snippet
+file_extensions:
+  - snip
+  - snippet
+  - snippets
+first_line_match: |-
+  (?x)
+
+  	# Modeline
+  	(?i:
+  		# Vim
+  		(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))
+  		(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:]
+  		(?:filetype|ft|syntax)\s*=
+  			(snippets?|snipmate|ultisnips?|neosnippet)
+  		(?=\s|:|$)
+
+  		|
+
+  		# Emacs
+  		-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  			(?:snipmate|ultisnips?|neosnippet|vim-?snippets?)
+  		(?=[\s;]|(?<![-*])-\*-).*?-\*-
+  	)
+scope: source.vim-snippet
+contexts:
+  main:
+    - include: snippet
+    - include: comment
+    - include: extends
+    - include: global
+    - include: priority
+    - include: expression
+    - include: version
+    - include: ultisnips
+    - include: neosnippet
+  comment:
+    - match: "^#"
+      captures:
+        0: punctuation.definition.comment.number-sign.vim-snippet
+      push:
+        - meta_scope: comment.line.number-sign.vim-snippet
+        - match: $
+          pop: true
+  escape:
+    - match: (\\).
+      scope: constant.character.escape.dollar-sign.vim-snippet
+      captures:
+        1: punctuation.definition.escape.vim-snippet
+  expression:
+    - match: (`)(!p)
+      captures:
+        1: punctuation.section.begin.embedded.vim-snippet
+        2: keyword.operator.use-python.vim-snippet
+      push:
+        - meta_scope: string.interpolated.python-code.vim-snippet
+        - match: "`"
+          captures:
+            0: punctuation.section.end.embedded.vim-snippet
+          pop: true
+        - match: '(?:[^\\`]|\\.)+'
+          scope: source.embedded.python
+          captures:
+    - match: (`)(!v)
+      captures:
+        1: punctuation.section.begin.embedded.vim-snippet
+        2: keyword.operator.use-viml.vim-snippet
+      push:
+        - meta_scope: string.interpolated.viml-code.vim-snippet
+        - match: "`"
+          captures:
+            0: punctuation.section.end.embedded.vim-snippet
+          pop: true
+        - match: '(?:[^\\`]|\\.)+'
+          scope: source.embedded.viml
+          captures:
+    - match: "`"
+      captures:
+        0: punctuation.section.begin.embedded.vim-snippet
+      push:
+        - meta_scope: string.interpolated.vim-snippet
+        - match: "`"
+          captures:
+            0: punctuation.section.end.embedded.vim-snippet
+          pop: true
+        - match: '(?:[^\\`]|\\.)+'
+          scope: source.embedded.viml
+          captures:
+  extends:
+    - match: ^(extends|include|source)(?=\s|$)
+      captures:
+        1: keyword.control.$1.directive.vim-snippet
+      push:
+        - meta_scope: meta.$1.directive.vim-snippet
+        - match: $
+          pop: true
+        - match: ","
+          scope: punctuation.separator.delimiter.comma.vim-snippet
+        - match: '[^,\s]+'
+          scope: entity.other.inherited-class.vim-snippet
+  global:
+    - match: '^(global)\s+(!p)[ \t]*$'
+      captures:
+        1: keyword.control.global.begin.vim-snippet
+        2: keyword.operator.use-python.vim-snippet
+      push:
+        - meta_scope: meta.ultisnip.global.vim-snippet
+        - meta_content_scope: source.embedded.python
+        - match: ^(endglobal)(?=\s|$)
+          captures:
+            1: keyword.control.global.end.vim-snippet
+          pop: true
+        - include: scope:source.python
+  neosnippet:
+    - match: (?:\G|^)(abbr|alias|delete|options)\s+(\S.*)
+      scope: meta.neosnippet-field.vim-snippet
+      captures:
+        1: keyword.operator.$1.vim-snippet
+        2: entity.other.neosnippet-keyword.vim-snippet
+    - match: |-
+        (?x) (?:\G|^)
+        (regexp) \s+
+        ( (')([^']*)(') # Single-quoted
+        | (")([^"]*)(") # Double-quoted
+        | ([^'"\s]\.) # Unquoted (?)
+        )
+      scope: meta.neosnippet-field.vim-snippet
+      captures:
+        1: keyword.operator.regex.vim-snippet
+        2: string.regexp.quoted.single.vim-snippet
+        3: punctuation.definition.string.regexp.begin.vim-snippet
+        5: punctuation.definition.string.regexp.end.vim-snippet
+        6: punctuation.definition.string.regexp.begin.vim-snippet
+        8: punctuation.definition.string.regexp.end.vim-snippet
+  priority:
+    - match: ^priority(?=\s|$)
+      captures:
+        0: keyword.control.version.directive.vim-snippet
+      push:
+        - match: $
+          pop: true
+        - match: '[-+]?[\d.]+'
+          scope: constant.numeric.integer.int.vim-snippet
+  snippet:
+    - match: '^(snippet)(!{0,2})(?=[ \t]|$)'
+      captures:
+        1: storage.type.class.vim-snippet
+        2: keyword.operator.scope.modifier.vim-snippet
+      push:
+        - meta_scope: meta.snippet.vim-snippet
+        - match: ^(endsnippet)\s*$|(?=^\S)|(?<=endsnippet)(?=\s|$)
+          captures:
+            1: storage.type.class.end.vim-snippet
+          pop: true
+        - include: snippetHead
+        - include: snippetNeck
+        - include: snippetBody
+  snippetBody:
+    - include: escape
+    - include: expression
+    - include: tabStop
+  snippetHead:
+    - match: \G
+      push:
+        - match: (?=^)|(?=\s*$)
+          pop: true
+        - match: \G\s*((\S+))
+          captures:
+            1: entity.name.trigger.vim-snippet
+            2: markup.heading.vim-snippet
+          push:
+            - match: (?=^|\S)
+              pop: true
+            - include: snippetNeck
+        - match: '(?<=\s)(")[^"]*(")'
+          captures:
+            0: string.quoted.double.description.vim-snippet
+            1: punctuation.definition.string.begin.vim-snippet
+            2: punctuation.definition.string.end.vim-snippet
+          push:
+            - match: (?=^|\S)
+              pop: true
+            - include: snippetNeck
+        - match: '(?<=\s)[Abeimrstw]+(?=\s*$)'
+          captures:
+            0: constant.language.other.options.vim-snippet
+          push:
+            - match: (?=^|\S)
+              pop: true
+            - include: snippetNeck
+        - match: (?<=\s)\S+
+          captures:
+            0: entity.other.description.vim-snippet
+          push:
+            - match: (?=^|\S)
+              pop: true
+            - include: snippetNeck
+        - include: snippetNeck
+  snippetNeck:
+    - match: \G\s*$\s*
+      push:
+        - meta_content_scope: meta.snippet-body.vim-snippet
+        - match: ^(endsnippet)\s*$|(?=^\s)|(?<=endsnippet)(?=\s|$)
+          captures:
+            1: storage.type.class.end.vim-snippet
+          pop: true
+        - match: (?<=^)(?=\S)(?!endsnippet|(?:abbr|alias|regexp|options)\s+\S)
+          push:
+            - match: '^(endsnippet)(?=$|[ \t])'
+              captures:
+                1: storage.type.class.end.vim-snippet
+              pop: true
+            - include: snippetBody
+        - match: (?<=^)(?=(?:abbr|alias|regexp|options)\s+\S)
+          push:
+            - match: (?=^\s)
+              pop: true
+            - include: neosnippet
+  tabStop:
+    - match: '(\$)([0-9]+)'
+      scope: variable.language.tab-stop.$2-nth.vim-snippet
+      captures:
+        1: punctuation.definition.variable.vim-snippet
+    - match: '(\${)([0-9]+)(})'
+      scope: variable.language.tab-stop.$2-nth.vim-snippet
+      captures:
+        1: punctuation.definition.variable.begin.vim-snippet
+        3: punctuation.definition.variable.end.vim-snippet
+    - match: '(\${)([0-9]+)(:)'
+      captures:
+        1: punctuation.definition.variable.begin.vim-snippet
+        3: keyword.operator.assignment.key-value.vim-snippet
+      push:
+        - meta_scope: variable.language.tab-stop.$2-nth.placeholder.vim-snippet
+        - meta_content_scope: markup.inserted.placeholder.vim-snippet
+        - match: "}"
+          captures:
+            0: punctuation.definition.variable.end.vim-snippet
+          pop: true
+        - include: visual
+        - include: escape
+        - include: tabStop
+    - match: '(\${)([0-9]+)(?=/)'
+      captures:
+        1: punctuation.definition.variable.begin.vim-snippet
+        2: variable.language.tab-stop.vim-snippet
+      push:
+        - meta_scope: meta.transform.tab-stop.$2-nth.vim-snippet
+        - match: "}"
+          captures:
+            0: punctuation.definition.variable.end.vim-snippet
+          pop: true
+        - match: \G/
+          captures:
+            0: keyword.control.transform.begin.vim-snippet
+          push:
+            - meta_scope: string.regexp.transform.vim-snippet
+            - meta_content_scope: markup.deleted.transform.vim-snippet
+            - match: /
+              captures:
+                0: keyword.control.transform.middle.vim-snippet
+              pop: true
+            - include: scope:source.regexp
+        - match: (?<=/)
+          push:
+            - meta_content_scope: markup.inserted.transform.vim-snippet
+            - match: "(/)([gima]*)"
+              captures:
+                1: keyword.control.transform.end.vim-snippet
+                2: storage.modifier.transform.option.vim-snippet
+              pop: true
+            - include: scope:source.regexp
+  ultisnips:
+    - match: ^(clearsnippets)(?=\s|$)
+      captures:
+        1: keyword.control.clearsnippets.directive.vim-snippet
+      push:
+        - meta_scope: meta.clear.directive.vim-snippet
+        - match: $
+          pop: true
+        - match: '[^\s]+'
+          scope: variable.parameter.function.vim-snippet
+    - match: '^(context|pre_expand|post_expand|post_jump)(?=[ \t]|$)'
+      captures:
+        1: keyword.control.$1.directive.vim-snippet
+      push:
+        - meta_scope: meta.$1.directive.vim-snippet
+        - match: $
+          pop: true
+        - match: '(")([^"]*)(")'
+          scope: string.quoted.double.python-code.vim-snippet
+          captures:
+            1: punctuation.definition.string.begin.vim-snippet
+            3: punctuation.definition.string.end.vim-snippet
+  version:
+    - match: ^(version)\s+(\d)
+      captures:
+        1: keyword.control.version.directive.vim-snippet
+        2: constant.numeric.integer.int.vim-snippet
+  visual:
+    - match: (\$)VISUAL
+      scope: constant.language.visual-content.unbraced.vim-snippet
+      captures:
+        1: punctuation.definition.vim-snippet
+    - match: '(\${)VISUAL(})'
+      scope: constant.language.visual-content.braced.vim-snippet
+      captures:
+        1: punctuation.definition.begin.vim-snippet
+        2: punctuation.definition.end.vim-snippet
+    - match: "({)VISUAL(})"
+      scope: constant.language.visual-content.v0-syntax.vim-snippet
+      captures:
+        1: punctuation.definition.begin.vim-snippet
+        2: punctuation.definition.end.vim-snippet

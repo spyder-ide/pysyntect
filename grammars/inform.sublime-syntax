@@ -1,0 +1,94 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Inform 7
+file_extensions:
+  - ni
+  - i7x
+scope: source.inform7
+contexts:
+  main:
+    - include: string
+    - match: '\['
+      captures:
+        0: punctuation.definition.comment.begin.inform7
+      push:
+        - meta_scope: comment.block.inform7
+        - match: '\]'
+          captures:
+            0: punctuation.definition.comment.end.inform7
+          pop: true
+        - include: nestedcomment
+    - match: '(?i)^\s*(volume|book|part|chapter|section)[ 	]+(.*)$'
+      scope: entity.name.inform7
+      captures:
+        1: entity.type.section.inform7
+        2: entity.name.section.inform7
+    - match: \(-
+      captures:
+        0: punctuation.definition.inform6.begin.inform7
+      push:
+        - meta_content_scope: support.other.inform6.inform7
+        - match: '-\)'
+          captures:
+            0: punctuation.definition.inform6.end.inform7
+          pop: true
+        - include: i6comment
+        - include: i6string
+        - include: i6dictword
+    - match: '(?i)^\s*(----[ 	]+(documentation)[ 	]+----)(.*)$'
+      captures:
+        1: entity.name.inform7
+        2: entity.type.section.inform7
+        3: comment.block.documentation.inform7
+      push:
+        - meta_content_scope: meta.documentation.inform7
+        - match: $ENDOFDOC
+          pop: true
+        - include: doccomment
+        - include: string
+  doccomment:
+    - match: "^[^	].*$"
+      scope: comment.block.documentation.inform7
+  i6comment:
+    - match: "!.*$"
+      scope: comment.line.bang.inform6.inform7
+  i6dictword:
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.inform6.inform7
+        - match: "'"
+          pop: true
+  i6string:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.inform6.inform7
+        - match: '"'
+          pop: true
+  nestedcomment:
+    - match: '\['
+      push:
+        - match: '\]'
+          pop: true
+        - include: nestedcomment
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.inform7
+      push:
+        - meta_scope: string.quoted.double.inform7
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.inform7
+          pop: true
+        - include: substitution
+  substitution:
+    - match: '\['
+      captures:
+        0: keyword.control.begin.inform7
+      push:
+        - meta_scope: keyword.control
+        - match: '\]'
+          captures:
+            0: keyword.control.end.inform7
+          pop: true

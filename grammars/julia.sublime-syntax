@@ -1,0 +1,489 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Julia
+comment: |
+  Reference to the Oniguruma Regex libraray:
+        https://github.com/kkos/oniguruma/blob/master/doc/RE
+
+      TODO:
+      * Once 0.4 is released, simplify type matches (no explicit 'Union', parens, etc.)
+      * take out ::Type
+      * Add more regex stuff.
+      * Some in comments throughout the grammar
+file_extensions:
+  - jl
+first_line_match: ^#!.*\bjulia\s*$
+scope: source.julia
+contexts:
+  main:
+    - include: operator
+    - include: array
+    - include: string
+    - include: bracket
+    - include: function_decl
+    - include: function_call
+    - include: keyword
+    - include: number
+    - include: comment
+    - include: type_decl
+    - include: symbol
+  comment:
+    - include: comment_block
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.julia
+      push:
+        - meta_scope: comment.line.number-sign.julia
+        - match: \n
+          pop: true
+  array:
+    - match: '\['
+      captures:
+        0: meta.bracket.julia
+      push:
+        - meta_scope: meta.array.julia
+        - match: '(?:\])(?:(\.)?''*)'
+          captures:
+            0: meta.bracket.julia
+            1: keyword.operator.transpose.julia
+          pop: true
+        - match: \bbegin\b
+          scope: constant.numeric.julia
+        - match: \bend\b
+          scope: constant.numeric.julia
+        - match: \bfor\b
+          scope: keyword.control.julia
+        - include: main
+  bracket:
+    - match: '(?:\(|\)|\[|\]|\{|\}|,)(?!(''|(?:\.''))*\.?'')'
+      scope: meta.bracket.julia
+  comment_block:
+    - match: "#="
+      captures:
+        0: punctuation.definition.comment.begin.julia
+      push:
+        - meta_scope: comment.block.number-sign-equals.julia
+        - match: "=#"
+          captures:
+            0: punctuation.definition.comment.end.julia
+          pop: true
+        - include: comment_block
+  function_call:
+    - match: '([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)({(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*})?\.?(?=\()'
+      captures:
+        1: support.function.julia
+        2: support.type.julia
+      push:
+        - match: \)(('|(\.'))*\.?')?
+          captures:
+            0: meta.bracket.julia
+            1: keyword.operator.transposed-func.julia
+          pop: true
+        - match: \bfor\b
+          scope: keyword.control.julia
+        - include: main
+  function_decl:
+    - match: '([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)({(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*})?(?=\(.*\)(::[^\s]+)?(\s*\bwhere\b\s+.+?)?\s*?=(?![=>]))'
+      comment: |
+        first group is function name
+                            Second group is type parameters (e.g. {T<:Number, S})
+                            Then open parens
+                            Then a lookahead ensures that we are followed by:
+                              - anything (function argumnets)
+                              - 0 or more spaces
+                              - Finally an equal sign
+                            Negative lookahead ensures we don't have another equal sign (not `==`)
+      captures:
+        1: entity.name.function.julia
+        2: support.type.julia
+    - match: '\b(function|macro)(?:\s+(?:[[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*(\.))?([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)({(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*})?|\s*)(?=\()'
+      comment: similar regex to previous, but with keyword not 1-line syntax
+      captures:
+        1: keyword.other.julia
+        2: keyword.operator.dots.julia
+        3: entity.name.function.julia
+        4: support.type.julia
+  keyword:
+    - match: '\b(?<![:_\.])(?:function|mutable\s+struct|struct|macro|quote|abstract\s+type|primitive\s+type|module|baremodule|where)\b'
+      scope: keyword.other.julia
+    - match: \b(for)\b
+      comment: special case for blocks to support tokenizing outer properly
+      captures:
+        0: keyword.control.julia
+      push:
+        - match: (?<!,|\s)(\s*\n)
+          pop: true
+        - match: \bouter\b
+          scope: keyword.other.julia
+        - include: main
+    - match: '\b(?<![:_])(?:if|else|elseif|while|begin|let|do|try|catch|finally|return|break|continue)\b'
+      scope: keyword.control.julia
+    - match: '\b(?<![:_])end\b'
+      scope: keyword.control.end.julia
+    - match: '\b(?<![:_])(?:global|local|const)\b'
+      scope: keyword.storage.modifier.julia
+    - match: '\b(?<![:_])(?:export)\b'
+      scope: keyword.control.export.julia
+    - match: '\b(?<![:_])(?:import)\b'
+      scope: keyword.control.import.julia
+    - match: '\b(?<![:_])(?:using)\b'
+      scope: keyword.control.using.julia
+    - match: '(@(\.|[[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*))'
+      scope: support.function.macro.julia
+  nest_parens_and_self:
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: nest_parens_and_self
+    - include: main
+  number:
+    - match: '((\b0(x|X)[0-9a-fA-F](_?[0-9a-fA-F])*)|(\b0o[0-7](_?[0-7])*)|(\b0b[0-1](_?[0-1])*)|((\b[0-9](_?[0-9])*\.?(_?[0-9]*))|(\.[0-9](_?[0-9])*))([eE][+-]?[0-9](_?[0-9])*)?(im\b)?|\bInf(32)?\b|\bNaN(32)?\b)'
+      scope: constant.numeric.julia
+    - match: \btrue\b|\bfalse\b|\bnothing\b|\bmissing\b
+      scope: constant.language.julia
+  operator:
+    - match: (?:->|<-|-->|=>)
+      scope: keyword.operator.arrow.julia
+    - match: (?::=|\+=|-=|\*=|//=|/=|\.//=|\./=|\.\*=|\\=|\.\\=|\^=|\.\^=|%=|\.%=|÷=|\.÷=|\|=|&=|\.&=|⊻=|\.⊻=|\$=|<<=|>>=|>>>=|=(?!=))
+      scope: keyword.operator.update.julia
+    - match: (?:<<|>>>|>>|\.>>>|\.>>|\.<<)
+      scope: keyword.operator.shift.julia
+    - match: '(?:\s*(::|>:|<:)\s*((?:(?:Union)?\([^)]*\)|[[:alpha:]_$∇][[:word:]⁺-ₜ!′\.]*(?:(?:{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*})|(?:".+?(?<!\\)"))?)))(?:\.\.\.)?'
+      captures:
+        1: keyword.operator.relation.julia
+        2: support.type.julia
+    - match: (?:===|(?<=\s)in(?=\s)|∈|\.∈|∉|\.∉|∋|\.∋|∌|\.∌|≈|\.≈|≉|\.≉|≠|\.≠|≡|\.≡|≢|\.≢|⊆|\.⊆|⊇|\.⊇|⊈|\.⊈|⊉|\.⊉|⊊|\.⊊|⊋|\.⊋|\.==|!==|!=|\.>=|\.>|\.<=|\.<|\.≤|\.≥|==|\.!=|\.=|\.!|<:|>:|:>|(?<!>)>=|(?<!<)<=|>|<|≥|≤)
+      scope: keyword.operator.relation.julia
+    - match: (?:\?:)
+      scope: keyword.operator.ternary.julia
+    - match: '(?:\|\||&&|(?<![[:word:]])!)'
+      scope: keyword.operator.boolean.julia
+    - match: '(?<=[[:word:]⁺-ₜ!′∇\)\]\}])(?::)'
+      scope: keyword.operator.range.julia
+    - match: (?:\|>)
+      scope: keyword.operator.applies.julia
+    - match: (?:\||\.\||\&|\.\&|~|\.~|⊻|\.⊻)
+      scope: keyword.operator.bitwise.julia
+    - match: (?:\+\+|--|\+|\.\+|-|\.\-|\*|\.\*|//(?!=)|\.//(?!=)|/|\./|%|\.%|\\|\.\\|\^|\.\^|÷|\.÷|⋅|\.⋅|∩|\.∩|∪|\.∪|×|√|∛)
+      scope: keyword.operator.arithmetic.julia
+    - match: (?:∘)
+      scope: keyword.operator.compose.julia
+    - match: (?:::|(?<=\s)isa(?=\s))
+      scope: keyword.operator.isa.julia
+    - match: '(?:\.(?=(?:@|_|\p{L}))|\.\.+)'
+      scope: keyword.operator.dots.julia
+    - match: (?:\$(?=.+))
+      scope: keyword.operator.interpolation.julia
+    - match: '([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)((''|(\.''))*\.?'')'
+      captures:
+        2: keyword.operator.transposed-variable.julia
+    - match: '(\])((?:''|(?:\.''))*\.?'')'
+      captures:
+        1: bracket.end.julia
+        2: keyword.operator.transposed-matrix.julia
+    - match: (\))((?:'|(?:\.'))*\.?')
+      captures:
+        1: bracket.end.julia
+        2: keyword.operator.transposed-parens.julia
+  string:
+    - match: (?:(@doc)\s((?:doc)?""")|(doc"""))
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.docstring.julia
+        - match: (""") ?(->)?
+          captures:
+            1: punctuation.definition.string.end.julia
+            2: keyword.operator.arrow.julia
+          pop: true
+        - include: string_escaped_char
+        - include: string_dollar_sign_interpolate
+    - match: (i?cxx)(""")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.cxx.julia
+        - meta_content_scope: source.cpp
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.cpp
+        - include: string_dollar_sign_interpolate
+    - match: '((i?cxxt?)|([rpv]cpp))(")'
+      captures:
+        1: support.function.macro.julia
+        4: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.cxx.julia
+        - meta_content_scope: source.cpp
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.cpp
+        - include: string_dollar_sign_interpolate
+    - match: (py)(""")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.python.julia
+        - meta_content_scope: source.python
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.python
+        - include: string_dollar_sign_interpolate
+    - match: (py)(")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.python.julia
+        - meta_content_scope: source.python
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.python
+        - include: string_dollar_sign_interpolate
+    - match: (js)(""")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.js.julia
+        - meta_content_scope: source.js
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.js
+        - include: string_dollar_sign_interpolate
+    - match: (js)(")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.js.julia
+        - meta_content_scope: source.js
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.js
+        - include: string_dollar_sign_interpolate
+    - match: (R)(""")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.R.julia
+        - meta_content_scope: source.r
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.r
+        - include: string_dollar_sign_interpolate
+    - match: (R)(")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.R.julia
+        - meta_content_scope: source.r
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:source.r
+        - include: string_dollar_sign_interpolate
+    - match: (raw)(""")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.quoted.other.julia
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+    - match: (raw)(")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.quoted.other.julia
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+    - match: (md)(""")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.markdown.julia
+        - meta_content_scope: source.gfm
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:text.md
+        - include: scope:source.gfm
+        - include: string_dollar_sign_interpolate
+    - match: (md)(")
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: embed.markdown.julia
+        - meta_content_scope: source.gfm
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: scope:text.md
+        - include: scope:source.gfm
+        - include: string_dollar_sign_interpolate
+    - match: ^\s?(doc)?(""")\s?$
+      comment: |
+        This only matches docstrings that start and end with triple quotes on
+                            their own line in the void
+      captures:
+        1: support.function.macro.julia
+        2: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.docstring.julia
+        - match: (""")
+          captures:
+            1: punctuation.definition.string.end.julia
+          pop: true
+        - include: string_escaped_char
+        - include: string_dollar_sign_interpolate
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.quoted.single.julia
+        - match: "'(?!')"
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: string_escaped_char
+    - match: '(?<![[:word:]⁺-ₜ!′∇])"""'
+      comment: multi-line string with triple double quotes
+      captures:
+        0: punctuation.definition.string.multiline.begin.julia
+      push:
+        - meta_scope: string.quoted.triple.double.julia
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.multiline.end.julia
+          pop: true
+        - include: string_escaped_char
+        - include: string_dollar_sign_interpolate
+    - match: '(?<![[:word:]⁺-ₜ!′∇])"(?!"")'
+      comment: String with single pair of double quotes. Regex matches isolated double quote
+      captures:
+        0: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.quoted.double.julia
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: string_escaped_char
+        - include: string_dollar_sign_interpolate
+    - match: r"""
+      captures:
+        0: punctuation.definition.string.regexp.begin.julia
+      push:
+        - meta_scope: string.regexp.julia
+        - match: '(""")([imsx]{0,4})?'
+          captures:
+            1: punctuation.definition.string.regexp.end.julia
+            2: keyword.other.option-toggle.regexp.julia
+          pop: true
+        - include: string_escaped_char
+    - match: r"
+      captures:
+        0: punctuation.definition.string.regexp.begin.julia
+      push:
+        - meta_scope: string.regexp.julia
+        - match: '(")([imsx]{0,4})?'
+          captures:
+            1: punctuation.definition.string.regexp.end.julia
+            2: keyword.other.option-toggle.regexp.julia
+          pop: true
+        - include: string_escaped_char
+    - match: '(?<!")([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)"""'
+      captures:
+        0: punctuation.definition.string.begin.julia
+        1: support.function.macro.julia
+      push:
+        - meta_scope: string.quoted.other.julia
+        - match: '(""")([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)?'
+          captures:
+            1: punctuation.definition.string.end.julia
+            2: punctuation.definition.string.end.julia
+          pop: true
+        - include: string_escaped_char
+    - match: '(?<!")([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)"'
+      captures:
+        0: punctuation.definition.string.begin.julia
+        1: support.function.macro.julia
+      push:
+        - meta_scope: string.quoted.other.julia
+        - match: '(?<![^\\]\\)(")([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)?'
+          captures:
+            1: punctuation.definition.string.end.julia
+            2: punctuation.definition.string.end.julia
+          pop: true
+        - include: string_escaped_char
+    - match: "`"
+      captures:
+        0: punctuation.definition.string.begin.julia
+      push:
+        - meta_scope: string.interpolated.backtick.julia
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.end.julia
+          pop: true
+        - include: string_escaped_char
+        - include: string_dollar_sign_interpolate
+  string_dollar_sign_interpolate:
+    - match: '\$[[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*'
+      scope: variable.interpolation.julia
+    - match: \$\(
+      comment: |
+        `punctuation.section.embedded`, `constant.escape`,
+                            & `meta.embedded.line` were considered but appear to have even spottier
+                            support among popular syntaxes.
+      push:
+        - meta_scope: variable.interpolation.julia
+        - match: \)
+          pop: true
+        - include: nest_parens_and_self
+        - include: main
+  string_escaped_char:
+    - match: '\\(\\|[0-3]\d{,2}|[4-7]\d?|x[a-fA-F0-9]{,2}|u[a-fA-F0-9]{,4}|U[a-fA-F0-9]{,8}|.)'
+      scope: constant.character.escape.julia
+  symbol:
+    - match: '(?<![[:word:]⁺-ₜ!′∇\)\]\}]):(?:[[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)'
+      comment: This is string.quoted.symbol.julia in tpoisot's package
+      scope: constant.other.symbol.julia
+  type_decl:
+    - match: '(?>!:_)(?:struct|mutable\s+struct|abstract\s+type|primitive\s+type)\s+([[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*)(\s*(<:)\s*[[:alpha:]_$∇][[:word:]⁺-ₜ!′∇]*(?:{.*})?)?'
+      scope: meta.type.julia
+      captures:
+        1: entity.name.type.julia
+        2: entity.other.inherited-class.julia
+        3: punctuation.separator.inheritance.julia

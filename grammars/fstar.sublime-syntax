@@ -1,0 +1,209 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: F*
+file_extensions:
+  - fst
+  - fsti
+  - fs7
+scope: source.fstar
+contexts:
+  main:
+    - include: comments
+    - include: modules
+    - include: options
+    - include: expr
+  commentblock:
+    - match: \(\*
+      captures:
+        0: punctuation.definition.comment.begin.fstar
+      push:
+        - meta_scope: comment.block.fstar
+        - match: \*\)
+          captures:
+            0: punctuation.definition.comment.end.fstar
+          pop: true
+        - include: commentblock
+  comments:
+    - match: //.*
+      scope: comment.line.fstar
+    - include: commentblock
+  expr:
+    - include: comments
+    - match: '''[a-zA-Z0-9_]+\b'
+      scope: variable.other.generic-type.fstar
+    - include: strings
+    - match: \b(int|nat|pos|bool|unit|string|Type|Type0|eqtype)\b
+      scope: support.class.base.fstar
+    - match: '(/\\|\\/|<:|<@|[(][|]|[|][)]|u#|~>|->|<--|<-|<==>|==>|[?][.]|[.]\[|[.]\(|[{][:]pattern|::|:=|;;|[!][{]|\[[|]|[|]>|[|]\]|[~+^&?$|#,.:;=\[\](){}-])'
+      scope: support.class.base.fstar
+    - match: \b(Pure|PURE|Tot|STATE|ST|St|Stack|StackInline|HST|ALL|All|EXN|Exn|Ex|DIV|Div|GHOST|Ghost|GTot|Lemma)\b
+      scope: constant.language.monad.fstar
+    - match: '\b(_|[(]\s*[)]|\[\s*\])\b'
+      scope: constant.language.fstar
+    - match: \b(let|in|type|kind|val|rec|and|if|then|else|assume|admit|assert|assert_norm|squash|failwith|SMTPat|SMTPatOr|hasEq|fun|function|forall|exists|exception|by|new_effect|reify|try|synth|with|when)\b
+      scope: keyword.other.fstar
+    - match: \b(abstract|attributes|noeq|unopteq|inline|inline_for_extraction|irreducible|logic|mutable|new|noextract|private|reifiable|reflectable|total|unfold|unfoldable)\b
+      scope: storage.modifier.fstar
+    - match: '\b([tT]rue|[fF]alse)\b'
+      scope: constant.language.boolean.fstar
+    - match: '\b0[xX][0-9a-fA-F]+[uU]?[zyslL]?\b'
+      scope: constant.numeric.hex.js
+    - match: '\b[0-9]+[uU]?[zyslL]?\b'
+      scope: constant.numeric.decimal.js
+    - match: |-
+        (?x)
+        (?:
+          (?:\b[0-9]+(\.)[0-9]+[eE][+-]?[0-9]+\b)| # 1.1E+3
+          (?:\b[0-9]+(\.)[eE][+-]?[0-9]+\b)|       # 1.E+3
+          (?:\B(\.)[0-9]+[eE][+-]?[0-9]+\b)|       # .1E+3
+          (?:\b[0-9]+[eE][+-]?[0-9]+\b)|            # 1E+3
+          (?:\b[0-9]+(\.)[0-9]+\b)|                # 1.1
+          (?:\b[0-9]+(\.)\B)|                      # 1.
+          (?:\B(\.)[0-9]+\b)|                      # .1
+          (?:\b[0-9]+\b(?!\.))                     # 1
+        )[L]?[fF]?
+      captures:
+        0: constant.numeric.decimal.fstar
+        1: meta.delimiter.decimal.period.fstar
+        2: meta.delimiter.decimal.period.fstar
+        3: meta.delimiter.decimal.period.fstar
+        4: meta.delimiter.decimal.period.fstar
+        5: meta.delimiter.decimal.period.fstar
+        6: meta.delimiter.decimal.period.fstar
+    - match: '([(])\s*(requires|ensures|decreases)?'
+      captures:
+        1: punctuation.definition.scope.begin.bracket.round.fstar
+        2: keyword.other.fstar
+      push:
+        - match: "([)])"
+          captures:
+            1: punctuation.definition.scope.end.bracket.round.fstar
+          pop: true
+        - include: expr
+    - match: "([(])"
+      captures:
+        1: punctuation.definition.clause.begin.bracket.round.fstar
+      push:
+        - match: "([)])"
+          captures:
+            1: punctuation.definition.clause.end.bracket.round.fstar
+          pop: true
+        - include: expr
+    - match: '([%]\[)'
+      captures:
+        1: constant.language.termorder.begin.fstar
+      push:
+        - match: '(\])'
+          captures:
+            1: constant.language.termorder.end.fstar
+          pop: true
+        - include: expr
+    - match: '(\[[@])'
+      captures:
+        1: storage.modifier.attributes.begin.fstar
+      push:
+        - match: '(\])'
+          captures:
+            1: storage.modifier.attributes.end.fstar
+          pop: true
+        - include: expr
+    - match: \b(match)\b
+      captures:
+        1: keyword.control.match.fstar
+      push:
+        - match: \b(with)\b
+          captures:
+            1: keyword.control.with.fstar
+          pop: true
+        - include: expr
+    - match: \b(begin)\b
+      captures:
+        1: keyword.control.begin.fstar
+      push:
+        - match: \b(end)\b
+          captures:
+            1: keyword.control.end.fstar
+          pop: true
+        - include: expr
+    - match: '\b([\p{Lu}\p{Lt}][\p{Lu}\p{Lt}\p{Ll}\p{Lo}\p{Lm}\d''_]*)\b(?!\s*[.])'
+      captures:
+        1: support.function.constructor.fstar
+    - match: '\b((?:[\p{Lu}\p{Lt}][\p{Lu}\p{Lt}\p{Ll}\p{Lo}\p{Lm}\d''_]*[.])+)'
+      captures:
+        1: variable.other.module.fstar
+    - match: '\b([\p{Ll}_][\p{Lu}\p{Lt}\p{Ll}\p{Lo}\p{Lm}\d''_]*)'
+      captures:
+        1: entity.name.function.fstar
+  modules:
+    - match: '\b(module)\s+([\p{Lu}\p{Lt}][\p{Lu}\p{Lt}\p{Ll}\p{Lo}\p{Lm}\d''_]*)\s*(=)'
+      captures:
+        1: keyword.control.module.fstar
+        2: variable.other.module-alias.fstar
+        3: keyword.operator.assignment.fstar
+      push:
+        - match: '\b((?<name>[\p{Lu}\p{Lt}][\p{Lu}\p{Lt}\p{Ll}\p{Lo}\p{Lm}\d''_]*)(?:[.]\g<name>)*)\b'
+          captures:
+            1: variable.other.module.fstar
+          pop: true
+    - match: \b(module|open|include)\b
+      captures:
+        1: keyword.control.module.fstar
+      push:
+        - match: '\b((?<name>[\p{Lu}\p{Lt}][\p{Lu}\p{Lt}\p{Ll}\p{Lo}\p{Lm}\d''_]*)(?:[.]\g<name>)*)\b'
+          captures:
+            1: variable.other.module.fstar
+          pop: true
+  op_names:
+    - match: \bop(?:_(?:Multiply|Star|Slash|Percent|Plus|Substraction|Equals|Less|Greater|Bang|Dollar|Amp|Dot|Hat|Colon|Pipe|Question))+\b
+      scope: entity.name.tag.fstar
+  options:
+    - match: '(#(?:re)?set-options)\s*(["])((?:[^"]|\\")*)(["])'
+      captures:
+        1: keyword.control.setoption.fstar
+        2: punctuation.definition.options.begin.fstar
+        3: string.quoted.double.fstar
+        4: punctuation.definition.options.end.fstar
+  string_escapes:
+    - match: '\\u(?![A-Fa-f0-9]{4}|{[A-Fa-f0-9]+})[^''"]*'
+      scope: invalid.illegal.unicode-escape.fstar
+    - match: '\\u(?:[A-Fa-f0-9]{4}|({)([A-Fa-f0-9]+)(}))'
+      scope: constant.character.escape.js
+      captures:
+        1: punctuation.definition.unicode-escape.begin.bracket.curly.fstar
+        3: punctuation.definition.unicode-escape.end.bracket.curly.fstar
+    - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+      scope: constant.character.escape.fstar
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.fstar
+      push:
+        - meta_scope: string.quoted.double.fstar
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.fstar
+          pop: true
+        - include: string_escapes
+    - match: "'"
+      captures:
+        0: punctuation.definition.char.begin.fstar
+      push:
+        - meta_scope: string.quoted.single.fstar
+        - match: "'"
+          captures:
+            0: punctuation.definition.char.end.fstar
+          pop: true
+        - include: string_escapes
+        - match: ".{2,}"
+          scope: invalid.illegal.string.js
+    - match: "`"
+      captures:
+        0: punctuation.definition.operator.begin.fstar
+      push:
+        - meta_scope: string.quoted.template.fstar
+        - match: "`"
+          captures:
+            0: punctuation.definition.operator.end.fstar
+          pop: true
+        - include: op_names

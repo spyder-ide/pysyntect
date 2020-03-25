@@ -1,0 +1,61 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: MLIR
+file_extensions:
+  - mlir
+scope: source.mlir
+contexts:
+  main:
+    - include: comment
+    - include: string
+    - match: '\b(func)\b\s*(@[\w_][\w\d_.$]*)'
+      scope: support.function.mlir
+      captures:
+        1: keyword.function.mlir
+        2: entity.name.function.mlir
+    - match: \b(attributes|br|call|constant|loc|return)\b
+      scope: keyword.module.mlir
+    - include: identifier
+    - include: branch_target
+    - include: attribute
+    - include: types
+    - include: integer
+  comment:
+    - match: //.*$
+      scope: comment.line.double-slash.mlir
+  attribute:
+    - match: '\W[\w_][\w\d_.$]*\s*='
+      scope: meta.attribute.mlir
+  branch_target:
+    - match: '\^bb[\w\d_$\.-]+'
+      scope: entity.name.label.mlir
+  identifier:
+    - match: '[\%#@][\w_][\w\d_.$]*'
+      scope: meta.identifier.mlir
+      captures:
+        0: variable.mlir
+  integer:
+    - match: '[\Wx]([0-9]+)'
+      scope: meta.identifier.mlir
+      captures:
+        1: constant.numeric.mlir
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.mlir
+      push:
+        - meta_scope: string.quoted.double.mlir
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.mlir
+          pop: true
+        - match: '\\[nt"]'
+          scope: constant.character.escape.mlir
+        - match: \\.
+          scope: invalid.illegal.mlir
+  types:
+    - match: '[\Wx](index|i[1-9][0-9]*|f16|bf16|f32|f64|memref|tensor|vector)\b'
+      scope: meta.types.simple.mlir
+      captures:
+        1: storage.type.mlir

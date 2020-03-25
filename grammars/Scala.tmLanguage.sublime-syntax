@@ -1,0 +1,431 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Scala
+file_extensions:
+  - scala
+first_line_match: ^#!/.*\b\w*scala\b
+scope: source.scala
+contexts:
+  main:
+    - include: code
+  backQuotedVariable:
+    - match: "`[^`]+`"
+  block-comments:
+    - match: /\*\*/
+      scope: comment.block.empty.scala
+      captures:
+        0: punctuation.definition.comment.scala
+    - match: ^\s*(/\*\*)(?!/)
+      captures:
+        1: punctuation.definition.comment.scala
+      push:
+        - meta_scope: comment.block.documentation.scala
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.scala
+          pop: true
+        - match: (@param)\s+(\S+)
+          captures:
+            1: keyword.other.documentation.scaladoc.scala
+            2: variable.parameter.scala
+        - match: (@(?:tparam|throws))\s+(\S+)
+          captures:
+            1: keyword.other.documentation.scaladoc.scala
+            2: entity.name.class
+        - match: '@(return|see|note|example|constructor|usecase|author|version|since|todo|deprecated|migration|define|inheritdoc)\b'
+          scope: keyword.other.documentation.scaladoc.scala
+        - match: '(\[\[)([^\]]+)(\]\])'
+          captures:
+            1: punctuation.definition.documentation.link.scala
+            2: string.other.link.title.markdown
+            3: punctuation.definition.documentation.link.scala
+        - include: block-comments
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.scala
+      push:
+        - meta_scope: comment.block.scala
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.scala
+          pop: true
+        - include: block-comments
+  char-literal:
+    - match: "'"
+      captures:
+        0: punctuation.definition.character.begin.scala
+      push:
+        - meta_scope: string.quoted.other constant.character.literal.scala
+        - match: "'|$"
+          captures:
+            0: punctuation.definition.character.end.scala
+          pop: true
+        - match: '\\(?:[btnfr\\"'']|[0-7]{1,3}|u[0-9A-Fa-f]{4})'
+          scope: constant.character.escape.scala
+        - match: \\.
+          scope: invalid.illegal.unrecognized-character-escape.scala
+        - match: "[^']{2,}"
+          scope: invalid.illegal.character-literal-too-long
+        - match: "(?<!')[^']"
+          scope: invalid.illegal.character-literal-too-long
+  code:
+    - include: script-header
+    - include: storage-modifiers
+    - include: declarations
+    - include: inheritance
+    - include: imports
+    - include: comments
+    - include: strings
+    - include: initialization
+    - include: xml-literal
+    - include: keywords
+    - include: constants
+    - include: scala-symbol
+    - include: scala-quoted
+    - include: char-literal
+    - include: empty-parentheses
+    - include: parameter-list
+    - include: qualifiedClassName
+    - include: backQuotedVariable
+    - include: curly-braces
+    - include: meta-brackets
+    - include: meta-bounds
+    - include: meta-colons
+  comments:
+    - include: block-comments
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.scala
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.scala
+          push:
+            - meta_scope: comment.line.double-slash.scala
+            - match: \n
+              pop: true
+  constants:
+    - match: \b(false|null|true)\b
+      scope: constant.language.scala
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.[0-9]+)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?|[0-9]+)([LlFfDd]|UL|ul)?\b'
+      scope: constant.numeric.scala
+    - match: \b(this|super)\b
+      scope: variable.language.scala
+  curly-braces:
+    - match: '\{'
+      captures:
+        0: punctuation.section.block.begin.scala
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.block.end.scala
+          pop: true
+        - include: code
+  declarations:
+    - match: '(?x)\b(def)\s+(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))'
+      captures:
+        1: keyword.declaration.scala
+        2: entity.name.function.declaration
+    - match: '\b(trait)\s+([^\s\{\(\[]+)'
+      captures:
+        1: keyword.declaration.scala
+        2: entity.name.class.declaration
+    - match: '\b(?:(case)\s+)?(class|object)\s+([^\s\{\(\[]+)'
+      captures:
+        1: keyword.declaration.scala
+        2: keyword.declaration.scala
+        3: entity.name.class.declaration
+    - match: '\b(type)\s+(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))'
+      captures:
+        1: keyword.declaration.scala
+        2: entity.name.type.declaration
+    - match: '\b(val)\s+([A-Z\p{Lt}\p{Lu}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?(\s*,\s*[A-Z\p{Lt}\p{Lu}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?)*)\b'
+      captures:
+        1: keyword.declaration.stable.scala
+        2: constant.other.declaration.scala
+    - match: '\b(?:(val)|(var))\s+(?:(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))|(?=\())'
+      captures:
+        1: keyword.declaration.stable.scala
+        2: keyword.declaration.volatile.scala
+        3: variable.other.declaration.scala
+    - match: '\b(package)\s+(object)\s+([^\s\{\(\[]+)'
+      captures:
+        1: keyword.other.scoping.scala
+        2: keyword.declaration.scala
+        3: entity.name.class.declaration
+    - match: \b(package)\s+
+      captures:
+        1: keyword.other.import.scala
+      push:
+        - meta_scope: meta.package.scala
+        - match: '(?<=[\n;])'
+          pop: true
+        - include: comments
+        - match: '(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))'
+          scope: entity.name.package.scala
+        - match: \.
+          scope: punctuation.definition.package
+  empty-parentheses:
+    - match: (\(\))
+      scope: meta.parentheses.scala
+      captures:
+        1: meta.bracket.scala
+  imports:
+    - match: \b(import)\s+
+      captures:
+        1: keyword.other.import.scala
+      push:
+        - meta_scope: meta.import.scala
+        - match: '(?<=[\n;])'
+          pop: true
+        - include: comments
+        - match: (given)(?=\s)
+          scope: keyword.given.import.scala
+        - match: '(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))'
+          scope: entity.name.import.scala
+        - match: \.
+          scope: punctuation.definition.import
+        - match: "{"
+          captures:
+            0: meta.bracket.scala
+          push:
+            - meta_scope: meta.import.selector.scala
+            - match: "}"
+              captures:
+                0: meta.bracket.scala
+              pop: true
+            - match: '(?x)\s*(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))\s*(=>)\s*(`[^`]+`|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))\s*'
+              captures:
+                1: entity.name.import.renamed-from.scala
+                2: keyword.other.arrow.scala
+                3: entity.name.import.renamed-to.scala
+            - match: '(given)(\s+(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))?(?=\s*[,}])'
+              captures:
+                1: keyword.given.import.scala
+                2: entity.name.type.import.scala
+            - match: '([^\s.,}]+)'
+              scope: entity.name.import.scala
+  inheritance:
+    - match: '(extends|with|derives)\s+([^\s\{\(\[\]]+)'
+      captures:
+        1: keyword.declaration.scala
+        2: entity.other.inherited-class.scala
+  initialization:
+    - match: '\b(new)\s+([^\s,\{\}\(\)\[\]]+)'
+      captures:
+        1: keyword.declaration.scala
+        2: entity.name.class
+  keywords:
+    - match: \b(return|throw)\b
+      scope: keyword.control.flow.jump.scala
+    - match: \b(classOf|isInstanceOf|asInstanceOf)\b
+      scope: support.function.type-of.scala
+    - match: \b(else|if|then|do|while|for|yield|match|case)\b
+      scope: keyword.control.flow.scala
+    - match: '^\s*end(?=\s+(if|while|for|match|(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))\s*(//.*|/\*(?!.*\*/\s*\S.*).*)?$)'
+      scope: keyword.control.flow.end.scala
+    - match: \b(catch|finally|try)\b
+      scope: keyword.control.exception.scala
+    - match: (==?|!=|<=|>=|<>|<|>)
+      scope: keyword.operator.comparison.scala
+    - match: '(\-|\+|\*|/(?![/*])|%|~)'
+      scope: keyword.operator.arithmetic.scala
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.scala
+    - match: (<-|←|->|→|=>|⇒|\?|\:+|@|\|)+
+      scope: keyword.operator.scala
+  meta-bounds:
+    - match: "<%|=:=|<:<|<%<|>:|<:"
+      comment: "For themes: Matching view bounds"
+      scope: meta.bounds.scala
+  meta-brackets: []
+  meta-colons: []
+  parameter-list:
+    - match: '(?<=[^\._$a-zA-Z0-9])(`[^`]+`|[_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?)\s*(:)\s+'
+      captures:
+        1: variable.parameter.scala
+        2: meta.colon.scala
+  qualifiedClassName:
+    - match: '(\b([A-Z][\w]*))'
+      captures:
+        1: entity.name.class
+  scala-quoted:
+    - match: '(''\{|''\[)(?!'')'
+      scope: constant.other.quoted.scala
+  scala-symbol:
+    - match: '(?>''(?:[A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}0-9]*(?:(?<=_)[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+)?|[!#%&*+\-\/:<>=?@^|~\p{Sm}\p{So}]+))(?!'')'
+      scope: constant.other.symbol.scala
+  script-header:
+    - match: ^#!(.*)$
+      scope: comment.block.shebang.scala
+      captures:
+        1: string.unquoted.shebang.scala
+  storage-modifiers:
+    - match: '\b(private\[\S+\]|protected\[\S+\]|private|protected)\b'
+      scope: storage.modifier.access
+    - match: \b(synchronized|@volatile|abstract|final|lazy|sealed|implicit|given|enum|inline |opaque |override|@transient|@native)\b
+      scope: storage.modifier.other
+  string-interpolation:
+    - match: \$\$
+      scope: constant.character.escape.interpolation.scala
+    - match: '(\$)([A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}][[A-Z\p{Lt}\p{Lu}_a-z\p{Lo}\p{Nl}\p{Ll}0-9]]*)'
+      scope: meta.template.expression.scala
+      captures:
+        1: punctuation.definition.template-expression.begin.scala
+    - match: '\$\{'
+      captures:
+        0: punctuation.definition.template-expression.begin.scala
+      push:
+        - meta_scope: meta.template.expression.scala
+        - meta_content_scope: meta.embedded.line.scala
+        - match: '\}'
+          captures:
+            0: punctuation.definition.template-expression.end.scala
+          pop: true
+        - include: code
+  strings:
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.scala
+      push:
+        - meta_scope: string.quoted.triple.scala
+        - match: '"""(?!")'
+          captures:
+            0: punctuation.definition.string.end.scala
+          pop: true
+        - match: '\\\\|\\u[0-9A-Fa-f]{4}'
+          scope: constant.character.escape.scala
+    - match: '\b([A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}]+)(""")'
+      captures:
+        1: keyword.interpolation.scala
+        2: string.quoted.triple.interpolated.scala punctuation.definition.string.begin.scala
+      push:
+        - match: '"""(?!")'
+          captures:
+            0: string.quoted.triple.interpolated.scala punctuation.definition.string.end.scala
+          pop: true
+        - include: string-interpolation
+        - match: '\\\\|\\u[0-9A-Fa-f]{4}'
+          scope: constant.character.escape.scala
+        - match: .
+          scope: string.quoted.triple.interpolated.scala
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.scala
+      push:
+        - meta_scope: string.quoted.double.scala
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.scala
+          pop: true
+        - match: '\\(?:[btnfr\\"'']|[0-7]{1,3}|u[0-9A-Fa-f]{4})'
+          scope: constant.character.escape.scala
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.scala
+    - match: '\b([A-Z\p{Lt}\p{Lu}_a-z\$\p{Lo}\p{Nl}\p{Ll}]+)(")'
+      captures:
+        1: keyword.interpolation.scala
+        2: string.quoted.double.interpolated.scala punctuation.definition.string.begin.scala
+      push:
+        - match: '"'
+          captures:
+            0: string.quoted.double.interpolated.scala punctuation.definition.string.end.scala
+          pop: true
+        - include: string-interpolation
+        - match: '\\(?:[btnfr\\"'']|[0-7]{1,3}|u[0-9A-Fa-f]{4})'
+          scope: constant.character.escape.scala
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.scala
+        - match: .
+          scope: string.quoted.double.interpolated.scala
+  xml-doublequotedString:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.xml
+      push:
+        - meta_scope: string.quoted.double.xml
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.xml
+          pop: true
+        - include: xml-entity
+  xml-embedded-content:
+    - match: "{"
+      captures:
+        0: meta.bracket.scala
+      push:
+        - meta_scope: meta.source.embedded.scala
+        - match: "}"
+          captures:
+            0: meta.bracket.scala
+          pop: true
+        - include: code
+    - match: " (?:([-_a-zA-Z0-9]+)((:)))?([_a-zA-Z-]+)="
+      captures:
+        1: entity.other.attribute-name.namespace.xml
+        2: entity.other.attribute-name.xml
+        3: punctuation.separator.namespace.xml
+        4: entity.other.attribute-name.localname.xml
+    - include: xml-doublequotedString
+    - include: xml-singlequotedString
+  xml-entity:
+    - match: "(&)([:a-zA-Z_][:a-zA-Z0-9_.-]*|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.xml
+      captures:
+        1: punctuation.definition.constant.xml
+        3: punctuation.definition.constant.xml
+  xml-literal:
+    - match: '(<)((?:([_a-zA-Z0-9][_a-zA-Z0-9]*)((:)))?([_a-zA-Z0-9][-_a-zA-Z0-9:]*))(?=(\s[^>]*)?></\2>)'
+      comment: We do not allow a tag name to start with a - since this would likely conflict with the <- operator. This is not very common for tag names anyway.  Also code such as -- if (val <val2 || val> val3) will falsly be recognized as an xml tag.  The solution is to put a space on either side of the comparison operator
+      captures:
+        1: punctuation.definition.tag.xml
+        3: entity.name.tag.namespace.xml
+        4: entity.name.tag.xml
+        5: punctuation.separator.namespace.xml
+        6: entity.name.tag.localname.xml
+      push:
+        - meta_scope: meta.tag.no-content.xml
+        - match: "(>(<))/(?:([-_a-zA-Z0-9]+)((:)))?([-_a-zA-Z0-9:]*[_a-zA-Z0-9])(>)"
+          captures:
+            1: punctuation.definition.tag.xml
+            2: meta.scope.between-tag-pair.xml
+            3: entity.name.tag.namespace.xml
+            4: entity.name.tag.xml
+            5: punctuation.separator.namespace.xml
+            6: entity.name.tag.localname.xml
+            7: punctuation.definition.tag.xml
+          pop: true
+        - include: xml-embedded-content
+    - match: "(</?)(?:([_a-zA-Z0-9][-_a-zA-Z0-9]*)((:)))?([_a-zA-Z0-9][-_a-zA-Z0-9:]*)(?=[^>]*?>)"
+      captures:
+        1: punctuation.definition.tag.xml
+        2: entity.name.tag.namespace.xml
+        3: entity.name.tag.xml
+        4: punctuation.separator.namespace.xml
+        5: entity.name.tag.localname.xml
+      push:
+        - meta_scope: meta.tag.xml
+        - match: (/?>)
+          captures:
+            1: punctuation.definition.tag.xml
+            2: entity.name.tag.namespace.xml
+            3: entity.name.tag.xml
+            4: punctuation.separator.namespace.xml
+            5: entity.name.tag.localname.xml
+          pop: true
+        - include: xml-embedded-content
+    - include: xml-entity
+  xml-singlequotedString:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.xml
+      push:
+        - meta_scope: string.quoted.single.xml
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.xml
+          pop: true
+        - include: xml-entity

@@ -1,0 +1,19 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Logos
+file_extensions:
+  - xm
+  - x
+  - xi
+  - xmi
+scope: source.logos
+contexts:
+  main:
+    - match: "%(init|hook|subclass|group|class|new|ctor|end|config|orig|log|hookf|dtor|property|c)"
+      scope: keyword.source.logos
+    - match: '%c\(([A-Za-z$_]+)\)'
+      captures:
+        1: keyword.source.logos
+    - include: scope:source.objc
+    - include: scope:source.c++

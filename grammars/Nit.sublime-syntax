@@ -1,0 +1,122 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nit
+file_extensions:
+  - nit
+scope: source.nit
+contexts:
+  main:
+    - include: strings
+    - include: markup
+    - include: comments
+    - include: keyword
+    - include: constant
+    - include: storage
+    - include: variable
+    - include: entity
+  character:
+    - match: '(''[^\\'']''|''\\.'')'
+      scope: string.character.nit
+  comment-single-line:
+    - match: "#.*"
+      scope: comment.singleline.nit
+  comments:
+    - include: comment-single-line
+  constant:
+    - match: "-?(([0-9]*.[0-9])|([0-9]+))+e-?[0-9]+"
+      scope: constant.numeric.float_exp.nit
+    - match: '-?[0-9]*\.[0-9]+'
+      scope: constant.numeric.float.nit
+    - match: "-?0(x|X)[0-9A-Fa-f_]+((u|i)(8|(16)|(32)))?"
+      scope: constant.numeric.hex.nit
+    - match: "-?0(o|O)[0-7_]+((u|i)(8|(16)|(32)))?"
+      scope: constant.numeric.oct.nit
+    - match: "-?0(b|B)[0-1_]+((u|i)(8|(16)|(32)))?"
+      scope: constant.numeric.bin.nit
+    - match: "-?[0-9][0-9_]*((u|i)(8|(16)|(32)))?"
+      scope: constant.numeric.dec.nit
+    - match: \b(true|false|null)\b
+      scope: constant.language.nit
+  entity:
+    - match: "[A-Z][a-zA-Z0-9_]*"
+      scope: entity.name.type.nit
+    - match: "_[a-z][a-zA-Z0-9_]*"
+      scope: entity.other.attribute-name.nit
+  inlongstring-code:
+    - match: "{{{"
+      push:
+        - meta_scope: incode.nit
+        - match: "}}}"
+          pop: true
+        - include: main
+  inshortstring-code:
+    - match: "{"
+      push:
+        - meta_scope: string.quoted.double.untitled
+        - match: "}"
+          pop: true
+        - include: main
+  keyword:
+    - match: \b(label|if|then|loop|else|while|for|do|end|in|with)\b
+      scope: keyword.control.nit
+    - match: \b(return|continue|break|abort)\b
+      scope: keyword.breaks.nit
+    - match: \b(nullable|once|new|var)\b
+      scope: keyword.declaration.nit
+    - match: \b(is)\b
+      scope: keyword.annot.nit
+    - match: \b(isa|as|type|isset)\b
+      scope: keyword.types.nit
+    - match: \b(assert|__debug__|super|implies)\b
+      scope: keyword.misc.nit
+    - match: '(==|\+=|-=|!=|=|!|@|<=>|<=|<<|<|>=|>>|>|\(|\)|\[|\]|,|::|:|\.\.\.|\.\.|\.|\+|-|\*\*|\*|/|%|)'
+      scope: keyword.operator.nit
+    - match: \b(and|not|or)\b
+      scope: keyword.operator.boolean.nit
+  long-tquote-alt-string:
+    - match: "'''"
+      push:
+        - meta_scope: string.triple.alt.nit
+        - match: "'''"
+          pop: true
+        - include: inlongstring-code
+  long-tquote-string:
+    - match: \"\"\"
+      push:
+        - meta_scope: string.triple.nit
+        - match: \"\"\"
+          pop: true
+        - include: inlongstring-code
+        - match: '([^\\]|\\.)'
+          scope: string.char.nit
+  markup:
+    - match: "`{"
+      push:
+        - meta_scope: markup.raw.nit
+        - match: "`}"
+          pop: true
+  simple-string:
+    - match: \"
+      push:
+        - meta_scope: string.quoted.double.untitled
+        - match: \"
+          pop: true
+        - include: inshortstring-code
+        - match: '([^\\]|\\.)'
+          scope: string.char.nit
+  storage:
+    - match: \b(fun|init|redef|class|interface|module|import|package|abstract|universal|enum)\b
+      scope: storage.type.nit
+    - match: \b(private|protected|public|intrude|extern)\b
+      scope: storage.modifier.nit
+  strings:
+    - include: long-tquote-alt-string
+    - include: long-tquote-string
+    - include: simple-string
+    - include: character
+  variable:
+    - match: \b(self)\b
+      scope: variable.language.nit
+    - match: "[a-z][a-zA-Z0-9_]*"
+      scope: variable.other.nit

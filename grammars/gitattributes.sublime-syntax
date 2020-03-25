@@ -1,0 +1,65 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: .gitattributes
+file_extensions:
+  - gitattributes
+  - git/info/attributes
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		git-?ignore
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		git-?ignore
+  	(?=\s|:|$)
+scope: source.gitattributes
+contexts:
+  main:
+    - include: comment
+    - include: pattern
+    - include: scope:source.gitignore#escape
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.gitattributes
+      push:
+        - meta_scope: comment.line.number-sign.gitattributes
+        - match: $
+          pop: true
+  attribute:
+    - match: '([-!](?=\S))?+([^-A-Za-z0-9_.\s]\S*)|([-!])(?=\s|$)'
+      scope: meta.attribute.gitattributes
+      captures:
+        2: invalid.illegal.syntax.bad-name.gitattributes
+        3: invalid.illegal.syntax.bad-name.gitattributes
+    - match: '(-|!)?([^\s=]+)(?:(=)([^\s]*))?'
+      scope: meta.attribute.gitattributes
+      captures:
+        2: variable.parameter.attribute.gitattributes
+        3: punctuation.definition.assignment.equals-sign.gitattributes
+        4: constant.language.other.gitattributes
+  attributePrefix:
+    - match: "-"
+      scope: keyword.operator.logical.not.negation.gitattributes
+    - match: "!"
+      scope: keyword.operator.unset.delete.gitattributes
+  pattern:
+    - match: '(?=[^#\s])'
+      push:
+        - meta_scope: meta.pattern.gitattributes
+        - match: $|(?=#)
+          pop: true
+        - include: scope:source.gitignore#patternInnards
+        - match: \s
+          push:
+            - meta_scope: meta.attribute-list.gitattributes
+            - match: (?=$)
+              pop: true
+            - include: attribute

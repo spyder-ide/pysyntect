@@ -1,0 +1,80 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nemerle
+file_extensions:
+  - n
+scope: source.nemerle
+contexts:
+  main:
+    - match: '(^[ \t]+)?(?=//)'
+      captures:
+        1: punctuation.whitespace.comment.leading.nemerle
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: //
+          captures:
+            0: punctuation.definition.comment.nemerle
+          push:
+            - meta_scope: comment.line.double-slash.nemerle
+            - match: \n
+              pop: true
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.nemerle
+      push:
+        - meta_scope: comment.block.nemerle
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.nemerle
+          pop: true
+    - match: \b(|false|null|true)\b
+      scope: constant.language.nemerle
+    - match: '\b(([0-9]+(\.|\_)?[0-9]*(b|bu|d|f|L|LU|m|u|ub|UL)?)|(0(b|o|x)[0-9]+))\b'
+      scope: constant.numeric.nemerle
+    - match: \b(catch|else|finally|for|foreach|if|match|repeat|try|unless|when|while)\b
+      scope: keyword.control.nemerle
+    - match: (\+|\-|\*|\/|\%)\=?
+      scope: keyword.operator.nemerle
+    - match: \b(\_|as|assert|base|checked|do|fun|get|ignore|implements|in|is|lock|namespace|out|params|ref|set|syntax|throw|typeof|unchecked|using|with)\b
+      scope: keyword.other.nemerle
+    - match: \b(array|bool|byte|char|class|decimal|double|enum|float|int|interface|list|long|macro|module|object|sbyte|short|string|struct|type|uint|ulong|ushort|variant|void)\b
+      scope: storage.type.nemerle
+    - match: \b(abstract|def|delegate|event|extern|internal|mutable|override|public|private|protected|sealed|static|volatile|virtual|new)\b
+      scope: storage.modifier.nemerle
+    - match: this
+      scope: variable.language.nemerle
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.nemerle
+      push:
+        - meta_scope: string.quoted.double.nemerle
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.nemerle
+          pop: true
+        - match: '\\(\\|''|\"|a|b|c[A-Z]+|e|f|n|r|u0+[0-9,A-Z]+|v)'
+          scope: constant.character.escape.nemerle
+    - match: \$"
+      captures:
+        0: punctuation.definition.string.begin.nemerle
+      push:
+        - meta_scope: string.interpolated.nemerle
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.nemerle
+          pop: true
+        - match: '\$[a-z,A-Z]+[a-z,A-Z,0-9]*( |\+|\-|\*|\/|\%)'
+          scope: constant.character.escape
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.nemerle
+      push:
+        - meta_scope: string.quoted.single.nemerle
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.nemerle
+          pop: true
+        - match: '\\(\\|''|\"|a|b|c[A-Z]+|e|f|n|r|u0+[0-9,A-Z]+|v)'
+          scope: constant.character.escape

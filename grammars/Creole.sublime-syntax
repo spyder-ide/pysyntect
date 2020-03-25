@@ -1,0 +1,227 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Creole
+file_extensions:
+  - creole
+  - cr
+scope: text.html.creole
+contexts:
+  main:
+    - match: '^ *([*])+(?=\s)'
+      captures:
+        1: punctuation.definition.list_item.creole
+      push:
+        - meta_scope: markup.list.unnumbered.creole
+        - match: ^(?=\S)
+          captures:
+            1: punctuation.definition.list_item.creole
+          pop: true
+        - include: list-paragraph
+        - include: inline
+    - match: '^[ ]*(#)(?=\s)'
+      captures:
+        1: punctuation.definition.list_item.creole
+      push:
+        - meta_scope: markup.list.numbered.creole
+        - match: ^(?=\S)
+          captures:
+            1: punctuation.definition.list_item.creole
+          pop: true
+        - include: list-paragraph
+        - include: inline
+    - match: '^(?=<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del)\b)(?!.*?</\1>)'
+      comment: disable creole formatting in block-level tags
+      push:
+        - meta_scope: meta.disable-markdown
+        - match: (?<=^</\1>$\n)
+          pop: true
+        - include: scope:text.html.basic
+    - match: '^(?=<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del)\b)'
+      comment: disable creole formatting in inline tags
+      push:
+        - meta_scope: meta.disable-markdown
+        - match: $\n?
+          pop: true
+        - include: scope:text.html.basic
+    - match: '^ *-{4,} *$\n?'
+      scope: punctuation.definition.horizonlal-rule.creole
+  ampersand:
+    - match: "&(?!([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+);)"
+      comment: matched so it's not when converted to html
+      scope: meta.other.valid-ampersand.markdown
+  block_raw:
+    - match: '^(\{\{\{)\s*$\n?'
+      captures:
+        1: punctuation.definition.raw.creole
+      push:
+        - meta_scope: markup.raw.block.creole
+        - match: '^(\}\}\})\s*$\n?'
+          captures:
+            1: punctuation.definition.raw.creole
+          pop: true
+  bold:
+    - match: |-
+        (?x)
+        	(?<!\*|^)(\*\*)(?=\S)						# opening **
+        	(?=												# zero-width positive lookahead
+        		(
+        		    <[^>]*+>						# match any HTML tag
+        		  | ~[\\*{}\[\]#\|/>]?+					# or escape characters
+        		  | \[										# or literal [
+        			(
+        			        (?<square>				# named group
+        						[^\[\]~]					# don't match these
+        			          | ~.							# or escaped characters
+        			          | \[ \g<square>*+ \]	# or nested group
+        			        )*+
+        				\]
+        			)
+        		  | (?!(?<=\S)\1).						# or everything else
+        		)++
+        		(?<=\S)\1								# closing **
+        	)												# close positive lookahead
+      captures:
+        1: punctuation.definition.bold.creole
+      push:
+        - meta_scope: markup.bold.creole
+        - match: (?<=\S)(\1)
+          captures:
+            1: punctuation.definition.bold.creole
+          pop: true
+        - match: "(?=<[^>]*?>)"
+          push:
+            - include: scope:text.html.basic
+            - match: (?<=>)
+              pop: true
+        - include: inline
+  bracket:
+    - match: '<(?![a-z/?\$!])'
+      comment: matched so it's not when converted to html
+      scope: meta.other.valid-bracket.creole
+  escape:
+    - match: '~[*#{}\|\[\]\\/>]+'
+      scope: constant.character.escape.creole
+  heading:
+    - match: '\G(={1,6})(?!=)\s*(?=\S)'
+      captures:
+        1: punctuation.definition.heading.creole
+      push:
+        - meta_scope: markup.heading.creole
+        - meta_content_scope: entity.name.section.creole
+        - match: \s*(=*) *$\n?
+          captures:
+            1: punctuation.definition.heading.creole
+          pop: true
+        - include: inline
+  image-inline:
+    - match: |-
+        (?x:
+        				(\{\{)						# opening double curly bracket
+        				(\s*[^\s\|]+[^\|]+?)		# the url; anything except pipe (at least 1 not whitespace)
+        				((\|)						# pipe separator
+        				(\s*[^\|\s]+[^\|]+)			# title text
+        					)?						# pipe and title are optional
+        				(\}\})						# close double curly bracket (end image)
+        			 )
+      scope: meta.image.inline.creole
+      captures:
+        1: punctuation.definition.image.creole
+        2: markup.underline.link.creole
+        4: punctuation.definition.image.creole
+        5: string.other.image.title.creole
+        6: punctuation.definition.image.creole
+  inline:
+    - include: inline_raw
+    - include: link-inline
+    - include: link-inet
+    - include: link-email
+    - include: line-break
+    - include: image-inline
+    - include: italic
+    - include: bold
+    - include: escape
+    - include: bracket
+    - include: ampersand
+  inline_raw:
+    - match: '(\{\{\{).*?(\}\}\})'
+      scope: markup.raw.inline.creole
+      captures:
+        1: punctuation.definition.raw.creole
+        2: punctuation.definition.raw.creole
+  italic:
+    - match: |-
+        (?x)
+        	(\/\/)(?=\S)									# opening //
+        	(?=												# zero-width positive lookahead
+        		(
+        		    <[^>]*+>						# match any HTML tag
+        		  | ~[\\*{}\[\]#\|/>]?+					# or escape characters
+        		  | \[										# or literal [
+        			(
+        			        (?<square>				# named group
+        						[^\[\]~]					# don't match these
+        			          | ~.							# or escaped characters
+        			          | \[ \g<square>*+ \]	# or nested group
+        			        )*+
+        				\]
+        			)
+        		  | (?!(?<=\S)\1).						# or everything else
+        		)++
+        		(?<=\S)\1								# closing //
+        	)												# close positive lookahead
+      captures:
+        1: punctuation.definition.italic.creole
+      push:
+        - meta_scope: markup.italic.creole
+        - match: (?<=\S)(\1)((?!\1)|(?=\1\1))
+          captures:
+            1: punctuation.definition.italic.creole
+          pop: true
+        - match: "(?=<[^>]*?>)"
+          push:
+            - include: scope:text.html.basic
+            - match: (?<=>)
+              pop: true
+        - include: inline
+  line-break:
+    - match: ' *(\\\\){1} *'
+      scope: punctuation.definition.line-break.creole
+  link-email:
+    - match: '(<)((?:mailto:)?[-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(>)'
+      scope: meta.link.email.lt-gt.creole
+      captures:
+        1: invalid.illegal.punctuation.link.creole
+        2: markup.underline.link.creole
+        4: invalid.illegal.punctuation.link.creole
+  link-inet:
+    - match: '(<)?((?:https?|ftp)://[^\s>]+)(>)?'
+      scope: meta.link.inet.creole
+      captures:
+        1: invalid.illegal.punctuation.link.creole
+        2: markup.underline.link.creole
+        3: invalid.illegal.punctuation.link.creole
+  link-inline:
+    - match: |-
+        (?x:
+        				(\[\[)						# opening double square bracket
+        				(\s*[^\s\|]+[^\|]+?)		# the url; anything except pipe (at least 1 not whitespace)
+        				((\|)						# pipe separator
+        				(\s*[^\|\s]+[^\|]+)			# title text
+        					)?						# pipe and title are optional
+        				(\]\])						# close double square bracket (end link)
+        			 )
+      scope: meta.link.inline.creole
+      captures:
+        1: punctuation.definition.link.creole
+        2: markup.underline.link.creole
+        4: punctuation.definition.link.creole
+        5: string.other.link.title.creole
+        6: punctuation.definition.link.creole
+  list-paragraph:
+    - match: \G\s+(?=\S)
+      push:
+        - meta_scope: meta.paragraph.list.creole
+        - match: ^\s*$
+          pop: true
+        - include: inline

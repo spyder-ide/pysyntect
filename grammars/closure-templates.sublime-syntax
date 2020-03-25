@@ -1,0 +1,282 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Closure Templates
+file_extensions:
+  - soy
+scope: text.html.soy
+contexts:
+  main:
+    - include: alias
+    - include: delpackage
+    - include: namespace
+    - include: template
+    - include: comment
+  comment:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.documentation.soy
+        - match: \*/
+          pop: true
+        - match: (@param\??)\s+(\S+)
+          captures:
+            1: keyword.parameter.soy
+            2: variable.parameter.soy
+    - match: ^\s*(\/\/.*)$
+      scope: comment.line.double-slash.soy
+  alias:
+    - match: '{(alias)\s+([\w\.]+)(?:\s+(as)\s+(\w+))?}'
+      captures:
+        1: storage.type.soy
+        2: entity.name.type.soy
+        3: storage.type.soy
+        4: entity.name.type.soy
+  attribute:
+    - match: (\w+)=("(?:\\?.)*?")
+      captures:
+        1: storage.other.attribute.soy
+        2: string.double.quoted.soy
+  body:
+    - include: comment
+    - include: let
+    - include: call
+    - include: css
+    - include: xid
+    - include: condition
+    - include: condition-control
+    - include: for
+    - include: literal
+    - include: msg
+    - include: special-character
+    - include: print
+    - include: scope:text.html.basic
+  boolean:
+    - match: true|false
+      scope: language.constant.boolean.soy
+  call:
+    - match: '{((?:del)?call)\s+([\w\.]+)(?=[^/]*?})'
+      captures:
+        1: storage.type.function.soy
+        2: entity.name.function.soy
+      push:
+        - match: '{/(\1)}'
+          captures:
+            1: storage.type.function.soy
+          pop: true
+        - include: comment
+        - include: variant
+        - include: attribute
+        - include: param
+    - match: '{((?:del)?call)(\s+[\w\.]+)'
+      captures:
+        1: storage.type.function.soy
+        2: entity.name.function.soy
+      push:
+        - match: "/}"
+          pop: true
+        - include: variant
+        - include: attribute
+  condition:
+    - match: '{/?(if|elseif|switch|case)\s*'
+      captures:
+        1: keyword.control.soy
+      push:
+        - match: "}"
+          pop: true
+        - include: attribute
+        - include: expression
+  condition-control:
+    - match: "{(else|ifempty|default)}"
+      captures:
+        1: keyword.control.soy
+  css:
+    - match: '{(css)\s+'
+      captures:
+        1: keyword.other.soy
+      push:
+        - match: "}"
+          pop: true
+        - include: expression
+  delpackage:
+    - match: '{(delpackage)\s+([\w\.]+)}'
+      captures:
+        1: storage.type.soy
+        2: entity.name.type.soy
+  expression:
+    - include: boolean
+    - include: number
+    - include: function
+    - include: "null"
+    - include: string
+    - include: variable-ref
+    - include: operator
+  for:
+    - match: '{/?(foreach|for)(?=\s|})'
+      captures:
+        1: keyword.control.soy
+      push:
+        - match: "}"
+          pop: true
+        - match: in
+          scope: keyword.control.soy
+        - include: expression
+        - include: body
+  function:
+    - match: (\w+)\(
+      captures:
+        1: support.function.soy
+      push:
+        - match: \)
+          pop: true
+        - include: expression
+  let:
+    - match: '{(let)\s+(\$\w+\s*:)'
+      captures:
+        1: storage.type.soy
+        2: variable.soy
+      push:
+        - match: "/}"
+          pop: true
+        - include: comment
+        - include: expression
+    - match: '{(let)\s+(\$\w+)'
+      captures:
+        1: storage.type.soy
+        2: variable.soy
+      push:
+        - match: '{/(\1)}'
+          captures:
+            1: storage.type.soy
+          pop: true
+        - include: attribute
+        - include: body
+  literal:
+    - match: "{(literal)}"
+      captures:
+        1: keyword.other.soy
+      push:
+        - meta_scope: meta.literal
+        - match: '{/(\1)}'
+          captures:
+            1: keyword.other.soy
+          pop: true
+  msg:
+    - match: "{/?(msg|fallbackmsg)"
+      captures:
+        1: keyword.other.soy
+  namespace:
+    - match: '{(namespace)\s+([\w\.]+)}'
+      captures:
+        1: storage.type.soy
+        2: entity.name.type.soy
+  "null":
+    - match: "null"
+      scope: language.constant.null.soy
+  number:
+    - match: '-?\.?\d+|\d[\.\d]*'
+      scope: language.constant.numeric
+  operator:
+    - match: '-|not|\*|\/|%|\+|<=|>=|<|>|==|!=|and|or|\?:|\?|:'
+      scope: keyword.operator.soy
+  param:
+    - match: '{(param)\s+(\w+\s*\:)'
+      captures:
+        1: storage.type.soy
+        2: variable.parameter.soy
+      push:
+        - match: "/}"
+          pop: true
+        - include: expression
+    - match: '{(param)\s+(\w+)'
+      captures:
+        1: storage.type.soy
+        2: variable.parameter.soy
+      push:
+        - match: '{/(\1)}'
+          captures:
+            1: storage.type.soy
+          pop: true
+        - include: attribute
+        - include: body
+  print:
+    - match: '{(print)?\s*'
+      captures:
+        1: keyword.other.soy
+      push:
+        - match: "}"
+          pop: true
+        - match: \|\s*(changeNewlineToBr|truncate|bidiSpanWrap|bidiUnicodeWrap)
+          captures:
+            1: support.function.soy
+        - include: expression
+  special-character:
+    - match: '{(sp|nil|\\r|\\n|\\t|lb|rb)}'
+      captures:
+        1: language.support.constant
+  string:
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.soy
+        - match: "'"
+          pop: true
+        - match: '\\(?:[\\''"nrtbf]|u[0-9a-fA-F]{4})'
+          scope: constant.character.escape.soy
+  template:
+    - match: '{(template|deltemplate)\s([\w\.]+)'
+      captures:
+        1: storage.type.soy
+        2: entity.name.function.soy
+      push:
+        - match: '{(/\1)}'
+          captures:
+            1: storage.type.soy
+          pop: true
+        - match: '{(@param)(\??)\s+(\S+\s*:)'
+          captures:
+            1: keyword.parameter.soy
+            2: storage.modifier.keyword.operator.soy
+            3: variable.parameter.soy
+          push:
+            - meta_scope: meta.parameter.soy
+            - match: "}"
+              pop: true
+            - include: type
+        - include: variant
+        - include: body
+        - include: attribute
+  type:
+    - match: any|null|\?|string|bool|int|float|number|html|uri|js|css|attributes
+      scope: support.type.soy
+    - match: (list|map)(<)
+      captures:
+        1: support.type.soy
+        2: support.type.punctuation.soy
+      push:
+        - match: (>)
+          captures:
+            1: support.type.modifier.soy
+          pop: true
+        - include: type
+  variable-ref:
+    - match: '\$[\a-zA-Z_][\w\.]*'
+      scope: variable.other.soy
+  variant:
+    - match: (variant)=(")
+      captures:
+        1: storage.other.attribute.soy
+        2: string.double.quoted.soy
+      push:
+        - meta_content_scope: string.double.quoted.soy
+        - match: (")
+          captures:
+            1: string.double.quoted.soy
+          pop: true
+        - include: expression
+  xid:
+    - match: '{(xid)\s+'
+      captures:
+        1: keyword.other.soy
+      push:
+        - match: "}"
+          pop: true
+        - include: expression

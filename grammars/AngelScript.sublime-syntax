@@ -1,0 +1,102 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: AngelScript
+comment: Made by Wronex :D
+file_extensions:
+  - as
+first_line_match: '-\*- C\+\+ -\*-'
+scope: source.angelscript
+contexts:
+  main:
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.angelscript
+      captures:
+        1: punctuation.definition.comment.angelscript
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.angelscript
+      push:
+        - meta_scope: comment.block.angelscript
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.angelscript
+          pop: true
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.angelscript
+      push:
+        - meta_scope: string.quoted.double.angelscript
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.angelscript
+          pop: true
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.angelscript
+      push:
+        - meta_scope: string.quoted.double.angelscript
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.angelscript
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.angelscript
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.angelscript
+      push:
+        - meta_scope: string.quoted.single.angelscript
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.angelscript
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.angelscript
+    - match: (~|!|&&|\|\|)
+      scope: keyword.operator.logical.angelscript
+    - match: "[-!%&><@*+=/?:]"
+      scope: keyword.operator.symbolic.angelscript
+    - match: \b(for|in|break|continue|while|do|return|if|else|case|switch|namespace|try|catch)\b
+      scope: keyword.control.angelscript
+    - match: \b(is|cast)\b
+      scope: keyword.operator.angelscript
+    - match: \b(or|and|xor|not)\b
+      scope: keyword.operator.logical.angelscript
+    - match: \b(get|in|inout|out|override|explicit|set|private|public|protected|const|default|final|shared|external|mixin|abstract|property)\b
+      scope: storage.modifier.angelscript
+    - match: \b(enum|void|bool|typedef|funcdef|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|string|ref|array|double|float|auto|dictionary)\b
+      scope: storage.type.angelscript
+    - match: "[A-Za-z_][A-Za-z_0-9]+@"
+      scope: storage.type.angelscript
+    - match: \b(null|true|false)\b
+      scope: constant.language.angelscript
+    - match: \b(this|super)\b
+      scope: variable.language.angelscript
+    - match: \b(import|from)\b
+      scope: keyword.control.import.angelscript
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?\b'
+      scope: constant.numeric.angelscript
+    - match: '^\s*\#([a-zA-Z_0-9]*)?'
+      scope: keyword.control.import.angelscript
+    - match: '^\s*\[(.*)\]\s*?'
+      scope: meta.metadata.angelscript
+      captures:
+        1: markup.heading.angelscript
+    - match: '\.[a-zA-Z_][a-zA-Z_0-9]*\b(?!\s*\()'
+      scope: variable.other.dot-access.angelscript
+    - match: '\b(class|interface)\s+([a-zA-Z_0-9]*)(?:\s*:\s*([a-zA-Z_0-9]*)(\s*,\s*([a-zA-Z_0-9]*))?(\s*,\s*([a-zA-Z_0-9]*))?(\s*,\s*([a-zA-Z_0-9]*))?(\s*,\s*([a-zA-Z_0-9]*))?)?'
+      scope: meta.class.angelscript
+      captures:
+        1: storage.type.class.angelscript
+        11: entity.other.inherited-class.angelscript
+        2: entity.name.type.class.angelscript
+        3: entity.other.inherited-class.angelscript
+        5: entity.other.inherited-class.angelscript
+        7: entity.other.inherited-class.angelscript
+        9: entity.other.inherited-class.angelscript
+    - match: '(\b|\.)([a-zA-Z_][a-zA-Z_0-9]*)\b(\s*\()'
+      captures:
+        2: meta.function-call.angelscript
+    - match: '\b([A-Z][A-Z0-9_]+)\b'
+      scope: constant.other.angelscript

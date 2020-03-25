@@ -1,0 +1,43 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: FreeMarker
+file_extensions:
+  - ftl
+  - ftlx
+  - ftlh
+scope: text.html.ftl
+contexts:
+  main:
+    - match: '[<\[]#--'
+      captures:
+        0: punctuation.definition.comment.ftl
+      push:
+        - meta_scope: comment.block.ftl
+        - match: '--[>\]]'
+          captures:
+            0: punctuation.definition.comment.ftl
+          pop: true
+    - match: '([<\[](#|@))(\w+(\.\w+)*)((\s+[^>\]]+)*?)\s*((\/)?([>\]]))'
+      scope: meta.function.ftl
+      captures:
+        1: punctuation.definition.function.ftl
+        2: punctuation.definition.function.ftl
+        3: entity.name.function.ftl
+        5: variable.parameter.function.ftl
+        8: entity.name.function.ftl
+        9: punctuation.definition.function.ftl
+    - match: '([<\[]\/(#|@))(\w+(\.\w+)*)\s*([>\]])'
+      scope: meta.function.ftl
+      captures:
+        1: punctuation.definition.function.ftl
+        2: punctuation.definition.function.ftl
+        3: entity.name.function.ftl
+        5: punctuation.definition.function.ftl
+    - match: '(\$\{)\.?[a-zA-Z_\(][\w\(\)+-\/\*]+(\.?[\w\(\)+-\/\*]+)*(.*?|\?\?|\!)?(\})'
+      scope: variable.other.readwrite.local.ftl
+      captures:
+        1: punctuation.definition.variable.ftl
+        3: entity.name.function.ftl
+        4: punctuation.definition.variable.ftl
+    - include: scope:text.html.basic

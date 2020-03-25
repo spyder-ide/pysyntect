@@ -1,0 +1,183 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: gn
+file_extensions:
+  - gn
+  - gni
+first_line_match: |-
+  (?xi)
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  	  gn
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+  	|
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s*set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  	  gn
+  	(?=\s|:|$)
+scope: source.gn
+contexts:
+  main:
+    - include: comment
+    - include: number
+    - include: condition
+    - include: function-call
+    - include: keywords
+    - include: string
+    - include: variable
+    - include: operators
+    - include: array
+    - include: brackets
+    - include: separators
+    - include: scope
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.gn
+      push:
+        - meta_scope: comment.line.number-sign.gn
+        - match: $
+          pop: true
+        - match: '(?<=TODO)(\()\s*(\w+)\s*(\))\s*:'
+          captures:
+            1: punctuation.section.begin.bracket.round.todo
+            2: storage.type.class.assignee.todo
+            3: punctuation.section.end.bracket.round.todo
+  scope:
+    - match: "{"
+      captures:
+        0: punctuation.scope.begin.bracket.curly.gn
+      push:
+        - meta_scope: meta.scope.gn
+        - match: "}"
+          captures:
+            0: punctuation.scope.begin.bracket.curly.gn
+          pop: true
+        - include: main
+  array:
+    - match: '\['
+      captures:
+        0: punctuation.section.begin.bracket.square.gn
+      push:
+        - meta_scope: meta.array.gn
+        - match: '\]'
+          captures:
+            0: punctuation.section.end.bracket.square.gn
+          pop: true
+        - include: main
+        - match: \w+
+          scope: variable.reference.gn
+  brackets:
+    - match: \(
+      captures:
+        0: punctuation.section.begin.bracket.round.gn
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.end.bracket.round.gn
+          pop: true
+        - include: main
+        - match: \w+
+          scope: variable.reference.gn
+  condition:
+    - match: (if|else)\s*(?=\()
+      captures:
+        1: keyword.control.$1.gn
+      push:
+        - meta_scope: meta.condition.gn
+        - match: (?<=\))
+          pop: true
+        - match: \G\(
+          captures:
+            0: punctuation.definition.condition.begin.bracket.round.gn
+          push:
+            - match: \)
+              captures:
+                0: punctuation.definition.condition.end.bracket.round.gn
+              pop: true
+            - include: main
+            - match: \w+
+              scope: variable.reference.gn
+  function-call:
+    - match: \s*(?!if|else|foreach|true|false)(\w+)\s*(?=\()
+      captures:
+        1: entity.name.function.gn
+      push:
+        - meta_scope: meta.function-call.gn
+        - match: (?<=\))
+          pop: true
+        - match: \G\(
+          captures:
+            0: punctuation.definition.parameters.begin.bracket.round.gn
+          push:
+            - meta_scope: meta.parameters.gn
+            - match: \)
+              captures:
+                0: punctuation.definition.parameters.end.bracket.round.gn
+              pop: true
+            - include: main
+            - match: \w+
+              scope: variable.argument.parameter.gn
+  keywords:
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.$1.gn
+    - match: \b(if|else|foreach)\b
+      scope: keyword.control.$1.gn
+  number:
+    - match: "-0+|0+(?=[1-9])"
+      scope: invalid.illegal.number.gn
+    - match: '-?\d+'
+      scope: constant.numeric.gn
+  operators:
+    - match: "==|!=|[><]=?"
+      scope: keyword.operator.comparison.gn
+    - match: "!|[|&]{2}"
+      scope: keyword.operator.logical.gn
+    - match: "[-+]?="
+      scope: keyword.operator.assignment.gn
+    - match: '-|\+'
+      scope: keyword.operator.arithmetic.gn
+  separators:
+    - match: ","
+      scope: punctuation.separator.list.comma.gn
+    - match: \.
+      scope: punctuation.delimiter.property.period.gn
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.gn
+      push:
+        - meta_scope: string.quoted.double.gn
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.gn
+          pop: true
+        - match: '\\["$\\]'
+          scope: constant.character.escape.gn
+        - match: '\$0x[0-9A-Fa-f]{2}'
+          scope: constant.character.escape.hex.gn
+        - match: ':(?=\w+")'
+          scope: punctuation.separator.build-path.gn
+        - match: \G//
+          scope: punctuation.definition.build-path.gn
+        - match: '\${'
+          captures:
+            0: punctuation.section.embedded.begin.gn
+          push:
+            - meta_scope: source.gn.embedded
+            - meta_content_scope: variable.interpolated.embedded.gn
+            - match: "}"
+              captures:
+                0: punctuation.section.embedded.end.gn
+              pop: true
+        - match: (\$)\w+
+          scope: variable.interpolated.embedded.gn
+          captures:
+            1: punctuation.definition.variable.embedded.gn
+  variable:
+    - match: '\w+(?=\s*[-+]?=|\s*[\[.])'
+      scope: variable.assignment.gn
+    - match: (?<==)\s*(?!\d|if|else|foreach|true|false)(\w+)\s*(?!\()
+      captures:
+        1: variable.reference.gn

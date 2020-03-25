@@ -1,0 +1,91 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: AMPL
+file_extensions:
+  - mod
+  - dat
+  - run
+scope: source.ampl
+contexts:
+  main:
+    - include: general
+    - include: argumentcurly
+    - include: argumentbracket
+  argumentbracket:
+    - match: '\['
+      push:
+        - match: '\]'
+          pop: true
+        - include: general
+        - match: \w
+          scope: meta.function-call.arguments.ampl
+  argumentcurly:
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: general
+        - match: .
+          scope: meta.function-call.arguments.ampl
+  blockcomment:
+    - match: /\*
+      push:
+        - meta_scope: comment.slashstar.ampl
+        - meta_content_scope: comment.block.documentation.ampl
+        - match: \*/
+          pop: true
+  doublequotestring:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ampl
+      push:
+        - meta_scope: string.quoted.double.ampl
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ampl
+          pop: true
+        - match: '%(\w+%|\d+)'
+          scope: entity.name.class.ampl
+  general:
+    - include: linecomment
+    - include: blockcomment
+    - include: singlequotestring
+    - include: doublequotestring
+    - include: number
+    - include: keyword
+    - include: suffix
+    - include: math
+    - include: operator
+  keyword:
+    - match: (?i)\b(minimize|maximize|objective|coeff|coef|cover|obj|default|from|to|to_come|net_in|net_out|dimen|dimension|integer|binary|set|param|var|node|ordered|circular|reversed|symbolic|arc|check|close|display|drop|include|print|printf|quit|reset|restore|solve|update|write|shell|model|data|option|let|solution|fix|unfix|end|function|pipe|format|if|then|else|and|or|exists|forall|in|not|within|while|repeat|for|subject to|subj to|s\.t\.|card|next|nextw|prev|prevw|first|last|member|ord|ord0)\b
+      scope: keyword.control.ampl
+  linecomment:
+    - match: '(#.*)(?!\[\[).*$\n?'
+      scope: comment.line.sharp.ampl
+      captures:
+        1: punctuation.definition.comment.gms
+  math:
+    - match: (?i)\b(union|diff|difference|symdiff|sum|inter|intersect|intersection|cross|setof|by|less|mod|div|product|abs|acos|acosh|alias|asin|asinh|atan|atan2|atanh|ceil|cos|exp|floor|log|log10|max|min|precision|round|sin|sinh|sqrt|tan|tanh|trunc|Beta|Cauchy|Exponential|Gamma|Irand224|Normal|Poisson|Uniform|Uniform01)\b
+      scope: keyword.operator.ampl
+  number:
+    - match: '(?<![\d.])\b\d+(\.\d+)?([eE]-?\d+)?|\.\d+([eE]-?\d+)?|(?i)([+-]?infinity)'
+      scope: constant.numeric.ampl
+  operator:
+    - match: (\+|-|\*|\/|\*\*|=|<=?|>=?|==|\||\^|<|>|!|\.\.|:=|&|!=|:|/)
+      scope: keyword.operator.ampl
+  singlequotestring:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.ampl
+      push:
+        - meta_scope: string.quoted.single.ampl
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.ampl
+          pop: true
+        - match: '%(\w+%|\d+)'
+          scope: entity.name.class.ampl
+  suffix:
+    - match: \b\w*.(lb|ub|lb0|lb1|lb2|lrc|ub0|ub1|ub2|urc|val|lbs|ubs|init|body|dinit|dual|init0|ldual|slack|udual|lslack|uslack|dinit0)|(<<|>>)
+      scope: keyword.ampl

@@ -1,0 +1,390 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Svelte
+file_extensions:
+  - svelte
+  - html
+scope: source.svelte
+contexts:
+  main:
+    - match: '(<)(style)\b(?=[^>]*(?:type=(''text/sass''|"text/sass")|lang=(sass|''sass''|"sass")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.style.html
+      push:
+        - match: (</)(style)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.style.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.sass
+            - match: (?=</style>)
+              pop: true
+            - include: scope:source.sass
+    - match: '(<)(style)\b(?=[^>]*(?:type=(''text/scss''|"text/scss")|lang=(scss|''scss''|"scss")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.style.html
+      push:
+        - match: (</)(style)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.style.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.css.scss
+            - match: (?=</style>)
+              pop: true
+            - include: scope:source.css.scss
+    - match: '(<)(style)\b(?=[^>]*(?:type=(''text/less''|"text/less")|lang=(less|''less''|"less")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.style.html
+      push:
+        - match: (</)(style)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.style.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.css.less
+            - match: (?=</style>)
+              pop: true
+            - include: scope:source.css.less
+    - match: '(<)(style)\b(?=[^>]*(?:type=(''text/stylus''|"text/stylus")|lang=(stylus|''stylus''|"stylus")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.style.html
+      push:
+        - match: (</)(style)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.style.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.stylus
+            - match: (?=</style>)
+              pop: true
+            - include: scope:source.stylus
+    - match: '(<)(style)\b(?=[^>]*(?:type=(''text/postcss''|"text/postcss")|lang=(postcss|''postcss''|"postcss")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.style.html
+      push:
+        - match: (</)(style)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.style.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.postcss
+            - match: (?=</style>)
+              pop: true
+            - include: scope:source.postcss
+    - match: '(<)(style)\b(?=[^>]*(?:(?:type=(''text/css''|"text/css")|lang=(css|''css''|"css")))?)(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.style.html
+      push:
+        - match: (</)(style)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.style.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.css
+            - match: (?=</style>)
+              pop: true
+            - include: scope:source.css
+    - match: '(<)(script)\b(?=[^>]*(?:type=(''text/typescript''|"text/typescript")|lang=(typescript|''typescript''|"typescript")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.script.html
+      push:
+        - match: (</)(script)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.script.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.ts
+            - match: (?=</script>)
+              pop: true
+            - include: scope:source.ts
+    - match: '(<)(script)\b(?=[^>]*(?:type=(''text/coffee''|"text/coffee")|lang=(coffee|''coffee''|"coffee")))(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.script.html
+      push:
+        - match: (</)(script)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.script.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.coffee
+            - match: (?=</script>)
+              pop: true
+            - include: scope:source.coffee
+    - match: '(<)(script)\b(?=[^>]*(?:(?:type=(''text/javascript''|"text/javascript")|lang=(javascript|''javascript''|"javascript")))?)(?![^/>]*/>\s*$)'
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.script.html
+      push:
+        - match: (</)(script)(>)
+          captures:
+            1: punctuation.definition.tag.begin.html
+            2: entity.name.tag.script.html
+            3: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+        - match: (>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          push:
+            - meta_content_scope: source.js
+            - match: (?=</script>)
+              pop: true
+            - include: scope:source.js
+    - match: '({)\s*(#if|:elseif|#await|@html)'
+      captures:
+        1: punctuation.definition.tag.begin.svelte
+        2: keyword.control.conditional
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.definition.tag.end.svelte
+          pop: true
+        - include: scope:source.ts
+    - match: '({)\s*(:then|:catch)\s+([_$[:alpha:]][_$[:alnum:]]*)\s*(})'
+      captures:
+        1: punctuation.definition.tag.begin.svelte
+        2: keyword.control.conditional
+        3: variable
+        4: punctuation.definition.tag.end.svelte
+    - match: '({)\s*(#each)'
+      captures:
+        1: punctuation.definition.tag.begin.svelte
+        2: keyword.control.conditional
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.definition.tag.end.svelte
+          pop: true
+        - match: \s
+          push:
+            - match: \s(as)\s+
+              captures:
+                1: keyword.control
+              pop: true
+            - include: scope:source.ts
+        - match: '[_$[:alpha:]][_$[:alnum:]]*\s*'
+          scope: variable
+        - match: ',\s*([_$[:alpha:]][_$[:alnum:]]*)\s*'
+          captures:
+            1: variable
+        - match: \(
+          push:
+            - match: \)\s*
+              pop: true
+            - include: scope:source.ts
+    - match: '({)\s*(:else|/if|/each|/await)\s*(})'
+      captures:
+        1: punctuation.definition.tag.begin.svelte
+        2: keyword.control.conditional
+        3: punctuation.definition.tag.end.svelte
+    - match: "{"
+      captures:
+        0: punctuation.definition.tag.begin.svelte
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.definition.tag.end.svelte
+          pop: true
+        - include: scope:source.ts
+    - match: "(</?)([a-zA-Z][a-zA-Z0-9:-]*)"
+      captures:
+        1: punctuation.definition.tag.begin.html
+        2: entity.name.tag.other.html
+      push:
+        - meta_scope: meta.tag.other.html
+        - match: (/?>)
+          captures:
+            1: punctuation.definition.tag.end.html
+          pop: true
+        - include: tag-stuff
+    - match: <!--
+      push:
+        - meta_scope: comment.block
+        - match: "-->"
+          pop: true
+    - match: <!doctype html>
+      scope: punctuation.definition.tag
+  entities:
+    - match: "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.html
+      captures:
+        1: punctuation.definition.entity.html
+        3: punctuation.definition.entity.html
+    - match: "&"
+      scope: invalid.illegal.bad-ampersand.html
+  string-double-quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.double.html
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: entities
+  string-single-quoted:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.single.html
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: entities
+  tag-event-handlers:
+    - match: '\b(on):([a-zA-Z]+)=("|'')'
+      captures:
+        1: entity.other.attribute-name.html
+        2: entity.other.attribute-name.html
+        3: string.quoted.double
+      push:
+        - match: \3
+          captures:
+            0: string.quoted.double
+          pop: true
+        - include: scope:source.ts
+  tag-generic-attribute:
+    - match: '\b([a-zA-Z\-:]+)'
+      scope: entity.other.attribute-name.html
+  tag-id-attribute:
+    - match: \b(id)\b\s*(=)
+      captures:
+        1: entity.other.attribute-name.id.html
+        2: punctuation.separator.key-value.html
+      push:
+        - meta_scope: meta.attribute-with-value.id.html
+        - match: (?<='|")
+          captures:
+            1: entity.other.attribute-name.id.html
+            2: punctuation.separator.key-value.html
+          pop: true
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.html
+          push:
+            - meta_scope: string.quoted.double.html
+            - meta_content_scope: meta.toc-list.id.html
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.html
+              pop: true
+            - include: entities
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.begin.html
+          push:
+            - meta_scope: string.quoted.single.html
+            - meta_content_scope: meta.toc-list.id.html
+            - match: "'"
+              captures:
+                0: punctuation.definition.string.end.html
+              pop: true
+            - include: entities
+  tag-moustaches:
+    - match: '\b([a-zA-Z\-:]+)=("|'')(?=.*{)'
+      captures:
+        1: entity.other.attribute-name.html
+        2: string.quoted.double
+      push:
+        - match: \2
+          captures:
+            0: string.quoted.double
+          pop: true
+        - match: "{"
+          captures:
+            0: punctuation.definition.tag.begin.svelte
+          push:
+            - match: "}"
+              captures:
+                0: punctuation.definition.tag.end.svelte
+              pop: true
+            - include: scope:source.ts
+        - match: "(?!{)."
+          scope: string.quoted.double
+  tag-moustaches-raw:
+    - match: '\b([a-zA-Z\-:]+)=({)'
+      captures:
+        1: entity.other.attribute-name.html
+        2: punctuation.definition.tag.begin.svelte
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.definition.tag.end.svelte
+          pop: true
+        - include: scope:source.ts
+  tag-shorthand:
+    - match: '({)\s*([_$[:alpha:]][_$[:alnum:]]*)\s*(})'
+      captures:
+        1: punctuation.definition.tag.begin.svelte
+        2: variable
+        3: punctuation.definition.tag.end.svelte
+  tag-stuff:
+    - include: tag-event-handlers
+    - include: tag-moustaches
+    - include: tag-moustaches-raw
+    - include: tag-shorthand
+    - include: tag-id-attribute
+    - include: tag-generic-attribute
+    - include: string-double-quoted
+    - include: string-single-quoted

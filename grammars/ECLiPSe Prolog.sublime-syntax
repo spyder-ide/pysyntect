@@ -1,0 +1,98 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ECLiPSe Prolog
+comment: This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+file_extensions:
+  - ecl
+scope: source.prolog.eclipse
+contexts:
+  main:
+    - include: comments
+    - match: (?<=:-)\s*
+      push:
+        - meta_scope: meta.clause.body.prolog
+        - match: '(\.)[^(\.\.)]'
+          captures:
+            1: keyword.control.clause.bodyend.prolog
+          pop: true
+        - include: comments
+        - include: builtin
+        - include: controlandkeywords
+        - include: atom
+        - include: variable
+        - include: constants
+        - match: .
+          scope: meta.clause.body.prolog
+    - match: (?<=-->)\s*
+      push:
+        - meta_scope: meta.dcg.body.prolog
+        - match: '(\.)[^(\.\.)]'
+          captures:
+            1: keyword.control.dcg.bodyend.prolog
+          pop: true
+        - include: comments
+        - include: controlandkeywords
+        - include: atom
+        - include: variable
+        - include: constants
+        - match: .
+          scope: meta.dcg.body.prolog
+    - include: scope:source.prolog
+  atom:
+    - match: '(?<![a-zA-Z0-9_])[a-z][a-zA-Z0-9_]*(?!\s*\(|[a-zA-Z0-9_])'
+      scope: constant.other.atom.simple.prolog
+    - match: "'.*?'"
+      scope: constant.other.atom.quoted.prolog
+    - match: '\[\]'
+      scope: constant.other.atom.emptylist.prolog
+  builtin:
+    - match: \b(op|findall|write|nl|writeln|fail|lib)\b
+      scope: keyword.other.prolog
+    - match: \b(for(each(elem)?)?|fromto|do|param|dim)\b
+      scope: keyword.other.prolog.eclipse
+  comments:
+    - match: "%.*"
+      scope: comment.line.percent-sign.prolog
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.prolog
+      push:
+        - meta_scope: comment.block.prolog
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.prolog
+          pop: true
+  constants:
+    - match: '(?<![a-zA-Z]|/)(\d+|(\d+\.\d+))'
+      scope: constant.numeric.integer.prolog
+    - match: '".*?"'
+      scope: string.quoted.double.prolog
+  controlandkeywords:
+    - match: (->)
+      captures:
+        1: keyword.control.if.prolog
+      push:
+        - meta_scope: meta.if.prolog
+        - match: (;)
+          captures:
+            1: keyword.control.else.prolog
+          pop: true
+        - include: main
+        - include: builtin
+        - include: comments
+        - include: atom
+        - include: variable
+        - match: .
+          scope: meta.if.body.prolog
+    - match: "!"
+      scope: keyword.control.cut.prolog
+    - match: (\s(is)\s)|=:=|=?\\?=|\\\+|@?>|@?=?<|\+|\*|\-
+      scope: keyword.operator.prolog
+    - match: (#|&|\$)(<|>|=)|(#|&|\$)?(::)|\.\.|or|and|(#|&|\$)\\=
+      scope: keyword.operator.prolog.eclipse
+  variable:
+    - match: "(?<![a-zA-Z0-9_])[A-Z][a-zA-Z0-9_]*"
+      scope: variable.parameter.uppercase.prolog
+    - match: (?<!\w)_
+      scope: variable.language.anonymous.prolog

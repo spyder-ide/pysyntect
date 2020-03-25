@@ -1,0 +1,56 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SuperCollider
+file_extensions:
+  - sc
+  - scd
+scope: source.supercollider
+contexts:
+  main:
+    - match: \b(arg|var|classvar|const|this|thisThread|thisMethod|thisFunction|thisFunctionDef|thisProcess|true|false|inf|nil)\b
+      scope: keyword.control.supercollider
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.supercollider
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.supercollider
+    - match: "'"
+      push:
+        - meta_scope: entity.name.symbol.supercollider
+        - match: "'"
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.supercollider
+    - match: '[a-z][a-zA-Z0-9_]*\:'
+      scope: support.name.tag.supercollider
+    - match: '^\s*\+*\s*([A-Z]{1}[a-zA-Z0-9_]*)\s*\:{1}\s*([A-Z]{1}[a-zA-Z0-9_]*)\s*\{'
+      captures:
+        1: entity.name.class.supercollider
+    - match: "^([A-Z_]{1}[a-zA-Z0-9_]*)[^a-zA-Z0-9_]"
+      captures:
+        1: entity.name.class.supercollider
+    - match: '\|[a-zA-Z0-9\#\[\]\"\_\=\.\(\)[[:space:]]\,]+\|'
+      scope: variable.parameter.function.supercollider
+    - match: '[^a-zA-Z0-9\\]([A-Z_]{1}[a-zA-Z0-9_]*)[^a-zA-Z0-9_]'
+      captures:
+        1: entity.name.class.supercollider
+    - match: '\\[a-zA-Z0-9\_]+'
+      scope: entity.name.symbol.supercollider
+    - match: '^\s*(\**[a-z]{1}[a-zA-Z0-9_]+)\s*\{'
+      captures:
+        1: entity.name.function.supercollider
+    - match: '\~[a-z][a-zA-Z0-9_]*'
+      scope: variable.language.supercollider
+    - match: \/\/.*
+      scope: comment.single.supercollider
+    - match: \/\*
+      push:
+        - meta_scope: comment.multiline.supercollider
+        - match: \*\/
+          pop: true
+    - match: '\b(0[xX][0-9A-Fa-f](?>_?[0-9A-Fa-f])*|\d(?>_?\d)*(\.(?![^[:space:][:digit:]])(?>_?\d)*)?([eE][-+]?\d(?>_?\d)*)?|0[bB][01]+)\b'
+      comment: "source: ruby bundle"
+      scope: constant.numeric.supercollider

@@ -1,0 +1,13 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Python Console
+file_extensions:
+  - doctest
+  - pycon
+scope: text.python.console
+contexts:
+  main:
+    - match: '^(>{3}|\.{3}|In \[\d+\]:) (.+)$'
+      captures:
+        1: punctuation.separator.prompt.python.console

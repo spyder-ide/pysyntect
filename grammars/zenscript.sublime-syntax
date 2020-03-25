@@ -1,0 +1,160 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ZenScript
+file_extensions:
+  - zs
+scope: source.zenscript
+contexts:
+  main:
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFfUuDd]|UL|ul)?\b'
+      comment: numbers
+      scope: constant.numeric.zenscript
+    - include: code
+    - match: '\b((?:[a-z]\w*\.)*[A-Z]+\w*)(?=\[)'
+      comment: arrays
+      scope: storage.type.object.array.zenscript
+  brackets:
+    - match: (<)\b(.*?)(:(.*?(:(\*|\d+)?)?)?)(>)
+      comment: items and blocks
+      scope: keyword.other.zenscript
+      captures:
+        1: keyword.control.zenscript
+        2: keyword.other.zenscript
+        3: keyword.control.zenscript
+        4: variable.other.zenscript
+        5: keyword.control.zenscript
+        6: constant.numeric.zenscript
+        7: keyword.control.zenscript
+  class:
+    - match: (zenClass)\s+(\w+)
+      comment: class
+      scope: meta.class.zenscript
+      captures:
+        1: storage.type.zenscript
+        2: entity.name.type.class.zenscript
+  class-constructor:
+    - match: \b(zenConstructor)\s*(?=\()
+      comment: class constructor
+      scope: meta.class.zenscript
+      captures:
+        1: entity.name.function.zenscript
+  code:
+    - include: class
+    - include: class-constructor
+    - include: functions
+    - include: function-call
+    - include: dots
+    - include: quotes
+    - include: brackets
+    - include: preprocessors
+    - include: comments
+    - include: var
+    - include: import
+    - include: keywords
+    - include: constants
+    - include: operators
+  comments:
+    - match: \s*((#|//).*$\n?)
+      comment: inline comments
+      scope: comment.line.number-sign
+    - match: \/\*
+      comment: block comments
+      captures:
+        0: comment.block
+      push:
+        - meta_scope: comment.block
+        - match: \*\/
+          captures:
+            0: comment.block
+          pop: true
+  constants:
+    - match: \b(true|false|null)\b
+      comment: constants (true, false, null)
+      scope: constant.language.zenscript
+  dots:
+    - match: \b(\w+)(\.)(\w+)((\.)(\w+))*
+      comment: dots
+      scope: plain.text.zenscript
+      captures:
+        1: storage.type.zenscript
+        2: keyword.control.zenscript
+        5: keyword.control.zenscript
+  function-call:
+    - match: '(?!function)([A-Za-z_$][\w$]*)\s*(?=\()'
+      comment: function calls
+      scope: meta.function-call.zenscript
+      captures:
+        1: entity.name.function.zenscript
+  functions:
+    - match: 'function\s+([A-Za-z_$][\w$]*)\s*(?=\()'
+      comment: functions
+      scope: meta.function.zenscript
+      captures:
+        0: storage.type.function.zenscript
+        1: entity.name.function.zenscript
+  import:
+    - match: \b(import)\b\s*
+      comment: package import
+      captures:
+        1: keyword.other.import.zenscript
+      push:
+        - meta_scope: meta.import.zenscript
+        - match: \s*(;)
+          captures:
+            1: punctuation.terminator.zenscript
+          pop: true
+  keywords:
+    - match: \b(in|has|void|as|version|for|return|while|break|instanceof)\b
+      comment: control keywords
+      scope: keyword.control.zenscript
+    - match: \b(any|bool|byte|short|int|long|float|double|string)\b
+      comment: storage keywords
+      scope: storage.type.zenscript
+    - match: '\b(?<=(as\s))[a-zA-Z]+\b'
+      comment: as holder keywords
+      scope: storage.type.zenscript
+    - match: \b(function)\b
+      comment: function keyword
+      scope: storage.type.function.zenscript
+    - match: \b(if|else)\b
+      comment: statement keywords
+      scope: keyword.control.conditional.zenscript
+  operators:
+    - match: (\.\.|\+=|\+|-=|-|\*=|\*|\/=|\/|%=|%|\|=|\||\|\||&=|&&|&|\^=|\^|\?|:|~=|~|;|<=|<|>=|>|==|=|!=|!|\$)
+      comment: math operators
+      scope: keyword.operator
+  preprocessors:
+    - match: ^(\s*)(#)(debug|ignoreBracketErrors|norun|loader|priority|ikwid|profile|zslint|modloaded)\b
+      scope: constant.numeric.zenscript
+      captures:
+        1: keyword.control.zenscript
+        2: keyword.control.zenscript
+        3: variable.language.zenscript
+  quotes:
+    - match: \"
+      comment: double quote string
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: string.quoted.double.zenscript
+        - meta_content_scope: string.other.zenscript
+        - match: \"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+    - match: \'
+      comment: single quote string
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: string.quoted.single.zenscript
+        - meta_content_scope: string.other.zenscript
+        - match: \'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+  var:
+    - match: \b(var|val|static|global)\b
+      comment: var
+      scope: storage.type

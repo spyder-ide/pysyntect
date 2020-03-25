@@ -1,0 +1,137 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Spline Font Database
+file_extensions:
+  - sfd
+first_line_match: '^SplineFontDB: [\d.]+'
+scope: text.sfd
+contexts:
+  main:
+    - include: punctuation
+    - include: private
+    - include: header
+    - include: names
+    - include: image
+    - include: pickleData
+    - include: sections
+    - include: copyright
+    - include: comment
+    - include: property
+    - include: control
+    - include: address
+    - include: encoding
+    - include: scope:source.fontforge#shared
+    - include: colour
+    - include: unquoted
+  comment:
+    - match: ^(U?Comments?)(:)
+      captures:
+        1: variable.other.property.sfd
+        2: punctuation.separator.dictionary.key-value.sfd
+      push:
+        - meta_scope: meta.user-comments.sfd
+        - meta_content_scope: comment.line.field.sfd
+        - match: $
+          pop: true
+  address:
+    - match: '\d+[xX][A-Fa-f0-9]+'
+      scope: constant.numeric.hexadecimal.sfd
+  colour:
+    - match: '(#)[A-Fa-f0-9]{3,}|(?<=\s)[A-Fa-f0-9]{6,8}'
+      scope: constant.other.hex.colour.sfd
+      captures:
+        1: punctuation.definition.colour.sfd
+  control:
+    - match: \b(Fore|Back|SplineSet|^End\w+)\b
+      scope: "keyword.control.${1:/downcase}.sfd"
+  copyright:
+    - match: ^(Copyright)(:)
+      captures:
+        1: variable.other.property.sfd
+        2: punctuation.separator.dictionary.key-value.sfd
+      push:
+        - meta_scope: meta.copyright-string.sfd
+        - meta_content_scope: string.unquoted.copyright.info.sfd
+        - match: $
+          pop: true
+        - include: scope:source.fontforge#stringEscapes
+  encoding:
+    - match: '(?i)\b(ISO[-\w]+)(?<=\d)(?=\s|$)'
+      scope: constant.language.encoding.sfd
+  header:
+    - match: ^(SplineFontDB)(:)
+      scope: meta.header.sfd
+      captures:
+        1: keyword.control.start.file.afm
+        2: punctuation.separator.dictionary.key-value.sfd
+  image:
+    - match: ^(Image)(?=:)(.+)$
+      captures:
+        1: keyword.control.begin.image.sfd
+      push:
+        - meta_scope: meta.image.sfd
+        - meta_content_scope: string.unquoted.raw.data.sfd
+        - match: ^(EndImage)\b
+          captures:
+            1: keyword.control.end.image.sfd
+          pop: true
+  names:
+    - match: ^((\w+)Name)(:)\s*(\S+.*?)\s$
+      scope: meta.dictionary.key-value.sfd
+      captures:
+        1: variable.other.property.sfd
+        3: punctuation.separator.dictionary.key-value.sfd
+        4: "entity.name.${2:/downcase},sfd"
+  pickleData:
+    - match: ^(PickledData)(:)\s*(")
+      captures:
+        1: variable.other.property.sfd
+        2: punctuation.separator.dictionary.key-value.sfd
+        3: punctuation.definition.string.begin.sfd
+      push:
+        - meta_scope: meta.pickle-data.sfd
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.sfd
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.sfd
+  private:
+    - match: ^BeginPrivate(?=:)
+      captures:
+        0: keyword.control.begin.private.sfd
+      push:
+        - meta_scope: meta.section.private.sfd
+        - match: ^EndPrivate\b
+          captures:
+            0: keyword.control.end.private.sfd
+          pop: true
+        - match: ^\S+
+          scope: entity.name.private.property.sfd
+        - include: main
+  property:
+    - match: "^([^:]+)(:)"
+      scope: meta.dictionary.key-value.sfd
+      captures:
+        1: variable.other.property.sfd
+        2: punctuation.separator.dictionary.key-value.sfd
+  punctuation:
+    - match: <|>
+      scope: punctuation.definition.brackets.angle.sfd
+    - match: "[{}]"
+      scope: punctuation.definition.brackets.curly.sfd
+  sections:
+    - match: '^(Start|Begin)([A-Z]\w+)(?=:)'
+      captures:
+        0: "keyword.control.begin.${2:/downcase}.sfd"
+      push:
+        - meta_scope: "meta.section.${2:/downcase}.sfd"
+        - match: ^(End\2)\b
+          captures:
+            0: "keyword.control.end.${2:/downcase}.sfd"
+          pop: true
+        - include: main
+  unquoted:
+    - match: \S+
+      scope: string.unquoted.property.sfd

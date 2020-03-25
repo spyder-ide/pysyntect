@@ -1,0 +1,81 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: q
+file_extensions:
+  - q
+scope: source.q
+contexts:
+  main:
+    - match: /
+      comment: comment block
+      push:
+        - meta_scope: comment.block.source.q
+        - match: \\
+          pop: true
+    - match: \s/.*|^/.*
+      comment: comment exit
+      scope: comment.line.source.q
+    - match: \\
+      comment: string
+      push:
+        - meta_scope: comment.block.source.q
+        - match: \\
+          pop: true
+    - match: (?=(\W|\b))((\.Q\.\w+)|(\.z\.\w+)|(\\\w+))(?=(\W|\b))
+      comment: q Reserved Functions
+      scope: other.source.q
+      captures:
+        2: support.function.q
+    - match: '".*?"'
+      comment: string
+      scope: string.quoted.string.source.q
+    - match: "`[:/a-zA-Z0-9_.]+"
+      comment: string
+      scope: string.interpolated.symbol.source.q
+    - match: '(?=([^a-zA-Z0-9]|\b))(\.?[a-zA-Z]+[a-zA-Z0-9_\.]*\s*)(:)\s*'
+      comment: Variable Definition
+      scope: other.source.q
+      captures:
+        2: variable.parameter.complex.source.q
+        3: support.function.q
+    - match: '[!$@\\/_#?|'',`(\\:)]'
+      comment: q adverbs and shortcut
+      scope: support.function.q
+    - match: \.(?=\W)
+      comment: dot notation
+      scope: support.function.q
+    - match: '(\{\s*\[)'
+      push:
+        - meta_content_scope: meta.function.parameters.q
+        - match: '(?=\]\s*)'
+          pop: true
+        - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(;)|(?=[\]\)]))'
+          captures:
+            1: entity.other.inherited-class.q
+            2: punctuation.separator.parameters.q
+    - match: (?=(\W|\b))(prd|while|wavg|delete|min|like|exp|abs|insert|wsum|last|log|div|cos|sin|sqrt|max|in|exec|within|xexp|avg|second|hour|minute|update|sum|by|from|select|neg|not|null|string|reciprocal|floor|ceiling|signum|mod|xbar|xlog|and|or|each|scan|over|prior|mmu|lsq|inv|md5|ltime|gtime|count|first|var|dev|med|cov|cor|all|any|rand|sums|prds|mins|maxs|fills|deltas|ratios|avgs|differ|prev|next|rank|reverse|iasc|idesc|asc|desc|msum|mcount|mavg|mdev|xrank|mmin|mmax|xprev|rotate|distinct|group|where|flip|type|key|til|get|value|attr|cut|set|upsert|raze|union|inter|except|cross|sv|vs|sublist|enlist|read0|read1|hopen|hclose|hdel|hsym|hcount|peach|system|ltrim|rtrim|trim|lower|upper|ssr|view|tables|views|cols|xcols|keys|xkey|xcol|xasc|xdesc|fkeys|meta|lj|aj|aj0|ij|pj|asof|uj|ww|wj|wj1|fby|xgroup|ungroup|ej|save|load|rsave|rload|show|csv|parse|eval)(?=(\W|\b))
+      comment: q keywords
+      scope: other.source.q
+      captures:
+        2: keyword.other.complex.source.q
+    - match: '(?=(\W|\b))([0-9]{4}\.[0-9]{2}\.[0-9]{2}[TD]?[0-9]{2}:[0-9]{2}:[0-9]{2}(:[0-9]{2})?(\.[0-9]{3,6})?)(?=(\W|\b))'
+      comment: datetime
+      scope: other.source.q
+      captures:
+        2: constant.numeric.complex.source.q
+    - match: '(?=(\W|\b))([0-9]{4}\.[0-9]{2}\.[0-9]{2}[TD]?)(?=(\W|\b))'
+      comment: time
+      scope: other.source.q
+      captures:
+        2: constant.numeric.complex.source.q
+    - match: '(?=(\W|\b))([0-9]{2}:[0-9]{2}:[0-9]{2}(:[0-9]{2})?(\.[0-9]{3,6})?)(?=(\W|\b))'
+      comment: date
+      scope: other.source.q
+      captures:
+        2: constant.numeric.complex.source.q
+    - match: '(?=(\W|\b))([-]?[0-9]+[bhijef]{0,1}(\.[0-9]+[m]?)?|0x[a-f0-9]+)(?=(\W|\b))'
+      comment: boolean,short,integer,long
+      scope: other.source.q
+      captures:
+        2: constant.numeric.complex.source.q

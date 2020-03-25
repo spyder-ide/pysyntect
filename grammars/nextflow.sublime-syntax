@@ -1,0 +1,51 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nextflow
+file_extensions:
+  - nf
+first_line_match: ^#!/*.*\bnextflow
+scope: source.nextflow
+contexts:
+  main:
+    - include: nfl-rules
+  code-block:
+    - match: "{"
+      push:
+        - meta_scope: code.block.nextflow
+        - match: "}"
+          pop: true
+        - include: nfl-rules
+  nfl-rules:
+    - include: process-def
+    - include: code-block
+    - include: scope:source.nextflow-groovy
+  process-body:
+    - match: "{"
+      push:
+        - meta_scope: process.body.nextflow
+        - match: "(?=})"
+          pop: true
+        - match: (?:accelerator|afterScript|beforeScript|cache|cpus|conda|container|containerOptions|clusterOptions|disk|echo|errorStrategy|executor|ext|label|machineType|maxErrors|maxForks|maxRetries|memory|module|penv|pod|publishDir|queue|scratch|stageInMode|stageOutMode|storeDir|tag|time|validExitStatus)\b
+          scope: process.directive.type.nextflow
+        - match: "(?:input|output|when|script|shell|exec):"
+          scope: constant.block.nextflow
+        - include: scope:source.nextflow-groovy#comments
+        - include: scope:source.nextflow-groovy#support-functions
+        - include: scope:source.nextflow-groovy#keyword
+        - include: scope:source.nextflow-groovy#values
+        - include: scope:source.nextflow-groovy#anonymous-classes-and-new
+        - include: scope:source.nextflow-groovy#types
+        - include: scope:source.nextflow-groovy#parens
+        - include: scope:source.nextflow-groovy#closures
+        - include: scope:source.nextflow-groovy#braces
+  process-def:
+    - match: '^\s*(process)\s+(\w+|"[^"]+"|''[^'']+'')\s*'
+      captures:
+        1: keyword.nextflow
+        2: function.nextflow
+      push:
+        - meta_scope: process.nextflow
+        - match: "}"
+          pop: true
+        - include: process-body

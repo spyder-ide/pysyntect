@@ -1,0 +1,232 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Protocol Buffer
+file_extensions:
+  - proto
+scope: source.protobuf
+contexts:
+  main:
+    - match: (import) (".*")
+      scope: meta.import.declaration.protobuf
+      captures:
+        1: keyword.other.import.protobuf
+        2: string.quoted.double.import.protobuf
+    - match: (syntax)\s*=\s*(".*")
+      scope: meta.syntax.declaration.protobuf
+      captures:
+        1: keyword.other.syntax.protobuf
+        2: string.quoted.double.syntax.protobuf
+    - match: '\b(message)\s+([A-Za-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.message.protobuf
+        2: entity.name.type.message.protobuf
+      push:
+        - meta_scope: meta.message-declaration.protobuf
+        - match: "}"
+          captures:
+            1: storage.type.message.protobuf
+            2: entity.name.type.message.protobuf
+          pop: true
+        - include: main
+        - include: any_field
+        - include: comments
+        - include: multiline_comments
+    - match: '\b(enum)\s+([A-Za-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.enum.protobuf
+        2: entity.name.type.enum.protobuf
+      push:
+        - meta_scope: meta.enum-declaration.protobuf
+        - match: "}"
+          pop: true
+        - match: '\b([A-Za-z0-9_]+)\s*=\s*(\d+)\b'
+          scope: meta.individual-enum-definition.protobuf
+          captures:
+            1: constant.other.user-defined.protobuf
+            2: constant.numeric.protobuf
+        - include: anywhere_option
+        - include: bracketed_option
+        - include: comments
+        - include: multiline_comments
+    - match: '\b(oneof)\s+([A-Za-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.oneof.protobuf
+        2: entity.name.type.oneof.protobuf
+      push:
+        - meta_scope: meta.oneof-declaration.protobuf
+        - match: "}"
+          pop: true
+        - match: '\b([A-Za-z0-9_]+)\s*=\s*(\d+)\b'
+          scope: meta.individual-oneof-definition.protobuf
+          captures:
+            1: constant.other.user-defined.protobuf
+            2: constant.numeric.protobuf
+        - include: main
+        - include: any_field
+        - include: comments
+        - include: multiline_comments
+    - match: '\b(service)\s+([A-Za-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.enum.protobuf
+        2: entity.name.type.enum.protobuf
+      push:
+        - meta_scope: meta.service-declaration.protobuf
+        - match: "}"
+          pop: true
+        - match: '\b(rpc)\s+([A-Za-z0-9_]+)\s+\(([A-Za-z0-9_.]+)\)\s*(returns)\s*\(([A-Za-z0-9_.]+)\)\s*;'
+          scope: meta.individual-rpc-call.protobuf
+          captures:
+            1: keyword.other.rpc-definition.protobuf
+            2: entity.name.function.service-rpc.protobuf
+            3: variable.parameter.request-type.protobuf
+            4: keyword.operator.returns.protobuf
+            5: variable.parameter.response-type.protobuf
+        - match: '\b(method)\s+([A-Za-z0-9_]+)\s*\(\s*\)\s*{'
+          captures:
+            1: keyword.other.method-modification.protobuf
+            2: entity.name.function.protobuf
+          push:
+            - meta_scope: meta.method-mofification.protobuf
+            - match: "}"
+              captures:
+                1: keyword.other.method-modification.protobuf
+                2: entity.name.function.protobuf
+              pop: true
+            - include: comments
+            - include: rpc_string_attribute
+            - include: rpc_primitive_attribute
+        - include: anywhere_option
+        - include: comments
+        - include: multiline_comments
+    - match: '\b(package)\s+([A-Za-z0-9._]+)\s*;'
+      scope: meta.package.protobuf
+      captures:
+        1: keyword.other.package-definition.protobuf
+        2: entity.name.section.protobuf
+    - match: (extensions)\s+(\d+)\s+(to)\s+(max|\d+);
+      scope: meta.extension-specification.protobuf
+      captures:
+        1: storage.modifier.extensions.protobuf
+        2: constant.numeric.protobufs
+        3: keyword.operator.to.protobufs
+        4: constant.numeric.protobufs
+    - include: anywhere_option
+    - include: bracketed_option
+    - include: extend_block
+    - include: comments
+    - include: multiline_comments
+  any_field:
+    - include: primitive_field
+    - include: group_field
+    - include: user_defined_message_field
+    - include: reserved_field
+  anywhere_option:
+    - match: (option)\s+
+      captures:
+        1: keyword.other.option.protobuf
+      push:
+        - match: ;
+          pop: true
+        - include: attribute
+  attribute:
+    - include: indiv_attribute
+    - include: string_attribute
+  bracketed_option:
+    - match: '\['
+      push:
+        - match: ;
+          pop: true
+        - include: attribute
+  comments:
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.protobuf
+        - match: \n
+          pop: true
+  extend_block:
+    - match: '\b(extend)\s+([A-Za-z0-9_]+)\s*\{'
+      captures:
+        1: storage.type.extend.protobuf
+        2: entity.name.type.message.protobuf
+      push:
+        - match: "}"
+          captures:
+            1: storage.type.extend.protobuf
+            2: entity.name.type.message.protobuf
+          pop: true
+        - include: any_field
+        - include: comments
+  group_field:
+    - match: '(required|optional|repeated)?\s+?(group)\s+([A-Za-z0-9_]+)\s*=\s*(\d+)\s*{'
+      captures:
+        1: keyword.control.occurrences.protobuf
+        2: invalid.deprecated.groups.protobuf
+        3: variable.other.primitive-field.protobuf
+        4: constant.numeric.field-tag.protobuf
+      push:
+        - match: "}"
+          captures:
+            1: keyword.control.occurrences.protobuf
+            2: invalid.deprecated.groups.protobuf
+            3: variable.other.primitive-field.protobuf
+            4: constant.numeric.field-tag.protobuf
+          pop: true
+        - include: any_field
+        - include: comments
+  indiv_attribute:
+    - match: '\(?([A-Za-z0-9_.]+)\)?\s*=\s*(true|false|\d+|([A-Z_]+))\b'
+      captures:
+        1: entity.other.attribute-name.protobuf
+        2: constant.language.field-option-values.protobuf
+  multiline_comments:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.protobuf
+        - match: \*/
+          pop: true
+  primitive_field:
+    - match: (required|optional|repeated)?\s+?(((s|u)?int|s?fixed)(32|64)|string|bytes|bool)\s+(\S+)\s*=\s*(\d+)
+      captures:
+        1: keyword.control.occurrences.protobuf
+        2: storage.type.built-in.protobuf
+        6: variable.other.primitive-field.protobuf
+        7: constant.numeric.field-tag.protobuf
+  reserved_field:
+    - match: (reserved)\s+(\d+)
+      captures:
+        1: keyword.control.occurrences.protobuf
+        2: constant.numeric.field-tag.protobuf
+  rpc_primitive_attribute:
+    - match: '(option)\s+\(?([A-Za-z0-9_.]+)\)?\.([A-Za-z0-9.]+)\s*=\s*(true|false|\d+|([A-Z_]+))\b'
+  rpc_string_attribute:
+    - match: '(option)\s+\(?([A-Za-z0-9_.]+)\)?\.([A-Za-z0-9.]+)\s*=\s*(")'
+      captures:
+        1: keyword.other.option.protobuf
+        2: entity.other.attribute-name.protobuf
+        3: entity.other.attribute-name.protobuf
+        4: string.quoted.double.protobuf
+      push:
+        - meta_content_scope: string.quoted.double.protobuf
+        - match: (")
+          captures:
+            1: string.quoted.double.protobuf
+          pop: true
+  string_attribute:
+    - match: '\(?([A-Za-z0-9_.]+)\)?\s*=\s*(")'
+      captures:
+        1: entity.other.attribute-name.protobuf
+        2: string.quoted.double.protobuf
+      push:
+        - meta_content_scope: string.quoted.double.protobuf
+        - match: (")
+          captures:
+            1: string.quoted.double.protobuf
+          pop: true
+  user_defined_message_field:
+    - match: '(required|optional|repeated)?\s+?([A-Za-z._]*)\s+(\S+)\s*=\s*(\d+)'
+      captures:
+        1: keyword.control.occurrences.protobuf
+        2: support.class.user-defined-type.protobuf
+        3: variable.other.primitive-field.protobuf
+        4: constant.numeric.field-tag.protobuf

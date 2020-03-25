@@ -1,0 +1,320 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Yacc/Bison
+file_extensions:
+  - bison
+  - y
+  - yy
+  - yacc
+first_line_match: |-
+  (?ix)
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		(?:yacc|bison)
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		(?:yacc|bison)
+  	(?=\s|:|$)
+scope: source.yacc
+contexts:
+  main:
+    - include: comment
+    - include: prologue
+    - include: declaration-section
+    - include: rules
+    - include: epilogue
+    - include: scope:source.cpp
+  comment:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.begin.yacc
+      push:
+        - meta_scope: comment.block.yacc
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.end.yacc
+          pop: true
+  action:
+    - match: '(%\?)({)'
+      captures:
+        1: keyword.operator.predicate.action.yacc
+        2: punctuation.section.block.begin.bracket.curly.c
+      push:
+        - meta_scope: meta.predicate.yacc
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.bracket.curly.c
+          pop: true
+        - include: action-innards
+    - match: "{"
+      captures:
+        0: punctuation.section.block.begin.bracket.curly.c
+      push:
+        - meta_scope: meta.action.yacc
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.bracket.curly.c
+          pop: true
+        - include: action-innards
+  action-innards:
+    - match: "{"
+      captures:
+        0: punctuation.section.block.begin.bracket.curly.c
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.bracket.curly.c
+          pop: true
+        - include: action-innards
+    - include: action-vars
+    - include: bison-defs
+    - include: scope:source.cpp
+  action-vars:
+    - match: '(\$)(undefined|accept|end)(?![-.])\b'
+      scope: constant.language.predefined-symbol.$2.yacc
+      captures:
+        1: punctuation.definition.symbol.yacc
+    - match: '(?<![-.$])\b(error)(?![-.])\b'
+      scope: constant.language.predefined-symbol.error.yacc
+    - match: '(\$@)([0-9]+)'
+      scope: variable.language.midrule-action-symbol.$2.nth.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+    - match: (@)\$
+      scope: variable.language.rule-location.lhs.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+    - match: "(@)([0-9]+)"
+      scope: variable.language.positional.rule-location.rhs.$2.yacc.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+    - match: (\$)\$
+      scope: variable.language.rule-value.lhs.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+    - match: '(\$)([0-9]+)'
+      scope: variable.language.positional.rule-value.rhs.$2.yacc.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+    - match: '(@)[A-Za-z_.][-.\w]*|(@)(\[)\s*[A-Za-z_.][-.\w]*\s*(\])'
+      scope: variable.language.symbol-location.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+        2: punctuation.definition.variable.yacc
+        3: punctuation.section.begin.brace.bracket.square.yacc
+        4: punctuation.section.end.bbrace.racket.square.yacc
+    - match: '(\$)[A-Za-z_.][-.\w]*|(\$\[)\s*[A-Za-z_.][-.\w]*\s*(\])'
+      scope: variable.language.symbol-value.yacc
+      captures:
+        1: punctuation.definition.variable.yacc
+        2: punctuation.definition.variable.begin.yacc
+        3: punctuation.definition.variable.end.yacc
+  bison-defs:
+    - match: |-
+        (?x) (?<![.-]) \b
+        (YYABORT|YYACCEPT|YYBACKUP|YYDEBUG|YYERROR_VERBOSE|YYERROR|YYFPRINTF|YYINITDEPTH
+        |YYMAXDEPTH|YYPRINT|YYRECOVERING|YYSTACK_USE_ALLOCA|yyerrok|yyerror|yylex|yyparse
+        |yypstate_delete|yypstate_new|yypull_parse|yypush_parse)
+        \b (?![.-])
+      scope: support.function.$1.yacc
+    - match: '(?<![.-])\b(yychar|yyclearin|yydebug|yylloc|yylval|yynerrs)\b(?![.-])'
+      scope: support.variable.$1.yacc
+    - match: '(?<![.-])\b(YYSTYPE|YYLTYPE)\b(?![.-])'
+      scope: support.type.$1.yacc
+  constant:
+    - match: \w+
+      scope: constant.language.other.token.yacc
+  data-type:
+    - match: (<)(\*)(>)
+      scope: storage.modifier.type.yacc
+      captures:
+        1: punctuation.definition.angle.bracket.begin.yacc
+        2: constant.language.default.yacc
+        3: punctuation.definition.angle.bracket.end.yacc
+    - match: <
+      captures:
+        0: punctuation.definition.angle.bracket.begin.yacc
+      push:
+        - meta_scope: storage.modifier.type.yacc
+        - match: ">"
+          captures:
+            0: punctuation.definition.angle.bracket.end.yacc
+          pop: true
+  declaration-innards:
+    - include: constant
+    - include: comment
+    - include: string
+    - include: data-type
+  declaration-section:
+    - match: "(?<=%})"
+      push:
+        - meta_scope: meta.declarations.yacc
+        - match: ^(?=\s*%%)
+          pop: true
+        - include: declarations
+        - include: comment
+        - include: data-type
+  declarations:
+    - match: ^\s*((%)union)\b
+      captures:
+        1: keyword.control.directive.union.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+      push:
+        - match: '^(?=\s*%)|(?<=})'
+          pop: true
+        - include: scope:source.cpp
+    - match: '^\s*((%)code)\s+(imports)\s*({)'
+      captures:
+        1: keyword.control.directive.code.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+        3: constant.language.other.qualifier.yacc
+        4: punctuation.definition.curly.bracket.begin.yacc
+      push:
+        - meta_scope: meta.code-block.yacc
+        - match: "}"
+          captures:
+            0: punctuation.definition.curly.bracket.end.yacc
+          pop: true
+        - include: scope:source.java
+    - match: '^\s*((%)(code|lex-param|parse-param|param|printer))(?:\s+(\w+))?\s*({)'
+      captures:
+        1: keyword.control.directive.$3.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+        4: constant.language.other.qualifier.yacc
+        5: punctuation.definition.curly.bracket.begin.yacc
+      push:
+        - meta_scope: meta.$3-block.yacc
+        - match: "}"
+          captures:
+            0: punctuation.definition.curly.bracket.end.yacc
+          pop: true
+        - include: scope:source.cpp
+    - match: ^\s*((%)defines)(?=\s|$|/\*|//)(?:\s+(?!//|/\*)(\S+))?
+      scope: meta.defines.yacc
+      captures:
+        1: keyword.control.directive.defines.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+        3: string.unquoted.filename.yacc
+    - match: '^\s*((%)define)(?:\s+([A-Za-z_.][-.\w]*))?\s*({)'
+      captures:
+        1: keyword.control.directive.define.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+        3: entity.name.var.yacc
+        4: punctuation.definition.curly.bracket.begin.yacc
+      push:
+        - match: "}"
+          captures:
+            0: punctuation.definition.curly.bracket.end.yacc
+          pop: true
+        - include: scope:source.cpp
+    - match: '^\s*((%)define)(?:\s+([A-Za-z_.][-.\w]*))?'
+      captures:
+        1: keyword.control.directive.define.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+        3: entity.name.var.yacc
+      push:
+        - match: '(?=\s*$)|^(?!\s{2,}(?=\w))|^(?=\s*%%)'
+          pop: true
+        - include: declaration-innards
+    - match: ^\s*((%)option)(?=\s|$)
+      captures:
+        1: keyword.control.directive.option.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+      push:
+        - match: $|(?=\s*(?://|/\*))|^(?=\s*%%)
+          pop: true
+        - match: '[A-Za-z_.][-.\w]*'
+          scope: constant.language.option-name.yacc
+        - include: declaration-innards
+    - match: |-
+        (?x)
+        ^\s* ((%)
+        (code|debug|destructor|dprec|empty|error-verbose|expect-rr|expect
+        |file-prefix|glr-parser|initial-action|language|left|lex-param
+        |locations|merge|name-prefix|no-lines|nonassoc|nterm|output|param
+        |parse-param|precedence|prec|printer|pure-parser|required?|right|skeleton
+        |start|token-table|token|type|verbose|yacc))\b
+      captures:
+        1: keyword.control.directive.$3.yacc
+        2: punctuation.definition.token.percentage-sign.yacc
+      push:
+        - match: '^(?!\s{2,}(?=\w))|^(?=\s*%%)'
+          pop: true
+        - include: declaration-innards
+    - match: '^\s*(%{)'
+      captures:
+        1: punctuation.section.embedded.begin.yacc
+      push:
+        - match: '^\s*(%})'
+          captures:
+            1: punctuation.section.embedded.end.yacc
+          pop: true
+        - include: scope:source.cpp
+  epilogue:
+    - match: (?<=%%)
+      push:
+        - meta_scope: meta.epilogue.yacc
+        - match: (?=A)B
+          pop: true
+        - include: scope:source.cpp
+  prologue:
+    - match: '^\s*(%{)'
+      scope: punctuation.section.embedded.begin.yacc
+    - match: '^\s*(%})'
+      scope: punctuation.section.embedded.end.yacc
+    - include: declarations
+  rule:
+    - match: '^\s*([A-Za-z_.][-.\w]*)\s*(:)'
+      captures:
+        1: entity.name.rule.yacc
+        2: punctuation.separator.key-value.colon.yacc
+      push:
+        - meta_scope: meta.rule.yacc
+        - match: \s*(;)\s*
+          captures:
+            1: punctuation.terminator.statement.semicolon.yacc
+          pop: true
+        - match: '([A-Za-z_.][-.\w]*)'
+          scope: entity.name.rule.yacc
+        - match: \|
+          scope: keyword.operator.logical.or.yacc
+        - include: comment
+        - include: string
+        - include: action
+  rules:
+    - match: ^\s*(%%)
+      captures:
+        1: keyword.control.section.begin.yacc
+      push:
+        - meta_scope: meta.rules.yacc
+        - match: ^\s*(%%)
+          captures:
+            1: keyword.control.section.end.yacc
+          pop: true
+        - include: comment
+        - include: rule
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.yacc
+      push:
+        - meta_scope: string.quoted.double.yacc
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.yacc
+          pop: true
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.yacc
+      push:
+        - meta_scope: string.quoted.single.yacc
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.yacc
+          pop: true

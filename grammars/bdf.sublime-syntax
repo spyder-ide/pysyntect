@@ -1,0 +1,198 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Glyph Bitmap Distribution Format
+file_extensions:
+  - bdf
+first_line_match: '\ASTARTFONT\s+[0-9]+\.[0-9]+\s*$'
+scope: source.bdf
+contexts:
+  main:
+    - include: comment
+    - include: globalInfo
+    - include: glyphs
+    - include: eof
+  comment:
+    - match: ^COMMENT(?=\s|$)
+      captures:
+        0: keyword.operator.start-comment.bdf
+      push:
+        - meta_content_scope: comment.line.bdf
+        - match: $
+          pop: true
+  eof:
+    - match: ^(ENDFONT)\s*$
+      captures:
+        1: keyword.control.end.file.bdf
+  globalInfo:
+    - match: '^(STARTFONT)\s+([-+]?\d+(?:\.\d+)?)?\s*$'
+      captures:
+        1: keyword.control.start.file.bdf
+        2: constant.numeric.float.decimal.version-number.bdf
+      push:
+        - meta_scope: meta.global-info.bdf
+        - match: ^(?=CHARS\b|ENDFONT\b)
+          pop: true
+        - include: comment
+        - match: ^CONTENTVERSION(?=\s|$)
+          captures:
+            0: keyword.operator.content-version.bdf
+          push:
+            - meta_scope: meta.content-version.bdf
+            - match: $
+              pop: true
+            - include: paramInteger
+        - match: ^FONT(?=\s|$)
+          captures:
+            0: keyword.operator.font-name.bdf
+          push:
+            - meta_scope: meta.font-name.bdf
+            - match: $
+              pop: true
+            - include: scope:source.xlfd#name
+            - match: '\G\s+(?![-+])(\S+.*)(?=\s*$)'
+              captures:
+                1: entity.name.identifier.bdf
+        - match: ^SIZE(?=\s|$)
+          captures:
+            0: keyword.operator.font-size.bdf
+          push:
+            - meta_scope: meta.font-size.bdf
+            - match: $
+              pop: true
+            - include: paramNumbers
+        - match: ^FONTBOUNDINGBOX(?=\s|$)
+          captures:
+            0: keyword.operator.bounding-box.bdf
+          push:
+            - meta_scope: meta.bounding-box.bdf
+            - match: $
+              pop: true
+            - include: paramIntegers
+        - match: ^METRICSSET(?=\s|$)
+          captures:
+            0: keyword.operator.metrics-set.bdf
+          push:
+            - meta_scope: meta.metrics-set.bdf
+            - match: $
+              pop: true
+            - match: "[3-9]+"
+              scope: invalid.illegal.unknown-type.bdf
+            - include: paramInteger
+        - match: ^(STARTPROPERTIES)(?:\s+(\d+))?\s*$
+          captures:
+            1: keyword.control.start.properties.bdf
+          push:
+            - meta_scope: meta.properties-list.bdf
+            - match: ^(ENDPROPERTIES)\s*$|^(?=CHARS\b|ENDFONT\b)
+              captures:
+                1: keyword.control.end.properties.bdf
+              pop: true
+            - match: ^(\S+)(?:\s+(\S.*))?(?=\s*$)
+              scope: meta.property.bdf
+              captures:
+                1: variable.assignment.property.name.bdf
+        - include: metrics
+  glyphs:
+    - match: ^(CHARS)(?:\s+(\d+))?\s*$
+      captures:
+        1: keyword.control.start.glyphs.bdf
+        2: constant.numeric.decimal.integer.bdf
+      push:
+        - meta_scope: meta.glyphs-list.bdf
+        - match: ^(?=ENDFONT\b)
+          pop: true
+        - match: ^(STARTCHAR)(?:\s+(\S.*))?(?=\s*$)
+          captures:
+            1: keyword.control.start.glyph.bdf
+            2: string.unquoted.glyph-name.bdf
+          push:
+            - meta_scope: meta.glyph.bdf
+            - match: ^(ENDCHAR)\s*$
+              captures:
+                1: keyword.control.end.glyph.bdf
+              pop: true
+            - match: ^ENCODING(?=\s|$)
+              captures:
+                0: keyword.operator.glyph-encoding.bdf
+              push:
+                - meta_scope: meta.glyph-encoding.bdf
+                - match: $
+                  pop: true
+                - include: paramNumbers
+            - match: ^BBX(?=\s|$)
+              captures:
+                0: keyword.operator.bounding-box.bdf
+              push:
+                - meta_scope: meta.bounding-box.bdf
+                - match: $
+                  pop: true
+                - include: paramNumbers
+            - match: ^(BITMAP)\s*$
+              captures:
+                1: keyword.operator.bitmap.bdf
+              push:
+                - meta_scope: meta.bitmap.bdf
+                - match: ^(?=ENDCHAR\b|ENDFONT\b)
+                  pop: true
+                - match: '^[0-9A-Fa-f]+(?=\s*$)'
+                  scope: constant.numeric.hexadecimal.hex.byte.bdf
+            - include: metrics
+  integer:
+    - match: '(?<!\w)[-+]?(?=0)\d+'
+      scope: constant.numeric.integer.octal.bdf
+    - match: '(?<!\w)[-+]?\d+'
+      scope: constant.numeric.integer.decimal.bdf
+  metrics:
+    - match: '^([SD]WIDTH1?|VVECTOR)(?=\s|$)'
+      captures:
+        0: keyword.operator.font-metric.bdf
+      push:
+        - meta_scope: "meta.font-metric.${1:/downcase}.bdf"
+        - match: $
+          pop: true
+        - include: paramNumbers
+  numbers:
+    - include: real
+    - include: integer
+  paramInteger:
+    - match: '\G\s+([-+]?[0-9]+)\s*$'
+      captures:
+    - include: paramInvalid
+  paramIntegers:
+    - include: integer
+    - match: '(?![-+0-9.])\S+'
+      scope: invalid.illegal.syntax.type.bdf
+  paramInvalid:
+    - match: \G\s+(\S+.+)\s*$
+      captures:
+        1: invalid.illegal.syntax.type.bdf
+  paramNumber:
+    - match: '\G\s+([-+]?(?:\d*\.\d+|\d+))\s*$'
+      captures:
+    - include: paramInvalid
+  paramNumbers:
+    - include: real
+    - include: integer
+    - match: '(?![-+0-9.])\S+'
+      scope: invalid.illegal.syntax.type.bdf
+  paramString:
+    - match: \G\s+(\S.*)\s*$
+      scope: variable.assignment.bdf
+      captures:
+        1: string.unquoted.bdf
+  quotedString:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.bdf
+      push:
+        - meta_scope: string.quoted.double.bdf
+        - match: '"(?!")|(?=$)'
+          captures:
+            0: punctuation.definition.string.end.bdf
+          pop: true
+        - match: '""'
+          scope: constant.character.escape.quote.bdf
+  real:
+    - match: '(?<!\w)[-+]?\d*\.\d+'
+      scope: constant.numeric.float.bdf

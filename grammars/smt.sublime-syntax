@@ -1,0 +1,241 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: smt
+comment: |
+  This grammar is written by non-textmate users; mainly in order to push the
+       grammar to the linguist repository. This is to enable highlighting of SMT code
+       on GitHub.
+
+       Any improvements are welcome. We are confirmed novices.
+          iam@csl.sri.com
+          bruno@csl.sri.com
+file_extensions:
+  - smt2
+  - smt
+scope: source.smt
+contexts:
+  main:
+    - match: '(^[ \t]+)?(?=;)'
+      captures:
+        1: punctuation.whitespace.comment.leading.smt
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: ;
+          captures:
+            0: punctuation.definition.comment.smt
+          push:
+            - meta_scope: comment.line.semicolon.smt
+            - match: \n
+              pop: true
+    - match: |-
+        (?x)                                                  (?# multiline mode )
+        			         (\b(?i:(define-fun|define-fun-rec|define-sort))\b)
+        					 (\s+)
+        					 ((\w|\.|\||_|@|%|\-|\!|\?)*)
+      comment: |
+        define-fun
+                               define-fun-rec
+                               define-sort
+
+                        Our notion of symbol is currently wrong. Here is what the standard says:
+
+                        <simple_symbol> ::= non-empty sequence of letters, digits and the characters
+                        + - / * = % ? ! . $ _  ̃ & ˆ <> @
+                        that does not start with a digit (or . and @ )
+
+                        <symbol> ::= <simple_symbol>  |
+                                     a sequence of whitespace and printable characters that
+                                     starts and ends with | and does not otherwise include | or /
+      scope: meta.function.define.smt
+      captures:
+        2: storage.type.function-type.smt
+        4: entity.name.function.smt
+    - match: (\b(?i:(declare-sort|declare-fun|declare-const))\b)(\s+)((\w|\.|\||_|@|%|\-|\!|\?)*)
+      comment: |
+        declare-const
+                               declare-fun
+                               declare-sort
+      scope: meta.function.declare.smt
+      captures:
+        2: storage.type.function-type.smt
+        4: entity.name.function.smt
+    - match: '(#|\?)(\w|[\\+-=<>''"&#])+'
+      scope: constant.character.smt
+      captures:
+        1: punctuation.definition.constant.smt
+    - match: \b(?i:as|let|exists|forall|par|_)\b
+      comment: |
+        ! ( FIXME  ! currently lives down with the symbols in keyword.operator.logical.smt)
+                             _
+                             as
+                             exists
+                             forall
+                             let
+                             par
+      scope: keyword.control.smt
+    - match: |-
+        (?x)(\:)(assertion-stack-levels|authors|chainable|definition|diagnostic-output-channel
+        |error-behavior|extensions|funs|funs-description|global-declarations|interactive-mode
+        |language|left-assoc|name|named|notes|pattern|print-success|produce-assignments
+        |produce-models|produce-proofs|produce-unsat-assumptions|produce-unsat-cores
+        |random-seed|reason-unknown|regular-output-channel|reproducible-resource-limit|right-assoc
+        |sorts|sorts-description|status|theories|values|verbosity|version)
+      comment: |
+        (FIXME word boundaries are needed here.)
+                              :all-statistics
+                              :assertion-stack-levels
+                              :authors
+                              :chainable
+                              :definition
+                              :diagnostic-output-channel
+                              :error-behavior
+                              :extensions
+                              :funs
+                              :funs-description
+                              :global-declarations
+                              :interactive-mode
+                              :language
+                              :left-assoc
+                              :name
+                              :named
+                              :notes
+                              :pattern
+                              :print-success
+                              :produce-assignments
+                              :produce-models
+                              :produce-proofs
+                              :produce-unsat-assumptions
+                              :produce-unsat-cores
+                              :random-seed
+                              :reason-unknown
+                              :regular-output-channel
+                              :reproducible-resource-limit
+                              :right-assoc
+                              :sorts
+                              :sorts-description
+                              :status
+                              :theories
+                              :values
+                              :verbosity
+                              :version
+      scope: keyword.other.predefined.smt
+    - match: |-
+        (?x)\b(?i:assert|check-sat|check-sat-assuming|echo|exit
+                             |get-assertions|get-assignment|get-info|get-model|get-option
+                             |get-proof|get-unsat-assumptions|get-unsat-core|get-value
+        					 |pop|push|reset|reset-assertions|set-info|set-logic|set-option)\b
+      comment: |
+        assert
+                             check-sat
+                             check-sat-assuming
+                             echo
+                             exit
+                             get-assertions
+                             get-assignment
+                             get-info
+                             get-model
+                             get-option
+                             get-proof
+                             get-unsat-assumptions
+                             get-unsat-core
+                             get-value
+                             pop
+                             push
+                             reset
+                             reset-assertions
+                             set-info
+                             set-logic
+                             set-option
+      scope: keyword.control.commands.smt
+    - match: \b(?i:ite|not|or|and|xor|distinct)\b
+      scope: keyword.operator.core.smt
+    - match: \b(?i:array|select|store)\b
+      scope: keyword.operator.array.smt
+    - match: |-
+        (?x)
+        					 \b(BitVec|concat|extract|bvnot|bvneg|bvand|bvor|bvadd|bvmul|bvudiv|bvurem|bvshl|bvlshr|bvult   (?#  FixedSizeBitVectors )
+        					 |bvnand|bvnor|bvxor|bvxnor|bvcomp|bvsub|bvsdiv|bvsrem|bvsmod|bvashr|repeat|zero_extend         (?#  QF_BV)
+        					 |sign_extend|rotate_left|rotate_right|bvule|bvugt|bvuge|bvslt|bvsle|bvsgt|bvsge|bv[0-9]+       (?#  QF_BV)
+        				 	)\b
+      comment: |
+        OK so there are theories, and there are logics. Seems like a lot of the
+                     bitvector operations are defined not in the bitvector theory, but rather in the
+                     QF_BV logic. We shall try to be systematic. Sooooooo:
+      scope: keyword.operator.bitvector.smt
+    - match: \b(Int|div|mod|abs)\b
+      scope: keyword.operator.ints.smt
+    - match: \b(RoundingMode|FloatingPoint|Nan|div|mod|abs)\b
+      comment: |
+        roundNearestTiesToEven RNE
+                        roundNearestTiesToAway RNA
+                        roundTowardPositive    RTP
+                        roundTowardNegative    RTN
+                        roundTowardZero        RTZ
+
+                        Float16 Float32 Float64 Float128
+
+                        +oo
+                        -oo
+
+                        +zero
+                        -zero
+      scope: keyword.operator.floatingpoint.smt
+    - match: \b(Real)\b
+      scope: keyword.operator.reals.smt
+    - match: \b(divisible|to_real|to_int|is_int)\b
+      scope: keyword.operator.reals_ints.smt
+    - match: \b(?i:eq|neq|and|or)\b
+      scope: keyword.operator.smt
+    - match: |-
+        (?x)\b(Bool|continued-execution|error|false|immediate-exit|incomplete|logic
+        |memout|sat|success|theory|true|unknown|unsupported|unsat)\b
+      comment: |
+        Bool
+                             continued-execution
+                             error
+                             false
+                             immediate-exit
+                             incomplete
+                             logic
+                             memout
+                             sat
+                             success
+                             theory
+                             true
+                             unknown
+                             unsupported
+                             unsat
+      scope: constant.language.smt
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b'
+      scope: constant.numeric.smt
+    - match: |-
+        (?x)
+        (?<=(\s|\()) # preceded by space or (
+        ( > | < | >= | <= | => | = | ! | [*/+-] )
+        (?=(\s|\()) # followed by space or (
+      comment: The symbols (always quirky in regex).
+      scope: keyword.operator.logical.smt
+    - match: \|
+      captures:
+        0: punctuation.definition.symbol.begin.smt
+      push:
+        - meta_scope: variable.parameter.symbol.smt
+        - match: \|
+          captures:
+            0: punctuation.definition.symbol.end.smt
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.smt
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.smt
+      push:
+        - meta_scope: string.quoted.double.smt
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.smt
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.smt

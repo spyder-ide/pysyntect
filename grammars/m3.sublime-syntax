@@ -1,0 +1,53 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Modula-3
+file_extensions:
+  - m3
+  - mg
+  - i3
+  - ig
+scope: source.modula-3
+contexts:
+  main:
+    - match: \b(AND|ANY|ARRAY|AS|BEGIN|BITS|BRANDED|BY|CASE|CONST|DIV|DO|ELSE|ELSIF|END|EVAL|EXCEPT|EXCEPTION|EXIT|EXPORTS|FINALLY|FOR|FROM|GENERIC|IF|IMPORT|IN|INTERFACE|LOCK|LOOP|METHODS|MOD|MODULE|NOT|OBJECT|OF|OR|OVERRIDES|PROCEDURE|RAISE|RAISES|READONLY|RECORD|REF|REPEAT|RETURN|REVEAL|SET|THEN|TO|TRY|TYPE|TYPECASE|UNSAFE|UNTIL|UNTRACED|VALUE|VAR|WHILE|WITH)\b
+      scope: keyword.modula-3
+    - match: \b(ABS|ADDRESS|ADR|ADRSIZE|ANY|BITSIZE|BOOLEAN|BYTESIZE|CARDINAL|CEILING|CHAR|DEC|DISPOSE|EXTENDED|FALSE|FIRST|FLOAT|FLOOR|INC|INTEGER|ISTYPE|LAST|LONGREAL|LOOPHOLE|MAX|MIN|MUTEX|NARROW|NEW|NIL|NULL|NUMBER|ORD|REAL|REF|REFANY|ROOT|ROUND|SUBARRAY|TEXT|TRUE|TRUNC|TYPECODE|VAL)\b
+      scope: constant.language.modula-3
+    - match: \b(LONGCARD|LONGINT)\b
+      scope: constant.language.cm3_specific.modula-3
+    - match: '(\b|[\+\-])[0-9]+\.[0-9]+([DdEeXx][\+\-]?[0-9]+)?\b'
+      scope: constant.numeric.float.modula-3
+    - match: '(\b|[\+\-])[0-9]+(\_[0-9a-fA-F]+)?L?\b'
+      scope: constant.numeric.integer.modula-3
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.modula-3
+        - match: '"'
+          pop: true
+        - include: escape_sequence
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.modula-3
+        - match: "'"
+          pop: true
+        - include: escape_sequence
+    - include: comment
+    - include: pragma
+  comment:
+    - match: \(\*
+      push:
+        - meta_scope: comment.block.modula-3
+        - match: \*\)
+          pop: true
+        - include: comment
+  escape_sequence:
+    - match: '\\[0-7]{3}|\\[\\fnrt\"\'']'
+      scope: constant.character.escape.modula-3
+  pragma:
+    - match: \<\*
+      push:
+        - meta_scope: keyword.control.directive.pragma.modula-3
+        - match: \*\>
+          pop: true
+        - include: pragma

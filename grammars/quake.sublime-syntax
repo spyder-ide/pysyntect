@@ -1,0 +1,28 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Quake
+scope: source.quake
+contexts:
+  main:
+    - match: \b(and|contains|else|end|for|foreach|if|in|is|local|not|or|proc|readonly|return)\b
+      scope: keyword.quake
+    - match: '\b[0-9]+\b'
+      scope: constant.numeric.integer.quake
+    - match: "%.*$"
+      scope: comment.line.percentage.quake
+    - include: block_comment
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.quake
+        - match: '"'
+          pop: true
+        - match: '\\[0-7]{3}|\\[\\fnrt\"\'']'
+          scope: constant.character.escape.quake
+  block_comment:
+    - match: \/\*
+      push:
+        - meta_scope: comment.block.quake
+        - match: \*\/
+          pop: true
+        - include: block_comment

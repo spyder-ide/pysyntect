@@ -1,0 +1,131 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: LTspice Symbol
+file_extensions:
+  - asy
+first_line_match: "^Version [0-9]$"
+scope: source.ltspice.symbol
+contexts:
+  main:
+    - include: version
+    - include: symbolType
+    - include: shapes
+    - include: window
+    - include: pinAttr
+    - include: pin
+    - include: attr
+    - include: text
+  attr:
+    - match: ^\s*(SYMATTR)(?=\s|$)
+      captures:
+        1: storage.type.var.attribute.ltspice.symbol
+      push:
+        - meta_scope: meta.attribute.ltspice.symbol
+        - match: $
+          pop: true
+        - match: \G\s+(\S+)
+          captures:
+            1: entity.attribute.name.ltspice.symbol
+        - match: .+
+          scope: string.unquoted.attribute.value.ltspice.symbol
+  number:
+    - match: '[-+]?[0-9]+\.[0-9]+'
+      scope: constant.numeric.float.real.decimal.ltspice.symbol
+    - match: "[-+]?[0-9]+"
+      scope: constant.numeric.integer.int.decimal.ltspice.symbol
+  pin:
+    - match: ^\s*(PIN)(?=\s|$)
+      captures:
+        1: keyword.control.pin.ltspice.symbol
+      push:
+        - meta_scope: meta.pin.ltspice.symbol
+        - match: $
+          pop: true
+        - include: number
+        - match: \w+
+          scope: constant.language.pin-alignment.ltspice.symbol
+  pinAttr:
+    - match: ^\s*(PINATTR)(?=\s|$)
+      captures:
+        1: storage.type.var.attribute.ltspice.symbol
+      push:
+        - meta_scope: meta.pin.attribute.ltspice.symbol
+        - match: $
+          pop: true
+        - match: \G\s+(SpiceOrder)\s+(\d+)
+          captures:
+            1: entity.pin.attribute.name.ltspice.symbol
+        - match: \G\s+(\S+)
+          captures:
+            1: entity.attribute.name.ltspice.symbol
+        - match: '(\[)([^\]]+)(\])'
+          captures:
+            1: punctuation.definition.brace.square.bracket.begin.ltspice.symbol
+            3: punctuation.definition.brace.square.bracket.begin.ltspice.symbol
+        - match: '[^\s\[]+'
+          scope: string.unquoted.attribute.value.ltspice.symbol
+  shapes:
+    - match: ^\s*(ARC|LINE|CIRCLE|RECTANGLE)(?=\s|$)
+      captures:
+        1: storage.type.var.shape.ltspice.symbol
+      push:
+        - meta_scope: "meta.shape.${1:/downcase}.ltspice.symbol"
+        - match: $
+          pop: true
+        - match: \G\s*(?!\d)(\w+)
+          scope: variable.parameter.type.ltspice.symbol
+        - include: number
+  symbolType:
+    - match: ^\s*(SymbolType)(?=\s|$)
+      captures:
+        1: keyword.control.symbol-type.ltspice.symbol
+      push:
+        - meta_scope: meta.symbol-type.ltspice.symbol
+        - match: $
+          pop: true
+        - match: "[A-Za-z_$]+"
+          scope: constant.language.symbol-type.ltspice.symbol
+  text:
+    - match: ^\s*(TEXT)(?=\s|$)
+      captures:
+        1: storage.type.var.text.ltspice.symbol
+      push:
+        - meta_scope: meta.text.ltspice.symbol
+        - match: $
+          pop: true
+        - match: |-
+            (?x) \G
+            \s+ ([-\d.]+) # X
+            \s+ ([-\d.]+) # Y
+            \s+ ([-\w$]+) # Alignment
+            \s+ ([-\d.]+) # Text-size
+          scope: meta.function-call.arguments.ltspice.symbol
+          captures:
+            1: meta.vector.x-axis.ltspice.symbol
+            2: meta.vector.y-axis.ltspice.symbol
+            3: constant.language.text-alignment.ltspice.symbol
+            4: meta.text-size.ltspice.symbol
+        - match: .+
+          scope: string.unquoted.text.ltspice.symbol
+  version:
+    - match: ^\s*(Version)(?=\s|$)
+      captures:
+        1: keyword.control.file-version.ltspice.symbol
+      push:
+        - meta_scope: meta.version.ltspice.symbol
+        - match: $
+          pop: true
+        - include: number
+  window:
+    - match: ^\s*(WINDOW)(?=\s|$)
+      captures:
+        1: keyword.control.window.ltspice.symbol
+      push:
+        - meta_scope: meta.window.ltspice.symbol
+        - match: $
+          pop: true
+        - match: '\G((?:\s+[-\d.]+){3})\s+(\w+)\s+([-\d.]+)'
+          scope: meta.function-call.arguments.ltspice.symbol
+          captures:
+            2: constant.language.window-alignment.ltspice.symbol

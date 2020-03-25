@@ -1,0 +1,76 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: FIGlet Font
+file_extensions:
+  - flf
+  - tlf
+first_line_match: \Aflf2a
+scope: source.figfont
+contexts:
+  main:
+    - include: prologue
+    - include: codeTag
+    - include: codeTagTable
+    - include: fontData
+    - include: endmarks
+  codeTag:
+    - match: |-
+        (?x) ^(?!.+[@#]$)
+        ( (-(?:0[Xx])?0*1)(?=\s|$)        # Invalid -1
+        | (\+?(?:[1-9][0-9]*|0(?=\s|$))) # Decimal
+        | (\+?0[0-7]+)                    # Octal
+        | (\+?0[Xx][0-9A-Fa-f]+)          # Hex
+        )
+        (?:\s+(\S.*))?
+        (?=\s*$)
+      scope: meta.code-tag.figfont
+      captures:
+        1: meta.codepoint.figfont
+        2: invalid.illegal.reserved-codepoint.figfont
+        3: constant.numeric.decimal.integer.int.figfont
+        4: constant.numeric.octal.integer.int.figfont
+        5: constant.numeric.hexadecimal.hex.integer.int.figfont
+        6: string.unquoted.description.figfont
+  codeTagTable:
+    - match: |-
+        (?x) ^(?!.+[@#]$)
+        ( (-(?:[1-9][0-9]*|0(?=\s|$))) # Decimal
+        | (-0[0-7]+)                    # Octal
+        | (-0[Xx][0-9A-Fa-f]+)          # Hex
+        )
+        (?:\s+(\S.*))?
+        \s*$\n?
+      captures:
+        0: meta.code-tag.figfont
+        1: meta.negative.codepoint.figfont
+        2: constant.numeric.decimal.integer.int.figfont
+        3: constant.numeric.octal.integer.int.figfont
+        4: constant.numeric.hexadecimal.hex.integer.int.figfont
+        5: string.unquoted.description.figfont
+      push:
+        - meta_scope: meta.translation-table.figfont
+        - meta_content_scope: string.interpolated.code-tag.figfont
+        - match: '(?<=@@|##)[ \t]*$'
+          pop: true
+        - include: endmarks
+  endmarks:
+    - match: '(?:@+|#+)[ \t]*$'
+      scope: keyword.operator.endmark.character.figfont
+  fontData:
+    - match: '[^#@\s]+|#+(?!#*[ \t]*$)|@+(?!@*[ \t]*$)'
+      scope: constant.character.sub-character.figfont
+  integer:
+    - match: "[-+]?[0-9]+"
+      scope: constant.numeric.decimal.integer.int.figfont
+  prologue:
+    - match: '^([ft]lf2a)(\S|\x7F)(\s+.+)?\s*$'
+      captures:
+        0: meta.header-line.figfont
+        1: keyword.control.file.signature.figfont
+        2: variable.parameter.hardblank.figfont
+      push:
+        - meta_scope: meta.prologue.figfont
+        - meta_content_scope: comment.block.freeform.figfont
+        - match: '^\s*(?=\2(?!.*(?i:hard\W?blank))|.{0,6}[#@]\s*$)'
+          pop: true

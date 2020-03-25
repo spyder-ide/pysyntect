@@ -1,0 +1,148 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SmPL
+file_extensions:
+  - cocci
+scope: source.smpl
+contexts:
+  main:
+    - include: comment
+    - include: include
+    - include: virtual
+    - include: control
+    - include: scripts
+    - include: metavariables
+    - include: variables
+    - include: lineAdded
+    - include: lineDeleted
+    - include: lineMatched
+    - include: when
+  comment:
+    - match: ///
+      captures:
+        0: punctuation.definition.comment.smpl
+      push:
+        - meta_scope: comment.line.triple-slash.smpl
+        - match: $
+          pop: true
+    - match: //
+      captures:
+        0: punctuation.definition.comment.smpl
+      push:
+        - meta_scope: comment.line.double-slash.smpl
+        - match: $
+          pop: true
+  control:
+    - match: '<\+(?=\.{3})|(?<=\.{3})\+>'
+      scope: storage.modifier.required.dots.smpl
+    - match: '<(?=\.{3})|(?<=\.{3})>'
+      scope: storage.modifier.optional.dots.smpl
+    - match: '\.{3}'
+      scope: keyword.control.flow.dots.smpl
+  include:
+    - match: '^\s*(include|using)\s+(?:("[^"]*")|(<.*>))'
+      scope: meta.preprocessor.$1.smpl
+      captures:
+        1: keyword.control.directive.$1.smpl
+  isoPath:
+    - match: <
+      captures:
+        0: punctuation.definition.string.begin.smpl
+      push:
+        - meta_scope: string.quoted.other.lt-gt.include.smpl
+        - match: ">"
+          captures:
+            0: punctuation.definition.string.end.smpl
+          pop: true
+  lineAdded:
+    - match: ^(\+).*
+      scope: markup.inserted.diff.smpl
+      captures:
+        1: punctuation.definition.inserted.diff.smpl
+  lineDeleted:
+    - match: ^(-).*
+      scope: markup.deleted.diff.smpl
+      captures:
+        1: punctuation.definition.deleted.diff.smpl
+  lineMatched:
+    - match: ^(\*)\s*(\S.*)
+      captures:
+        1: keyword.operator.semantic-match.diff.smpl
+        2: markup.changed.diff.smpl
+  metavariables:
+    - match: ^(@).*(@)\s*$
+      captures:
+        0: meta.diff.range.smpl
+        1: punctuation.definition.range.diff.begin.smpl
+        2: punctuation.definition.range.diff.end.smpl
+      push:
+        - meta_scope: meta.diff.header.metavariables.smpl
+        - match: ^(@@)
+          captures:
+            0: meta.diff.range.smpl
+            1: punctuation.definition.range.diff.smpl
+          pop: true
+  scripts:
+    - match: (^(@).*?(?<=\s|@)(script|initialize|finalize):python(?=\s|@).*?(@)\s*$)
+      captures:
+        0: meta.diff.header.metavariables.smpl
+        1: meta.diff.range.smpl
+        2: punctuation.definition.range.diff.begin.smpl
+        3: punctuation.definition.range.diff.end.smpl
+      push:
+        - match: ^(?=@(?!@\s*$))
+          pop: true
+        - match: ^
+          push:
+            - meta_scope: meta.diff.header.metavariables.smpl
+            - match: ^(@@)
+              captures:
+                0: meta.diff.range.smpl
+                1: punctuation.definition.range.diff.smpl
+              pop: true
+        - match: (?<=@@)\s*$\n?
+          push:
+            - meta_content_scope: source.embedded.python
+            - match: ^(?=@)
+              pop: true
+            - include: comment
+            - include: scope:source.python
+    - match: (^(@).*?(?<=\s|@)(script|initialize|finalize):ocaml(?=\s|@).*?(@)\s*$)
+      captures:
+        0: meta.diff.header.metavariables.smpl
+        1: meta.diff.range.smpl
+        2: punctuation.definition.range.diff.begin.smpl
+        3: punctuation.definition.range.diff.end.smpl
+      push:
+        - match: ^(?=@(?!@\s*$))
+          pop: true
+        - match: ^
+          push:
+            - meta_scope: meta.diff.header.metavariables.smpl
+            - match: ^(@@)
+              captures:
+                0: meta.diff.range.smpl
+                1: punctuation.definition.range.diff.smpl
+              pop: true
+        - match: (?<=@@)\s*$\n?
+          push:
+            - meta_content_scope: source.embedded.ocaml
+            - match: ^(?=@)
+              pop: true
+            - include: comment
+            - include: scope:source.ocaml
+  variables:
+    - match: '(?<!^)(@)[\w]+'
+      scope: variable.at-prefix.smpl
+      captures:
+        1: keyword.operator.variable.smpl
+  virtual:
+    - match: ^\s*(virtual)\s+(.*)
+      captures:
+        1: storage.modifier.virtual.smpl
+  when:
+    - match: '(?<=\s|\.{3})(when)\s*(any(?:\s|$)|!=)'
+      captures:
+        1: keyword.control.flow.when.smpl
+        2: keyword.operator.comparison.smpl

@@ -1,0 +1,16 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Shell Session
+file_extensions:
+  - sh-session
+scope: text.shell-session
+contexts:
+  main:
+    - match: '(?x) ^ (?: ( (?:\(\S+\)\s*)? (?: sh\S*?                       | \w+\S+[@:]\S+(?:\s+\S+)? | \[\S+?[@:][^\n]+?\].*? ) ) \s* )? ( [>$#%] | \p{Greek} ) \s+ (.*) $'
+      captures:
+        1: entity.other.prompt-prefix.shell-session
+        2: punctuation.separator.prompt.shell-session
+        3: source.shell
+    - match: ^.+$
+      scope: meta.output.shell-session

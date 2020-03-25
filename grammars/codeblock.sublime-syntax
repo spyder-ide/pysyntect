@@ -1,0 +1,19 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+file_extensions: []
+scope: markdown.plantuml.codeblock
+contexts:
+  main:
+    - include: plantuml-code-block
+  plantuml-code-block:
+    - match: 'plantuml(\s+[^`~]*)?$'
+      push:
+        - match: '(^|\G)(?=\s*[`~]{3,}\s*$)'
+          pop: true
+        - match: (^|\G)(\s*)(.*)
+          push:
+            - meta_content_scope: meta.embedded.block.plantuml
+            - match: ""
+              pop: true
+            - include: scope:source.wsd

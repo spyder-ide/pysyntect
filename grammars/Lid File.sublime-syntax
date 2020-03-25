@@ -1,0 +1,17 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Lid File
+file_extensions:
+  - lid
+scope: source.lid
+contexts:
+  main:
+    - match: '([\x{21}-\x{39}\x{3B}-\x{7E}]+)(:)\s*'
+      captures:
+        1: keyword.other.mail
+        2: punctuation.separator.key-value.mail
+      push:
+        - meta_scope: meta.header.mail
+        - match: '^(?![ \t\v])'
+          pop: true

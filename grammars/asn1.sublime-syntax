@@ -1,0 +1,37 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Abstract Syntax Notation
+file_extensions:
+  - asn
+  - asn1
+scope: source.asn
+contexts:
+  main:
+    - match: "--.*$"
+      scope: comment.line.asn
+    - match: "::="
+      scope: storage.type.asn
+    - match: \|
+      scope: storage.type.asn
+    - match: \.\.
+      scope: keyword.operator.asn
+    - match: (SEQUENCE|SET|CLASS|CHOICE|OF)
+      scope: storage.type.asn
+    - match: (BOOLEAN|INTEGER|ENUMERATED|REAL|(BIT|OCTET) STRING|NULL|OBJECT IDENTIFIER|ANY|DATE|DATE-TIME|(Numeric|Printable|Teletex|IA5|Visible|Graphic|General)String|(Generalized|UTC)Time|EXTERNAL|Object Descriptor)
+      scope: variable.language.asn
+    - match: '([-+]?[0-9]+|[-+]?\.[0-9]+)(?=\)|\.\.)'
+      scope: constant.numeric.float.asn
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.asn
+        - match: '"'
+          pop: true
+    - match: OPTIONAL|SIZE|\^ FROM
+      scope: storage.modifier.asn
+    - match: DEFINITIONS|AUTOMATIC TAGS|BEGIN|END
+      scope: entity.name.type.class.asn
+    - match: IMPORTS|FROM
+      scope: support.constant.asn
+    - match: (IM|EX)PLICIT
+      scope: constant.language.asn

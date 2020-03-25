@@ -1,0 +1,105 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: R
+file_extensions:
+  - R
+  - r
+  - s
+  - S
+  - Rprofile
+scope: source.r
+contexts:
+  main:
+    - match: '^(#pragma[ \t]+mark)[ \t](.*)'
+      scope: comment.line.pragma-mark.r
+      captures:
+        1: comment.line.pragma.r
+        2: entity.name.pragma.name.r
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.r
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.r
+          push:
+            - meta_scope: comment.line.number-sign.r
+            - match: \n
+              pop: true
+    - match: \b(logical|numeric|character|complex|matrix|array|data\.frame|list|factor)(?=\s*\()
+      scope: storage.type.r
+    - match: \b(function|if|break|next|repeat|else|for|return|switch|while|in|invisible)\b
+      scope: keyword.control.r
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(i|L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b'
+      scope: constant.numeric.r
+    - match: \b(T|F|TRUE|FALSE|NULL|NA|Inf|NaN)\b
+      scope: constant.language.r
+    - match: \b(pi|letters|LETTERS|month\.abb|month\.name)\b
+      scope: support.constant.misc.r
+    - match: (\-|\+|\*|\/|%\/%|%%|%\*%|%in%|%o%|%x%|\^)
+      scope: keyword.operator.arithmetic.r
+    - match: (=|<-|<<-|->|->>)
+      scope: keyword.operator.assignment.r
+    - match: (==|!=|<>|<|>|<=|>=)
+      scope: keyword.operator.comparison.r
+    - match: "(!|&{1,2}|[|]{1,2})"
+      scope: keyword.operator.logical.r
+    - match: (\.\.\.|\$|@|:|\~)
+      scope: keyword.other.r
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.r
+      push:
+        - meta_scope: string.quoted.double.r
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.r
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.r
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.r
+      push:
+        - meta_scope: string.quoted.single.r
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.r
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.r
+    - match: '([[:alpha:].][[:alnum:]._]*)\s*(<-)\s*(function)'
+      scope: meta.function.r
+      captures:
+        1: entity.name.function.r
+        2: keyword.operator.assignment.r
+        3: keyword.control.r
+    - match: '(setMethod|setReplaceMethod|setGeneric|setGroupGeneric|setClass)\s*\(\s*([[:alpha:]\d]+\s*=\s*)?("|\x{27})([a-zA-Z._\[\$@][a-zA-Z0-9._\[]*?)\3.*'
+      scope: meta.method.declaration.r
+      captures:
+        1: entity.name.tag.r
+        4: entity.name.type.r
+    - match: '([[:alpha:].][[:alnum:]._]*)\s*\('
+    - match: '([[:alpha:].][[:alnum:]._]*)\s*(=)(?=[^=])'
+      captures:
+        1: variable.parameter.r
+        2: keyword.operator.assignment.r
+    - match: '\b([\d_][[:alnum:]._]+)\b'
+      scope: invalid.illegal.variable.other.r
+    - match: '\b([[:alnum:]_]+)(?=::)'
+      scope: entity.namespace.r
+    - match: '\b([[:alnum:]._]+)\b'
+      scope: variable.other.r
+    - match: '\{'
+      captures:
+        0: punctuation.section.block.begin.r
+      push:
+        - meta_scope: meta.block.r
+        - match: '\}'
+          captures:
+            0: punctuation.section.block.end.r
+          pop: true
+        - include: scope:source.r

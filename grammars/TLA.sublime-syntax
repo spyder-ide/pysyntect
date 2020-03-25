@@ -1,0 +1,83 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TLA
+file_extensions:
+  - tla
+scope: source.tla
+contexts:
+  main:
+    - match: \\\*.*$
+      scope: comment.line.slash-star
+    - match: \(\*
+      push:
+        - meta_scope: comment.block
+        - match: \*\)
+          pop: true
+    - match: '\={4,}'
+      scope: markup.other.startbreak
+    - match: "={4,}"
+      scope: markup.other.endbreak
+    - match: '\b(\\h[0-9a-fA-F]+|\\o[0-9]+|\\b[01]+|\d+\.\d+|\d+)\b'
+      scope: constant.numeric
+    - match: \b(BOOLEAN|FALSE|STRING|TRUE)\b
+      scope: constant.language.tla
+    - match: \b==\b
+      scope: keyword.operator.definition.tla
+    - match: (\/\\|\\\/|\=>|<\=>|\|\=|\=\||\|\-|\-\||~)
+      scope: keyword.operator.logic.tla
+    - match: '<\=|>\=|\=|<|>|\/\=|\#'
+      scope: keyword.operator.comparison.tla
+    - match: \b=\b
+      scope: keyword.operator.assignment.tla
+    - match: (\\EE|\\AA)
+      scope: keyword.operator.temporal.quantification.tla
+    - match: (\\E|\\A)
+      scope: keyword.operator.quantification.tla
+    - match: (\\notin|:)
+      scope: keyword.operator.sets.tla
+    - match: (\|\->|\->)
+      scope: keyword.operator.functions.tla
+    - match: \\(approx|asymp|bigcirc|bullet|cap|cdot|circ|cong|cup|div|doteq|equiv|geq|gg|in|intersect|land|leq|ll|lor|o|odot|ominus|oplus|oslash|otimes|prec|preceq|propto|sim|simeq|sqcap|sqcup|sqsubset|sqsubseteq|sqsupset|sqsupseteq|star|subset|subseteq|succ|succeq|supset|supseteq|union|uplus|wr)\b
+      scope: keyword.operator.latex.tla
+    - match: '\b(\+|\-|\*|\/){1}\b'
+      scope: keyword.operator.arithmetic.tla
+    - match: '(\[\]|\<\>|\-\+\->)'
+      scope: keyword.operator.temporal.tla
+    - include: reserved-words
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.tla
+        - match: '"'
+          pop: true
+    - match: "';"
+      push:
+        - meta_scope: string.quoted.single.tla
+        - match: "'"
+          pop: true
+    - match: '(\[)'
+      captures:
+        1: punctuation.definition.list.begin.tla
+      push:
+        - meta_scope: meta.structure.list.tla
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.list.end.tla
+          pop: true
+        - match: '(?<=\[|\,)\s*(?![\],])'
+          push:
+            - meta_content_scope: meta.structure.list.item.tla
+            - match: '\s*(?:(,)|(?=\]))'
+              captures:
+                1: punctuation.separator.list.tla
+              pop: true
+            - include: main
+    - match: (<<)(\s*(>>))
+      scope: meta.structure.tuple.tla
+      captures:
+        1: punctuation.definition.tuple.begin.tla
+        2: meta.empty-tuple.tla
+        3: punctuation.definition.tuple.end.tla
+  reserved-words:
+    - match: \b(ACTION|ASSUME|ASSUMPTION|AXIOM|BY|CASE|CHOOSE|CONSTANT|CONSTANTS|COROLLARY|DEF|DEFINE|DEFS|DOMAIN|ELSE|ENABLED|EXCEPT|EXTENDS|HAVE|HIDE|IF|IN|INSTANCE|LAMBDA|LEMMA|LET|LOCAL|MODULE|NEW|OBVIOUS|OMITTED|ONLY|OTHER|PICK|PROOF|PROPOSITION|PROVE|QED|RECURSIVE|SF_|STATE|SUBSET|SUFFICES|TAKE|TEMPORAL|THEN|THEOREM|UNCHANGED|UNION|USE|VARIABLE|VARIABLES|WF_|WITH|WITNESS)\b
+      scope: keyword.control.tla

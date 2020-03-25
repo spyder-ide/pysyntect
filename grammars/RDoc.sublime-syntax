@@ -1,0 +1,31 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: RDoc
+file_extensions:
+  - rdoc
+scope: text.rdoc
+contexts:
+  main:
+    - match: ^\s*(•).*$\n?
+      scope: meta.bullet-point.strong.text
+      captures:
+        1: punctuation.definition.item.text
+    - match: ^\s*(·).*$\n?
+      scope: meta.bullet-point.light.text
+      captures:
+        1: punctuation.definition.item.text
+    - match: ^\s*(\*).*$\n?
+      scope: meta.bullet-point.star.text
+      captures:
+        1: punctuation.definition.item.text
+    - match: '^([ \t]*)(?=\S)'
+      push:
+        - meta_content_scope: meta.paragraph.text
+        - match: ^(?!\1(?=\S))
+          pop: true
+        - match: |-
+            (?x)
+            	( (https?|s?ftp|ftps|file|smb|afp|nfs|(x-)?man|gopher|txmt)://|mailto:)
+            	[-:@a-zA-Z0-9_.,~%+/?=&#]+(?<![.,?:])
+          scope: markup.underline.link.text

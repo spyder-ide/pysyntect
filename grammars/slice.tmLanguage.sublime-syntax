@@ -1,0 +1,1070 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Slice
+file_extensions:
+  - ice
+scope: source.slice
+contexts:
+  main:
+    - include: comment
+    - include: preprocessor
+    - include: metadata.global
+    - include: storage.module
+  comment:
+    - include: comment.line
+    - include: comment.block
+  annotation:
+    - match: (@)\S*\b
+      scope: storage.type.annotation.slice
+      captures:
+        1: punctuation.definition.annotation.slice
+  comment.block:
+    - match: \/\*
+      captures:
+        0: punctuation.definition.comment.block.begin.slice
+      push:
+        - meta_scope: comment.block.slice
+        - meta_content_scope: text.slice
+        - match: \*\/
+          captures:
+            0: punctuation.definition.comment.block.end.slice
+          pop: true
+        - include: annotation
+        - include: link
+        - include: line.continuation
+  comment.line:
+    - match: \/\/
+      captures:
+        0: punctuation.definition.comment.line.begin.slice
+      push:
+        - meta_scope: comment.line.slice
+        - meta_content_scope: text.slice
+        - match: $
+          pop: true
+        - include: annotation
+        - include: link
+        - include: line.continuation
+  constant:
+    - include: constant.boolean
+    - include: constant.string
+    - include: constant.numeric.float
+    - include: constant.numeric.hex
+    - include: constant.numeric.oct
+    - include: constant.numeric.dec
+  constant.boolean:
+    - match: \b(?:(true)|(false))\b
+      captures:
+        0: constant.langauge.slice
+        1: constant.boolean.true.slice
+        2: constant.boolean.false.slice
+  constant.numeric.dec:
+    - match: '(-|\+)?\b(?:0|[1-9]\d*)\b'
+      scope: constant.numeric.integer.slice
+      captures:
+        1: punctuation.definition.numeric.sign.slice
+  constant.numeric.float:
+    - match: (-|\+)?(?:\d+(\.)\d*|\d*(\.)\d+|\d+(?=e|E|f|F))(?:(e|E)-?\d+)?(f|F)?
+      scope: constant.numeric.float.slice
+      captures:
+        1: punctuation.numeric.sign.slice
+        2: punctuation.separator.decimal.slice
+        3: punctuation.separator.decimal.slice
+        4: punctuation.numeric.exponent.slice
+        5: punctuation.definition.float.slice
+  constant.numeric.hex:
+    - match: '(-|\+)?\b(0x)[\da-fA-F]+\b'
+      scope: constant.numeric.hex.slice
+      captures:
+        1: punctuation.definition.numeric.sign.slice
+        2: punctuation.definition.numeric.hex.slice
+  constant.numeric.oct:
+    - match: (-|\+)?\b(0)(\d+)\b
+      scope: constant.numeric.octal.slice
+      captures:
+        1: punctuation.definition.numeric.sign.slice
+        2: punctuation.definition.numeric.oct.slice
+  constant.string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.slice
+      push:
+        - meta_scope: string.quoted.double.slice
+        - match: (")|$
+          captures:
+            1: punctuation.definition.string.end.slice
+            2: invalid.illegal.mismatched-quotes.slice
+          pop: true
+        - match: \\.
+        - include: line.continuation
+  invalid:
+    - match: \S
+      scope: invalid.illegal
+  line.continuation:
+    - match: (\\)\s*$
+      captures:
+        1: punctuation.separator.continuation.backslash.slice
+      push:
+        - match: ^
+          pop: true
+  link:
+    - match: (\b\S*)?(#)\S*\b
+      scope: variable.link.slice
+      captures:
+        1: punctuation.definition.link.slice
+  metadata:
+    - include: metadata.global
+    - include: metadata.local
+  metadata.content:
+    - include: standard
+    - match: (")
+      captures:
+        0: string.quoted.double.slice
+        1: punctuation.definition.string.begin.slice
+      push:
+        - match: '(?=\])|(?<=,)'
+          pop: true
+        - include: line.continuation
+        - match: '((?:[^\\"]|\\.)+)'
+          scope: string.quoted.double.slice
+          captures:
+        - match: (")
+          captures:
+            0: string.quoted.double.slice
+            1: punctuation.definition.string.end.slice
+          push:
+            - match: '(?=\])|(,)'
+              captures:
+                1: punctuation.separator.metadata.slice
+              pop: true
+            - include: standard
+  metadata.global:
+    - match: '\[\['
+      captures:
+        0: punctuation.definition.metadata.global.begin.slice
+      push:
+        - meta_scope: meta.metadata.global.slice
+        - match: '\]\]'
+          captures:
+            0: punctuation.definition.metadata.global.end.slice
+          pop: true
+        - include: metadata.content
+  metadata.identifier:
+    - match: \S+
+      scope: entity.metadata.directive.slice
+  metadata.local:
+    - match: '\['
+      captures:
+        0: punctuation.definition.metadata.local.begin.slice
+      push:
+        - meta_scope: meta.metadata.local.slice
+        - match: '\]'
+          captures:
+            0: punctuation.definition.metadata.local.end.slice
+          pop: true
+        - include: metadata.content
+  preprocessor:
+    - include: preprocessor.if
+    - include: preprocessor.ifdef
+    - include: preprocessor.ifndef
+    - include: preprocessor.elif
+    - include: preprocessor.else
+    - include: preprocessor.endif
+    - include: preprocessor.define
+    - include: preprocessor.undef
+    - include: preprocessor.include
+    - include: preprocessor.pragma
+    - include: preprocessor.line
+    - include: preprocessor.error
+    - include: preprocessor.null
+  preprocessor.define:
+    - match: (#)\s*define\b
+      captures:
+        0: keyword.control.preprocessor.define.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.define.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: \b(\w+)((\())
+          captures:
+            2: meta.group.parameters.preprocessor.slice
+            3: punctuation.section.group.parameters.begin.slice
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+            - match: \b\w+\b
+              push:
+                - match: (?=\))|(,)|($)
+                  captures:
+                    1: punctuation.separator.parameter.preprocessor.slice
+                    2: invalid.mismatched.parenthesis.slice
+                  pop: true
+                - include: standardP
+            - match: \b\w+\b
+              captures:
+                0: punctuation.variable.parameter.preprocessor.slice
+              push:
+                - match: (?=\))|((,))|($)
+                  captures:
+                    1: punctuation.separator.parameter.preprocessor.slice
+                    2: invalid.trailing-comma.slice
+                    3: invalid.mismatched.parenthesis.slice
+                  pop: true
+                - include: standardP
+            - match: (\))
+              captures:
+                0: meta.group.parameters.preprocessor.slice
+                1: punctuation.section.group.parameters.end.slice
+              push:
+                - match: $
+                  pop: true
+                - include: standardP
+                - match: \S
+                  scope: constant.preprocessor.slice
+        - match: \b\w+\b
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+            - match: \S
+              scope: constant.preprocessor.slice
+  preprocessor.elif:
+    - match: (#)\s*elif\b
+      captures:
+        0: keyword.control.preprocessor.elif.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.elif.slice
+        - match: $
+          pop: true
+        - include: standardP
+  preprocessor.else:
+    - match: (#)\s*else\b
+      captures:
+        0: keyword.control.preprocessor.else.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.endif.slice
+        - match: $
+          pop: true
+        - include: standardP
+  preprocessor.endif:
+    - match: (#)\s*endif\b
+      captures:
+        0: keyword.control.preprocessor.endif.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.endif.slice
+        - match: $
+          pop: true
+        - include: standardP
+  preprocessor.error:
+    - match: ((#)\s*error)\b
+      captures:
+        1: keyword.control.preprocessor.error.slice
+        2: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.error.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: .
+          scope: text.error.slice
+  preprocessor.identifier:
+    - match: '\b[a-zA-Z_][a-zA-Z0-9_]*\b'
+      scope: entity.identifier.preproprocessor.slice
+    - include: invalid
+  preprocessor.if:
+    - match: (#)\s*if\b
+      captures:
+        0: keyword.control.preprocessor.if.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.if.slice
+        - match: $
+          pop: true
+        - include: standardP
+  preprocessor.ifdef:
+    - match: (#)\s*ifdef\b
+      captures:
+        0: keyword.control.preprocessor.ifdef.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.ifdef.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: \b\w+\b
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+  preprocessor.ifndef:
+    - match: (#)\s*ifndef\b
+      captures:
+        0: keyword.control.preprocessor.ifndef.slice
+        1: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.ifndef.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: \b\w+\b
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+  preprocessor.include:
+    - match: ((#)\s*include)\b
+      captures:
+        1: keyword.control.preprocessor.include.slice
+        2: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.include.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: (?<="|>)
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.slice
+          push:
+            - meta_scope: string.quoted.double.slice
+            - meta_content_scope: entity.name.header.slice
+            - match: (")|($)
+              captures:
+                1: punctuation.definition.string.end.slice
+                2: invalid.illegal.mismatched-quotes.slice
+              pop: true
+            - match: \\.
+            - include: line.continuation
+        - match: <
+          captures:
+            0: punctuation.definition.string.begin.slice
+          push:
+            - meta_scope: string.quoted.other.angle.slice
+            - meta_content_scope: entity.name.header.slice
+            - match: (>)|($)
+              captures:
+                1: punctuation.definition.string.end.slice
+                2: invalid.illegal.mismatched-quotes.slice
+              pop: true
+            - match: \\.
+            - include: line.continuation
+  preprocessor.line:
+    - match: ((#)\s*line)\b
+      captures:
+        1: keyword.control.preprocessor.line.slice
+        2: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.line.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: '\b[\d]+\b'
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+            - match: (?<=")
+              push:
+                - match: $
+                  pop: true
+                - include: standardP
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.begin.slice
+              push:
+                - meta_scope: string.quoted.double.slice
+                - meta_content_scope: entity.name.file.slice
+                - match: (")|($)
+                  captures:
+                    1: punctuation.definition.string.end.slice
+                    2: invalid.illegal.mismatched-quotes.slice
+                  pop: true
+                - match: \\.
+                - include: line.continuation
+  preprocessor.null:
+    - match: (#)
+      captures:
+        0: punctuation.definition.preprocessor.slice
+        1: keyword.control.preprocessor.null.slice
+      push:
+        - meta_scope: meta.preprocessor.null.slice
+        - match: $
+          pop: true
+        - include: standardP
+  preprocessor.pragma:
+    - match: ((#)\s*pragma)\b
+      captures:
+        1: keyword.control.preprocessor.pragma.slice
+        2: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.pragma.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: \b\S+\b
+          captures:
+            0: keyword.control.preprocessor.pragma.other.slice
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+  preprocessor.undef:
+    - match: ((#)\s*undef)\b
+      captures:
+        1: keyword.control.preprocessor.undef.slice
+        2: punctuation.definition.preprocessor.slice
+      push:
+        - meta_scope: meta.preprocessor.undef.slice
+        - match: $
+          pop: true
+        - include: standardP
+        - match: \b\w+\b
+          push:
+            - match: $
+              pop: true
+            - include: standardP
+  standard:
+    - include: comment
+    - include: preprocessor
+    - include: line.continuation
+  standardP:
+    - include: comment
+    - include: line.continuation
+  storage:
+    - include: storage.module
+    - include: storage.enum
+    - include: storage.struct
+    - include: storage.sequence
+    - include: storage.dictionary
+    - include: storage.interface
+    - include: storage.exception
+    - include: storage.class
+    - include: storage.basic
+  storage.basic:
+    - include: storage.modifier
+    - match: \\?\bbool\b
+      push:
+        - meta_scope: meta.bool.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.bool.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\bbyte\b
+      push:
+        - meta_scope: meta.byte.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.byte.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\bshort\b
+      push:
+        - meta_scope: meta.short.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.short.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\bint\b
+      push:
+        - meta_scope: meta.int.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.int.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\blong\b
+      push:
+        - meta_scope: meta.long.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.long.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\bfloat\b
+      push:
+        - meta_scope: meta.float.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.float.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\bdouble\b
+      push:
+        - meta_scope: meta.double.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.double.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: \\?\bstring\b
+      push:
+        - meta_scope: meta.string.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.string.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+    - match: '\\?\b[:\w]+\b'
+      push:
+        - meta_scope: meta.type.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: storage.basic.assignment
+  storage.basic.assignment:
+    - include: standard
+    - match: "="
+      captures:
+        0: keyword.operator.assignment.slice
+      push:
+        - match: "(?=;|})"
+          pop: true
+        - include: standard
+        - include: constant
+  storage.class:
+    - include: storage.modifier
+    - match: (?<!\\)\bclass\b
+      captures:
+        0: storage.type.class.slice
+      push:
+        - meta_scope: meta.class.slice
+        - match: "(})|(;)"
+          captures:
+            1: punctuation.section.block.end.slice
+            2: punctuation.terminator.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.class.slice
+          push:
+            - match: "(?=}|;)"
+              pop: true
+            - include: standard
+            - match: (?<!\\)\bextends\b
+              captures:
+                0: storage.modifier.extends.slice
+              push:
+                - match: "(?=})|((?=;))"
+                  captures:
+                    1: invalid.illegal.missing-brace.slice
+                  pop: true
+                - include: standard
+                - match: '\\?[:\w]+'
+                  push:
+                    - match: "(?=}|;)"
+                      pop: true
+                    - include: standard
+                    - include: storage.class.implements
+                - include: storage.class.implements
+            - include: storage.class.implements
+  storage.class.body:
+    - match: "{"
+      captures:
+        0: punctuation.section.block.begin.slice
+      push:
+        - match: "(?=})"
+          pop: true
+        - include: standard
+        - include: storage.basic
+  storage.class.implements:
+    - match: (?<!\\)\bimplements\b
+      captures:
+        0: storage.modifier.implements.slice
+      push:
+        - match: "(?=})|((?=;))"
+          captures:
+            1: invalid.illegal.missing-brace.slice
+          pop: true
+        - include: standard
+        - match: '\\?[:\w]+'
+          push:
+            - match: "(?={|}|;)|(,)"
+              captures:
+                1: punctuation.separator.class.implements.slice
+              pop: true
+            - include: standard
+        - include: storage.class.body
+    - include: storage.class.body
+  storage.dictionary:
+    - include: storage.modifier
+    - match: (?<!\\)\bdictionary\b
+      captures:
+        0: storage.type.dictionary.slice
+      push:
+        - meta_scope: meta.dictionary.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: (\<)
+          captures:
+            0: meta.generic.dictionary.slice
+            1: punctuation.definition.generic.begin.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: standard
+            - match: '(\\?[:\w]+)|(?=\>)'
+              captures:
+                1: meta.generic.dictionary.slice
+                2: invalid.illegal.missing-type.slice
+              push:
+                - match: "(?=;|})"
+                  pop: true
+                - include: standard
+                - match: (,)|(?=\>)
+                  captures:
+                    0: meta.generic.dictionary.slice
+                    1: punctuation.separator.dictionary.slice
+                    2: invalid.illegal.missing-type.slice
+                  push:
+                    - match: "(?=;|{|})"
+                      pop: true
+                    - include: standard
+                    - match: '(\\?[:\w]+)|(?=\>)'
+                      captures:
+                        1: meta.generic.dictionary.slice
+                        2: invalid.illegal.missing-type.slice
+                      push:
+                        - match: "(?=;|})"
+                          pop: true
+                        - include: standard
+                        - match: (\>)
+                          captures:
+                            0: meta.generic.dictionary.slice
+                            1: punctuation.definition.generic.end.slice
+                          push:
+                            - match: "(?=;|})"
+                              pop: true
+                            - include: standard
+                            - match: \\?\b\w+\b
+                              captures:
+                                0: entity.name.dictionary.slice
+                              push:
+                                - match: "(?=;|})"
+                                  pop: true
+  storage.enum:
+    - include: storage.modifier
+    - match: (?<!\\)\benum\b
+      captures:
+        0: storage.type.enum.slice
+      push:
+        - meta_scope: meta.enum.slice
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.enum.slice
+          push:
+            - match: "(?=})"
+              pop: true
+            - include: standard
+            - match: "{"
+              captures:
+                0: punctuation.section.block.begin.slice
+              push:
+                - match: "(?=})"
+                  pop: true
+                - include: standard
+                - match: \\?\b\w+\b
+                  captures:
+                    0: constant.other.enum.slice
+                  push:
+                    - match: "(?=})|(,)"
+                      captures:
+                        1: punctuation.separator.enum.slice
+                      pop: true
+                    - include: standard
+                    - match: "="
+                      captures:
+                        0: keyword.operator.assignment.slice
+                      push:
+                        - match: "(?=})|(?=,)"
+                          pop: true
+                        - include: standard
+                        - include: constant
+  storage.exception:
+    - include: storage.modifier
+    - match: (?<!\\)\bexception\b
+      captures:
+        0: storage.type.exception.slice
+      push:
+        - meta_scope: meta.exception.slice
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.exception.slice
+          push:
+            - match: "(?=})"
+              pop: true
+            - include: standard
+            - match: (?<!\\)\bextends\b
+              captures:
+                0: storage.modifier.extends.slice
+              push:
+                - match: "(?=})"
+                  pop: true
+                - include: standard
+                - match: '\\?[:\w]+'
+                  push:
+                    - match: "(?={|})|(,)"
+                      captures:
+                        1: punctuation.separator.exception.extends.slice
+                      pop: true
+                    - include: standard
+                - include: storage.exception.body
+            - include: storage.exception.body
+  storage.exception.body:
+    - match: "{"
+      captures:
+        0: punctuation.section.block.begin.slice
+      push:
+        - match: "(?=})"
+          pop: true
+        - include: standard
+        - include: storage.basic
+  storage.identifier:
+    - match: (?<!\\)\b(?:bool|byte|class|const|dictionary|double|enum|exception|extends|false|float|idempotent|implements|int|interface|local|LocalObject|long|module|Object|optional|out|sequence|short|string|struct|throws|true|Value|void)\b
+      scope: invalid.illegal.reserved.identifier.slice
+    - match: '(\\)?\b([a-zA-Z_][a-zA-Z0-9_]*)\b'
+      captures:
+        1: punctuation.escape.backslash.slice
+    - match: .
+      scope: invalid.illegal.identifier.slice
+  storage.interface:
+    - include: storage.modifier
+    - match: (?<!\\)\binterface\b
+      captures:
+        0: storage.type.interface.slice
+      push:
+        - meta_scope: meta.interface.slice
+        - match: "(})|(;)"
+          captures:
+            1: punctuation.section.block.end.slice
+            2: punctuation.terminator.semicolon.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.interface.slice
+          push:
+            - match: "(?=}|;)"
+              pop: true
+            - include: standard
+            - match: (?<!\\)\bextends\b
+              captures:
+                0: storage.modifier.extends.slice
+              push:
+                - match: "(?=})|((?=;))"
+                  captures:
+                    1: invalid.illegal.missing-brace.slice
+                  pop: true
+                - include: standard
+                - match: '\\?[:\w]+'
+                  push:
+                    - match: "(?={|}|;)|(,)"
+                      captures:
+                        1: punctuation.separator.interface.extends.slice
+                      pop: true
+                    - include: standard
+                - include: storage.interface.body
+            - include: storage.interface.body
+  storage.interface.body:
+    - match: "{"
+      captures:
+        0: punctuation.section.block.begin.slice
+      push:
+        - match: "(?=})"
+          pop: true
+        - include: standard
+        - include: storage.operation
+  storage.modifier:
+    - match: '(?=\[)'
+      push:
+        - match: "(?<=])"
+          pop: true
+        - include: standard
+        - include: metadata.local
+    - match: (?<!\\)\b(?:(local)|(const)|(idempotent)|(out)|(optional\(\d*\)))(?:\b|(?<=\)))
+      captures:
+        1: storage.modifier.local.slice
+        2: storage.modifier.const.slice
+        3: storage.modifier.idempotent.slice
+        4: storage.modifier.out.slice
+  storage.module:
+    - include: storage.modifier
+    - match: (?<!\\)\bmodule\b
+      captures:
+        0: storage.type.module.slice
+      push:
+        - meta_scope: meta.module.slice
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.module.slice
+          push:
+            - match: "(?=})"
+              pop: true
+            - include: standard
+            - match: "{"
+              captures:
+                0: punctuation.section.block.begin.slice
+              push:
+                - match: "(?=})"
+                  pop: true
+                - include: standard
+                - include: storage
+  storage.operation:
+    - include: storage.modifier
+    - match: '\\?[:\w]+'
+      push:
+        - meta_scope: meta.operation.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing-brace.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.function.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: standard
+            - match: \(
+              captures:
+                0: punctuation.section.group.operation.parameters.begin.slice
+              push:
+                - match: "(?=;|})"
+                  pop: true
+                - include: standard
+                - match: \)
+                  captures:
+                    0: punctuation.section.group.operation.parameters.end.slice
+                  push:
+                    - match: "(?=;|})"
+                      pop: true
+                    - include: standard
+                    - match: (?<!\\)\bthrows\b
+                      captures:
+                        0: storage.modifier.throws.slice
+                      push:
+                        - match: "(?=;|})"
+                          pop: true
+                        - include: standard
+                        - match: '\\?[:\w]+'
+                          push:
+                            - match: "(?=;|})|(,)"
+                              captures:
+                                1: punctuation.separator.operation.throws.slice
+                              pop: true
+                            - include: standard
+                - include: storage.modifier
+                - match: '\\?[:\w]+'
+                  push:
+                    - match: (?=\))|(?<=,)
+                      pop: true
+                    - match: \\?\b\w+\b
+                      captures:
+                        0: entity.name.operation.parameter
+                      push:
+                        - match: (?=\))|(,)
+                          captures:
+                            1: punctuation.separator.operation.parameter.slice
+                          pop: true
+  storage.sequence:
+    - include: storage.modifier
+    - match: (?<!\\)\bsequence\b
+      captures:
+        0: storage.type.sequence.slice
+      push:
+        - meta_scope: meta.sequence.slice
+        - match: "(;)|((?=}))"
+          captures:
+            1: punctuation.terminator.semicolon.slice
+            2: invalid.illegal.missing.semicolon.slice
+          pop: true
+        - include: standard
+        - match: (\<)
+          captures:
+            0: meta.generic.sequence.slice
+            1: punctuation.definition.generic.begin.slice
+          push:
+            - match: "(?=;|})"
+              pop: true
+            - include: standard
+            - match: '(\\?[:\w]+)|(?=\>)'
+              captures:
+                1: meta.generic.sequence.slice
+                2: invalid.illegal.missing-type.slice
+              push:
+                - match: "(?=;|})"
+                  pop: true
+                - include: standard
+                - match: (\>)
+                  captures:
+                    0: meta.generic.sequence.slice
+                    1: punctuation.definition.generic.end.slice
+                  push:
+                    - match: "(?=;|})"
+                      pop: true
+                    - include: standard
+                    - match: \\?\b\w+\b
+                      captures:
+                        0: entity.name.sequence.slice
+                      push:
+                        - match: "(?=;|})"
+                          pop: true
+  storage.struct:
+    - include: storage.modifier
+    - match: (?<!\\)\bstruct\b
+      captures:
+        0: storage.type.struct.slice
+      push:
+        - meta_scope: meta.struct.slice
+        - match: "}"
+          captures:
+            0: punctuation.section.block.end.slice
+          pop: true
+        - include: standard
+        - match: \\?\b\w+\b
+          captures:
+            0: entity.name.struct.slice
+          push:
+            - match: "(?=})"
+              pop: true
+            - include: standard
+            - match: "{"
+              captures:
+                0: punctuation.section.block.begin.slice
+              push:
+                - match: "(?=})"
+                  pop: true
+                - include: standard
+                - include: storage.basic
+  storage.types:
+    - match: (\\)?\b(?:(bool)|(byte)|(short)|(int)|(long)|(float)|(double)|(string)|(Object)|(LocalObject)|(Value))\b
+      captures:
+        1: punctuation.escape.backslash.slice
+        10: storage.type.object.slice
+        11: storage.type.localobject.slice
+        12: storage.type.value.slice
+        2: storage.type.bool.slice
+        3: storage.type.byte.slice
+        4: storage.type.short.slice
+        5: storage.type.int.slice
+        6: storage.type.long.slice
+        7: storage.type.float.slice
+        8: storage.type.double.slice
+        9: storage.type.string.slice
+    - include: storage.types.custom
+  storage.types.custom:
+    - match: '(\\)?([:\w]+)'
+      captures:
+        1: punctuation.escape.backslash.slice
+    - include: invalid
+  storage.types.void:
+    - match: (\\)?\bvoid\b
+      scope: storage.type.void.slice
+      captures:
+        1: punctuation.escape.backslash.slice

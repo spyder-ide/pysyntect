@@ -1,0 +1,65 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: DOSBox Configuration
+file_extensions:
+  - dosbox.conf
+first_line_match: |-
+  (?ix)
+
+  	# Header comment in default config file
+  	This\s+is\s+the\s+configuration\s+file\s+for\s+DOSBox
+
+  	|
+
+  	# Emacs modeline
+  	-\*-(?:\s*(?=[^:;\s]+\s*-\*-)|(?:.*?[;\s]|(?<=-\*-))mode\s*:\s*)
+  		dosbox(?:-?conf(?:ig)?)?
+  	(?=[\s;]|(?<![-*])-\*-).*?-\*-
+
+  	|
+
+  	# Vim modeline
+  	(?:(?:\s|^)vi(?:m[<=>]?\d+|m)?|\sex)(?=:(?=\s*set?\s[^\n:]+:)|:(?!\s* set?\s))(?:(?:\s|\s*:\s*)\w*(?:\s*=(?:[^\n\\\s]|\\.)*)?)*[\s:](?:filetype|ft|syntax)\s*=
+  		dosbox(?:-?conf(?:ig)?)?
+  	(?=\s|:|$)
+scope: source.dosbox-conf
+contexts:
+  main:
+    - include: scope:etc#comment
+    - include: autoexec
+    - include: section
+    - include: setting
+  autoexec:
+    - match: '^\s*((\[)autoexec(\]))\s*$'
+      captures:
+        1: entity.name.section.group-title.dosbox-conf
+        2: punctuation.definition.entity.begin.dosbox-conf
+        3: punctuation.definition.entity.end.dosbox-conf
+      push:
+        - meta_content_scope: meta.embedded.source.batchfile
+        - match: '(?=^\[.*\])'
+          pop: true
+        - include: scope:source.batchfile
+  section:
+    - match: '^\s*((\[).*(\]))\s*$'
+      captures:
+        1: entity.name.section.group-title.dosbox-conf
+        2: punctuation.definition.entity.begin.dosbox-conf
+        3: punctuation.definition.entity.end.dosbox-conf
+  setting:
+    - match: '^\s*([^#=\s]+)\s*(=)'
+      captures:
+        1: keyword.other.setting.dosbox-conf
+        2: punctuation.separator.key-value.dosbox-conf
+      push:
+        - meta_scope: meta.setting.dosbox-conf
+        - match: $|(?=#)
+          pop: true
+        - include: values
+  values:
+    - match: \bauto\b
+      scope: support.constant.language.auto.dosbox-conf
+    - include: scope:etc#num
+    - include: scope:etc#bool
+    - include: scope:etc#bareword

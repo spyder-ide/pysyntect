@@ -1,0 +1,210 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ABAP
+file_extensions:
+  - abap
+  - ABAP
+scope: source.abap
+contexts:
+  main:
+    - match: ^\*.*\n?
+      scope: comment.line.full.abap
+      captures:
+        1: punctuation.definition.comment.abap
+    - match: '".*\n?'
+      scope: comment.line.partial.abap
+      captures:
+        1: punctuation.definition.comment.abap
+    - match: '(?<![^\s])##.*?(?=([\.:,\s]))'
+      scope: comment.line.pragma.abap
+    - match: '(?i)(?<=\s)([a-z_/][a-z_0-9/]*)(?=\s+=\s+)'
+      scope: variable.other.abap
+    - match: '\b[0-9]+(\b|\.|,)'
+      scope: constant.numeric.abap
+    - match: (?ix)(^|\s+)((PUBLIC|PRIVATE|PROTECTED)\sSECTION)(?=\s+|:|\.)
+      scope: storage.modifier.class.abap
+    - match: (?<!\\)(\|)(.*?)
+      captures:
+        1: constant.character.escape.abap
+      push:
+        - meta_scope: string.interpolated.abap
+        - match: (?<!\\)(\|)
+          captures:
+            1: constant.character.escape.abap
+          pop: true
+        - match: "({ )|( })"
+          scope: constant.character.escape
+        - match: "(?<={ ).*?(?= })"
+          scope: variable.other.abap
+        - match: \\\|
+          scope: constant.character.escape.abap
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.abap
+        - match: "'"
+          pop: true
+        - match: "''"
+          scope: constant.character.escape.abap
+    - match: "`"
+      push:
+        - meta_scope: string.quoted.single.abap
+        - match: "`"
+          pop: true
+        - match: "``"
+          scope: constant.character.escape.abap
+    - match: '(?i)^\s*(class)\s([a-z_/][a-z_0-9/]*)'
+      captures:
+        1: storage.type.block.abap
+        2: entity.name.type.block.abap
+      push:
+        - meta_scope: meta.block.begin.implementation.abap
+        - match: \s*\.\s*\n?
+          pop: true
+        - match: (?ix)(^|\s+)(definition|implementation|public|inheriting\s+from|final|deferred|abstract|shared\s+memory\s+enabled|(global|local)*\s*friends|(create\s+(public|protected|private))|for\s+testing|risk\s+level\s+(critical|dangerous|harmless))|duration\s(short|medium|long)(?=\s+|\.)
+          scope: storage.modifier.class.abap
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.type.block.abap
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: generic_names
+    - match: '(?ix)^\s*(method)\s(?:([a-z_\/][a-z_0-9\/]*)~)?([a-z_\/][a-z_0-9\/]*)'
+      captures:
+        1: storage.type.block.abap
+        2: entity.name.type.abap
+        3: entity.name.function.abap
+      push:
+        - match: \s*\.\s*\n?
+          pop: true
+        - match: (?ix)(?<=^|\s)(BY\s+DATABASE(\s+PROCEDURE|\s+FUNCTION))(?=\s+|\.)
+          scope: storage.modifier.method.abap
+        - match: (?ix)(?<=^|\s)(FOR\s+(HDB|LLANG))(?=\s+|\.)
+          scope: storage.modifier.method.abap
+        - match: (?ix)(?<=\s)(OPTIONS\s+(READ-ONLY|DETERMINISTIC|SUPPRESS\s+SYNTAX\s+ERRORS))(?=\s+|\.)
+          scope: storage.modifier.method.abap
+        - match: (?ix)(?<=^|\s)(LANGUAGE\s+SQLSCRIPT)(?=\s+|\.)
+          scope: storage.modifier.method.abap
+        - match: '(?ix)(?<=\s)(USING)\s+([a-z_\/][a-z_0-9\/]*)+(?=\s+|\.)'
+          captures:
+            1: storage.modifier.method.abap
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: generic_names
+    - match: '(?ix)^\s*(INTERFACE)\s([a-z_\/][a-z_0-9\/]*)'
+      captures:
+        1: storage.type.block.abap
+        2: entity.name.type.abap
+      push:
+        - match: \s*\.\s*\n?
+          pop: true
+        - match: (?ix)(?<=^|\s)(DEFERRED|PUBLIC)(?=\s+|\.)
+          scope: storage.modifier.method.abap
+    - match: '(?ix)^\s*(FORM)\s([a-z_\/][a-z_0-9\/]*)'
+      captures:
+        1: storage.type.block.abap
+        2: entity.name.type.abap
+      push:
+        - match: \s*\.\s*\n?
+          pop: true
+        - match: (?ix)(?<=^|\s)(USING|TABLES|CHANGING|RAISING)(?=\s+|\.)
+          scope: storage.modifier.form.abap
+        - include: abaptypes
+    - match: (?i)(endclass|endmethod|endform|endinterface)
+      scope: storage.type.block.end.abap
+    - match: "(?i)(<[A-Za-z_][A-Za-z0-9_]*>)"
+      scope: variable.other.field.symbol.abap
+    - include: keywords
+    - include: abap_constants
+    - include: reserved_names
+    - include: operators
+    - include: builtin_functions
+    - include: abaptypes
+    - include: system_fields
+  abap_constants:
+    - match: (?ix)(?<=\s)(initial|null|space|abap_true|abap_false|table_line)(?=\s|\.|,)
+      scope: constant.language.abap
+  abaptypes:
+    - match: (?ix)\s(abap_bool|string|xstring|any|clike|csequence|numeric|xsequence|c|n|i|p|f|d|t|x)(?=\s|\.|,)
+      scope: support.type.abap
+    - match: (?ix)\s(TYPE|REF|TO|STANDARD|SORTED|HASHED|INDEX|TABLE|WITH|UNIQUE|NON-UNIQUE|SECONDARY|DEFAULT|KEY)(?=\s|\.|,)
+      scope: keyword.control.simple.abap
+  arithmetic_operator:
+    - match: (?i)(?<=\s)(\+|\-|\*|\*\*|/|%|DIV|MOD|BIT-AND|BIT-OR|BIT-XOR|BIT-NOT)(?=\s)
+      scope: keyword.operator.abap
+  builtin_functions:
+    - match: (?ix)(?<=\s)(abs|sign|ceil|floor|trunc|frac|acos|asin|atan|cos|sin|tan|cosh|sinh|tanh|exp|log|log10|sqrt|strlen|xstrlen|charlen|lines|numofchar|dbmaxlen|round|rescale|nmax|nmin|cmax|cmin|boolc|boolx|xsdbool|contains|contains_any_of|contains_any_not_of|matches|line_exists|ipow|char_off|count|count_any_of|count_any_not_of|distance|condense|concat_lines_of|escape|find|find_end|find_any_of|find_any_not_of|insert|match|repeat|replace|reverse|segment|shift_left|shift_right|substring|substring_after|substring_from|substring_before|substring_to|to_upper|to_lower|to_mixed|from_mixed|translate|bit-set|line_index)(?=\()
+      scope: entity.name.function.builtin.abap
+  comparison_operator:
+    - match: (?i)(?<=\s)(<|>|<\=|>\=|\=|<>|eq|ne|lt|le|gt|ge|cs|cp)(?=\s)
+      scope: keyword.operator.abap
+  control_keywords:
+    - match: |-
+        (?ix)(^|\s)(
+        at|case|catch|continue|do|elseif|else|endat|endcase|enddo|endif|
+        endloop|endon|if|loop|on|raise|try)(?=\s|\.|:)
+      scope: keyword.control.flow.abap
+  generic_names:
+    - match: "[A-Za-z_][A-Za-z0-9_]*"
+  keywords:
+    - include: main_keywords
+    - include: control_keywords
+    - include: keywords_followed_by_braces
+  keywords_followed_by_braces:
+    - match: '(?ix)\b(data|value|field-symbol)\((<?[a-z_\/][a-z_0-9\/]*>?)\)'
+      captures:
+        1: keyword.control.simple.abap
+        2: variable.other.abap
+  logical_operator:
+    - match: (?i)(?<=\s)(not|or|and)(?=\s)
+      scope: keyword.operator.abap
+  main_keywords:
+    - match: |-
+        (?ix)(?<=^|\s)(
+        	        abstract|add|add-corresponding|adjacent|alias|aliases|all|append|appending|ascending|as|assert|assign|assigned|assigning|association|authority-check|
+        	        back|begin|binary|block|bound|break-point|by|byte|
+        	        call|cast|changing|check|class-data|class-method|class-methods|class-pool|clear|close|cnt|collect|commit|comment|cond|character|
+        	        corresponding|communication|component|compute|concatenate|condense|constants|conv|count|
+        	        controls|convert|create|currency|
+        	        data|descending|default|define|deferred|delete|describe|destination|detail|display|divide|divide-corresponding|display-mode|duplicates|
+        	        deleting|
+        	        editor-call|empty|end|endexec|endfunction|ending|endmodule|end-of-definition|end-of-page|end-of-selection|end-test-injection|end-test-seam|exit-command|
+        	        endprovide|endselect|endtry|endwhile|enum|event|events|exec|exit|export|
+        	        exporting|extract|exception|exceptions|
+        	        field-symbols|field-groups|field|first|fetch|fields|format|frame|free|from|function|find|for|found|function-pool|
+        	        generate|get|
+        	        handle|hide|hashed|header|help-request|
+        	        include|import|importing|index|infotypes|initial|initialization|
+        	        id|implemented|is|in|interface|interfaces|interface-pool|intervals|init|input|insert|instance|into|
+        			key|
+        	        left-justified|leave|like|line|lines|line-count|line-size|load|local|log-point|length|left|leading|lower|
+        	        matchcode|method|mesh|message|message-id|methods|modify|module|move|move-corresponding|multiply|multiply-corresponding|match|modif|
+        			new|new-line|new-page|new-section|next|no|no-display|no-gap|no-gaps|no-sign|no-zero|non-unique|number|
+        	        occurrence|object|obligatory|of|output|overlay|optional|others|occurrences|occurs|offset|options|
+        	        pack|parameters|partially|perform|places|position|print-control|private|program|protected|provide|public|put|
+        	        radiobutton\s+group|raising|range|ranges|receive|receiving|redefinition|reduce|reference|refresh|regex|reject|results|requested|
+        	        ref|replace|report|reserve|restore|result\s+xml|return|returning|right-justified|rollback|read|read-only|rp-provide-from-last|run|
+        	        scan|screen|scroll|search|select|select-options|selection-screen|stamp|source|subkey|
+        	        separated|set|shift|single|skip|sort|sorted|split|standard|stamp|starting|start-of-selection|sum|subtract-corresponding|statics|step|stop|structure|submatches|submit|subtract|summary|supplied|suppress|section|syntax-check|syntax-trace|system-call|switch|
+        	        tables|table|task|testing|test-seam|test-injection|then|time|times|title|titlebar|to|top-of-page|trailing|transfer|transformation|translate|transporting|types|type|type-pool|type-pools|
+        	        unassign|unique|uline|unpack|update|upper|using|user-command|
+        	        value|value-request|
+        	        when|while|window|write|where|with|work|
+        		xml)(?=\s|\.|:|,)
+      scope: keyword.control.simple.abap
+  operators:
+    - include: other_operator
+    - include: arithmetic_operator
+    - include: comparison_operator
+    - include: logical_operator
+  other_operator:
+    - match: (?<=\s)(&&|\?=|\+=|-=|\/=|\*=|&&=)(?=\s)
+      scope: keyword.operator.abap
+  reserved_names:
+    - match: (?ix)(?<=\s)(me|super)(?=\s|\.|,|->)
+      scope: constant.language.abap
+  system_fields:
+    - match: '(?ix)\b(sy-)(abcde|batch|binpt|calld|callr|colno|cpage|cprog|cucol|curow|datar|datlo|datum|dayst|dbcnt|dbnam|dbsysc|dyngr|dynnr|fdayw|fdpos|host|index|langu|ldbpg|lilli|linct|linno|linsz|lisel|listi|loopc|lsind|macol|mandt|marow|modno|msgid|msgli|msgno|msgty|msgv[1-4]|opsysc|pagno|pfkey|repid|saprl|scols|slset|spono|srows|staco|staro|stepl|subrc|sysid|tabix|tcode|tfill|timlo|title|tleng|tvar[0-9]|tzone|ucomm|uline|uname|uzeit|vline|wtitl|zonlo)(?=\.|\s)'
+      scope: variable.language.abap

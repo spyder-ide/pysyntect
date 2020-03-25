@@ -1,0 +1,64 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: faust
+comment: faust language
+file_extensions:
+  - dsp
+  - lib
+scope: source.faust
+contexts:
+  main:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.faust
+      push:
+        - meta_scope: comment.block.faust
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.faust
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.faust
+      captures:
+        1: punctuation.definition.comment.faust
+    - match: '(\.\d+([Ee][-+]\d+)?i?)\b'
+      scope: constant.numeric.faust
+    - match: '\b\d+\.\d*(([Ee][-+]\d+)?i?\b)?'
+      scope: constant.numeric.faust
+    - match: '\b((0x[0-9a-fA-F]+)|(0[0-7]+i?)|(\d+([Ee]\d+)?i?)|(\d+[Ee][-+]\d+i?))\b'
+      scope: constant.numeric.faust
+    - match: \b(mem|prefix|int|float|rdtable|rwtable|select2|select3|ffunction|fconstant|fvariable|button|checkbox|vslider|hslider|nentry|vgroup|hgroup|tgroup|vbargraph|hbargraph|attach|acos|asin|atan|atan2|cos|sin|tan|exp|log|log10|pow|sqrt|abs|min|max|fmod|remainder|floor|ceil|rint)\b
+      scope: constant.symbol.faust
+    - match: \b(import|component|declare|library|environment|with|letrec|process|seq|par|sum|prod|inputs|outputs)\b
+      scope: keyword.control.faust
+    - match: (,|:>|<:|:|~)
+      scope: keyword.algebra.faust
+    - match: (;|=)
+      scope: constant.numeric.faust
+    - include: string_escaped_char
+    - include: strings
+    - include: operators
+  operators:
+    - match: '(\+|&|==|!=|\(|\)|\-|\||\-=|\|=|\|\||<|<=|\[|\]|\*|\^|\*=|\^=|<\-|>|>=|\{|\}|/|<<|/=|<<=|\+\+|=|:=|,|;|%|>>|%=|>>=|\-\-|!|\.\.\.|\.|:|&\^|&\^=)'
+      scope: keyword.operator.faust
+  printf_verbs:
+    - match: '%(\[\d+\])?([\+#\-0\x20]{,2}((\d+|\*)?(\.?(\d+|\*|(\[\d+\])\*?)?(\[\d+\])?)?))?[vT%tbcdoqxXUbeEfFgGsp]'
+      scope: constant.escape.format-verb.faust
+  string_escaped_char:
+    - match: '\\([0-7]{3}|[abfnrtv\\''"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})'
+      scope: constant.character.escape.faust
+    - match: '\\[^0-7xuUabfnrtv\''"]'
+      scope: invalid.illegal.unknown-escape.faust
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.faust
+      push:
+        - meta_scope: string.quoted.double.faust
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.faust
+          pop: true
+        - include: string_escaped_char
+        - include: printf_verbs

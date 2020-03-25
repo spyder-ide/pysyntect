@@ -1,0 +1,118 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Vyper
+file_extensions:
+  - vy
+scope: source.vyper
+contexts:
+  main:
+    - match: \#.*
+      comment: Comments
+      scope: comment
+    - match: (\"\"\")
+      comment: Multiline comments
+      push:
+        - meta_scope: comment
+        - match: (\"\"\")
+          pop: true
+    - match: '\b(event|enum)\s+([A-Za-z_]\w*)\b'
+      comment: Events
+      scope: keyword.control
+      captures:
+        2: support.function
+    - match: '\b(contract|interface|library|using|struct|constructor|modifier)(\s+[A-Za-z_]\w*)?(?:\s+is\s+((?:[A-Za-z_][\,\s]*)*))?\b'
+      comment: Structures, event definitions
+      scope: keyword.control
+      captures:
+        2: entity.name.function
+        3: entity.name.function
+    - match: '\b(def)(\s+[A-Za-z_]\w*)?(?:\s+is\s+((?:[A-Za-z_][\,\s]*)*))?\b'
+      comment: function
+      scope: storage.type.function
+      captures:
+        2: entity.name.function
+        3: entity.name.function
+    - match: '\b(address\s*payable|address|string|bytes?\d*|int\d*|uint\d*|bool|u?fixed\d+x\d+)\s*(?:\[(\d*)\])?\s*(?:\[(\d*)\])?\s*(?:(indexed|memory|storage|calldata|payable)?\s*(\b[A-Za-z_]\w*)\s*)?(?=[,\)])'
+      comment: Built-in types
+      captures:
+        1: constant.language
+        2: constant.numeric
+        3: constant.numeric
+        4: keyword.control
+        5: variable.parameter
+    - match: '\b(mapping)\s*\((.*)\s+=>\s+(.*)\)(\s+(?:private|public|internal|external))?\s+([A-Za-z_]\w*)\b'
+      comment: Mapping definition
+      captures:
+        1: constant.language
+        2: constant.language
+        3: constant.language
+        4: keyword.control
+    - match: \b(True|False)\b
+      comment: True and false keywords
+      scope: constant.language
+    - match: \b(self)\.\b
+      comment: self call
+      scope: storage.type.function
+    - match: \b(address\s*payable|address|string|bytes?\d*|int\d*|uint\d*|bool|u?fixed\d+x\d+)\b
+      comment: Types
+      captures:
+        1: constant.language
+        2: constant.numeric
+        3: constant.numeric
+        4: keyword.control
+    - match: \b(var|import|constant|pragma|payable|storage|memory|calldata|if|else|for|while|do|break|continue|returns?|private|public|pure|view|internal|external|this|suicide|selfdestruct|delegatecall|emit|new|is|throw|revert|assert|require|\_)\b
+      comment: Langauge keywords
+      scope: keyword.control
+    - match: \b(not|or|pass|not|from|import)\b
+      comment: Vyper specific keywords
+      scope: keyword
+    - match: '(@[A-Za-z_]\w*)\b'
+      comment: Vyper decorators
+      scope: keyword
+    - match: '\b([A-Za-z_]\w*)\s*\:\s*'
+      comment: Variable definitions - bytes data; | uint x = uint(y);
+      captures:
+        1: variable.parameter
+    - match: (=|!|>|<|\||&|\?|:|\^|~|\*|\+|\-|\/|\%|\bhex\b)
+      comment: Operators
+      scope: keyword.control
+    - match: '\b(msg|block|tx|abi)\.([A-Za-z_]\w*)\b'
+      comment: msg and block special usage
+      captures:
+        1: constant.language
+        2: constant.language
+    - match: \b(now|delete)\b
+      comment: Now and delete
+      captures:
+        1: constant.language
+    - match: \b(blockhash|gasleft|addmod|mulmod|keccak256|sha256|sha3|ripemd160|ecrecover)\s*\(
+      comment: Function call - built-in functions
+      captures:
+        1: constant.language
+    - match: '\b([A-Za-z_]\w*)(?:\[(\d*)\])?(?:\[(\d*)\])?\('
+      comment: "Function call, also for example - uint[] memory a = new uint[332](7); or uint[2][] memory arrayOfPairs = new uint[2][](size);"
+      captures:
+        1: support.function
+        2: constant.numeric
+        3: constant.numeric
+    - match: \b\.(length|selector)\b
+      comment: Special treatment for length and .selector
+      captures:
+        1: support.type
+    - match: \b(\d+)\s+(wei|finney|szabo|ether|seconds|minutes|hours|days|weeks|years)\b
+      comment: Ether and time units
+      captures:
+        1: constant.numeric
+        2: keyword.control
+    - match: '([\"\''].*?[\"\''])'
+      comment: Strings
+      scope: string.quoted
+    - match: \b(\d+)(e\d*)?\b
+      comment: Numbers, possibly with scientific notation
+      captures:
+        1: constant.numeric
+        2: constant.numeric
+    - match: '\b(0[xX][a-fA-F0-9]+)\b'
+      comment: Hexadecimal
+      scope: constant.numeric

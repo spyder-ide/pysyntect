@@ -1,0 +1,97 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Csound Score
+file_extensions:
+  - sco
+scope: source.csound-score
+contexts:
+  main:
+    - include: scope:source.csound#preprocessorDirectives
+    - include: scope:source.csound#commentsAndMacroUses
+    - match: "[abCdefiqstvxy]"
+      scope: keyword.control.csound-score
+    - match: w
+      scope: invalid.illegal.csound-score
+    - match: z
+      scope: constant.numeric.language.csound-score
+    - match: '([nNpP][pP])(\d+)'
+      scope: meta.p-symbol.csound-score
+      captures:
+        1: keyword.control.csound-score
+        2: constant.numeric.integer.decimal.csound-score
+    - match: (m)|(n)
+      captures:
+        1: keyword.mark.preprocessor.csound-score
+        2: keyword.repeat-mark.preprocessor.csound-score
+      push:
+        - match: $
+          pop: true
+        - include: scope:source.csound#comments
+        - match: '[A-Z_a-z]\w*'
+          scope: entity.name.label.csound-score
+    - match: r\b
+      captures:
+        0: keyword.repeat-section.preprocessor.csound-score
+      push:
+        - match: $
+          pop: true
+        - include: scope:source.csound#comments
+        - match: \d+
+          captures:
+            0: constant.numeric.integer.decimal.csound-score
+          push:
+            - match: $
+              pop: true
+            - include: scope:source.csound#comments
+            - include: scope:source.csound#macroNames
+    - include: scope:source.csound#numbers
+    - match: '[!+\-*/^%&|<>#~.]'
+      scope: keyword.operator.csound-score
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.csound-score
+      push:
+        - meta_scope: string.quoted.csound-score
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.csound-score
+          pop: true
+        - include: scope:source.csound#macroUses
+    - match: '\{'
+      captures:
+        0: punctuation.braced-loop.begin.csound-score
+      push:
+        - meta_scope: meta.braced-loop.csound-score
+        - match: '\}'
+          captures:
+            0: punctuation.braced-loop.end.csound-score
+          pop: true
+        - match: \G
+          push:
+            - meta_scope: meta.braced-loop-details.csound-score
+            - match: $
+              pop: true
+            - match: \d+
+              captures:
+                0: constant.numeric.integer.decimal.csound-score
+              push:
+                - match: $
+                  pop: true
+                - match: '[A-Z_a-z]\w*\b'
+                  captures:
+                    0: entity.name.function.preprocessor.csound-score
+                  push:
+                    - match: $
+                      pop: true
+                    - match: \S+
+                      scope: invalid.illegal.csound-score
+                - match: \S+
+                  scope: invalid.illegal.csound-score
+            - match: \S+
+              scope: invalid.illegal.csound-score
+        - match: ^
+          push:
+            - match: '(?=\})'
+              pop: true
+            - include: main

@@ -1,0 +1,55 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ox
+file_extensions:
+  - ox
+first_line_match: "-[*]-( Mode:)? C -[*]-"
+scope: source.ox
+contexts:
+  main:
+    - include: comments
+    - match: \b(break|case|continue|default|delete|do|else|for|new|parallel for|foreach|goto|if|_Pragma|return|switch|switch_single|while)\b
+      scope: keyword.control.ox
+    - match: \b(array|char|class|const|decl|double|enum|extern|int|matrix|static|serial|string|struct)\b
+      scope: storage.type.ox
+    - match: ^\s*.\s*(.NaN|.Inf|TRUE|FALSE)\b
+      scope: constant.language.ox
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b'
+      scope: constant.numeric.ox
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ox
+      push:
+        - meta_scope: string.quoted.double.ox
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ox
+          pop: true
+    - match: ^\s*#\s*(include|import|pragma)\b\s+
+      captures:
+        1: keyword.control.import.include.ox
+      push:
+        - match: (?=(?://|/\*))|$
+          captures:
+            1: keyword.control.import.include.ox
+          pop: true
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.ox
+      push:
+        - meta_scope: comment.block.ox
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.ox
+          pop: true
+    - match: //
+      captures:
+        0: punctuation.definition.comment.ox
+      push:
+        - meta_scope: comment.line.double-slash.ox
+        - match: $\n?
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.ox

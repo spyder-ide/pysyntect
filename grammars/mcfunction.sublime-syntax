@@ -1,0 +1,627 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: mcfunction
+file_extensions:
+  - mcfunction
+scope: source.mcfunction
+contexts:
+  main:
+    - include: comment
+    - include: command
+    - include: unknown
+  comment:
+    - match: '^[ \t]*((#)(>)((.*)))$'
+      captures:
+        1: comment.block.mcfunction
+        2: markup.list.mcfunction
+        3: markup.list.mcfunction
+        4: markup.bold.mcfunction
+        5: markup.list.mcfunction
+      push:
+        - meta_scope: meta.comment.block.mcfunction
+        - match: '^(?![ \t]*#)'
+          pop: true
+        - include: comment.block
+    - match: '^[ \t]*(#.*)$'
+      scope: meta.comment.line.mcfunction
+      captures:
+        1: comment.line.mcfunction
+  block_predicate:
+    - match: '(\#)([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)'
+      captures:
+        1: entity.name.function.mcfunction
+        2: entity.name.function.mcfunction
+        3: entity.name.function.mcfunction
+        4: entity.name.function.mcfunction
+    - match: '([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)'
+      captures:
+        1: entity.name.function.mcfunction
+        2: entity.name.function.mcfunction
+        3: entity.name.function.mcfunction
+    - match: '([a-z0-9_\.\-\/]+)'
+      captures:
+        1: entity.name.function.mcfunction
+    - match: '(\[)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: '(\])'
+          captures:
+            1: variable.language.mcfunction
+          pop: true
+        - include: block_predicate.arguments
+    - match: '(\{)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: '(\})'
+          captures:
+            1: variable.language.mcfunction
+          pop: true
+        - include: nbt.compound
+  block_predicate.argument.boolean:
+    - match: '(true|false)(?= *[\,\]\n])'
+      scope: meta.block_predicate.argument.boolean.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  block_predicate.argument.literal:
+    - match: '([a-z_][a-z0-9_]*)(?= *[\,\]\n])'
+      scope: meta.block_predicate.argument.literal.mcfunction
+      captures:
+        1: entity.name.mcfunction
+  block_predicate.argument.number:
+    - match: '(\-?\d*\.?\d+)(?= *[\,\]\n])'
+      scope: meta.block_predicate.argument.number.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  block_predicate.arguments:
+    - match: " +"
+      scope: meta.block_predicate.argument_spacing.mcfunction
+    - match: '([a-z_][a-z0-9_]*) *(\=) *'
+      captures:
+        1: variable.other.mcfunction
+        2: variable.language.mcfunction
+      push:
+        - meta_scope: meta.block_predicate.argument.mcfunction
+        - match: '(\,)(?=[\]\n])|(\,)|(?=[\]\n])'
+          captures:
+            1: invalid.illegal.mcfunction
+            2: variable.language.mcfunction
+          pop: true
+        - include: block_predicate.argument.number
+        - include: block_predicate.argument.boolean
+        - include: block_predicate.argument.literal
+  command:
+    - match: '^\s*([a-z_][a-z0-9_]*)[ \n]'
+      captures:
+        1: keyword.control.mcfunction
+      push:
+        - meta_scope: meta.command.mcfunction
+        - match: $
+          pop: true
+        - match: (?<= )
+          push:
+            - meta_content_scope: meta.command.token.mcfunction
+            - match: '[ \n]'
+              pop: true
+            - include: command.tokens
+  command.token.block_predicate:
+    - match: '(?<= )(?=(\#)?([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)(\[|\{))'
+      push:
+        - meta_scope: meta.command.token.block_predicate.mcfunction
+        - match: '(?=\n)|(?:(?<=\])(?!\{)|(?<=\}))([^ \n]*)'
+          captures:
+            1: invalid.illegal.mcfunction
+          pop: true
+        - include: block_predicate
+  command.token.block_predicate_without_namespace:
+    - match: '(?<= )(?=(\#)?([a-z0-9_\.\-\/]+)(\[ *([a-z_][a-z0-9_]*) *\=))'
+      push:
+        - meta_scope: meta.command.token.block_predicate_without_namespace.mcfunction
+        - match: '(?=\n)|(?:(?<=\])(?!\{)|(?<=\}))([^ \n]*)'
+          captures:
+            1: invalid.illegal.mcfunction
+          pop: true
+        - include: block_predicate
+  command.token.boolean:
+    - match: '(?<= )(true|false)(?=[ \n]|$)'
+      scope: meta.command.token.boolean.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  command.token.coordinate:
+    - match: '(?<= )([\~\^])(\-?\d*\.?\d+)?(?=[ \n]|$)'
+      scope: meta.command.token.coordinate.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+        2: constant.numeric.mcfunction
+  command.token.fakeplayer:
+    - match: '(?<= )([\#\$\%]\S+)(?=[ \n]|$)'
+      scope: meta.command.token.fakeplayer.mcfunction
+      captures:
+        1: support.class.mcfunction
+  command.token.greedy_parent:
+    - match: ((?<=^say | say ))(.*)$
+      scope: meta.command.token.greedy_parent.mcfunction
+      captures:
+        1: entity.name.mcfunction
+        2: string.quoted.mcfunction
+  command.token.literal:
+    - match: '(?<= )([a-z_][a-z0-9_]*)(?=[ \n]|$)'
+      scope: meta.command.token.literal.mcfunction
+      captures:
+        1: entity.name.mcfunction
+  command.token.nbt_compound:
+    - match: '(?<= )(\{)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - meta_scope: meta.command.token.nbt_compound.mcfunction
+        - match: '(?=\n)|(\})([^ \n]*)'
+          captures:
+            1: variable.language.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: nbt.compound
+  command.token.nbt_list:
+    - match: '(?<= )(\[)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - meta_scope: meta.command.token.nbt_list.mcfunction
+        - match: '(?=\n)|(\])([^ \n]*)'
+          captures:
+            1: variable.language.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: nbt.list
+  command.token.nbt_path:
+    - match: '(?<= )(?=\w+[\.\[\{])'
+      push:
+        - meta_scope: meta.command.token.nbt_path.mcfunction
+        - match: '(?=[ \n]|$)'
+          pop: true
+        - include: nbt_path.property
+  command.token.number:
+    - match: '(?<= )(\-?\d*\.?\d+)(?=[ \n]|$)'
+      scope: meta.command.token.number.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  command.token.operation:
+    - match: '(?<= )(\%\=|\*\=|\+\=|\-\=|\/\=|\<|\=|\>|\>\<|\<\=|\>\=)(?=[ \n]|$)'
+      scope: meta.command.token.operation.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  command.token.quoted_string:
+    - match: (?<= )(\")
+      captures:
+        1: string.quoted.mcfunction
+      push:
+        - meta_scope: meta.command.token.quoted_string.mcfunction
+        - match: '(?=\n)|(\")([^ \n]*)'
+          captures:
+            1: string.quoted.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: common.quoted_string
+  command.token.range:
+    - match: '(?<= )(\-?\d*\.?\d+)?(\.\.)(\-?\d*\.?\d+)?(?=[ \n]|$)'
+      scope: meta.command.token.range.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+        2: keyword.control.mcfunction
+        3: constant.numeric.mcfunction
+  command.token.resource_location:
+    - match: '(?<= )([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)(?=[ \n]|$)'
+      scope: meta.command.token.resource_location.mcfunction
+      captures:
+        1: entity.name.function.mcfunction
+        2: entity.name.function.mcfunction
+        3: entity.name.function.mcfunction
+  command.token.root_redirect:
+    - match: '(?<= )(run) ([a-z_][a-z0-9_]*)?(?=[ \n]|$)'
+      scope: meta.command.token.root_redirect.mcfunction
+      captures:
+        1: entity.name.mcfunction
+        2: keyword.control.mcfunction
+  command.token.selector_with_arguments:
+    - match: '(?<= )(\@[a-z])(\[)'
+      captures:
+        1: support.class.mcfunction
+        2: support.class.mcfunction
+      push:
+        - meta_scope: meta.command.token.selector_with_arguments.mcfunction
+        - match: '(?=\n)|(\])([^ \n]*)'
+          captures:
+            1: support.class.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - match: " +"
+          scope: meta.selector.argument_spacing.mcfunction
+        - match: '([a-z_][a-z0-9_]*) *(\=) *(\!)? *'
+          captures:
+            1: variable.other.mcfunction
+            2: support.class.mcfunction
+            3: keyword.control.mcfunction
+          push:
+            - meta_scope: meta.selector.argument.mcfunction
+            - match: '( *\,)(?=[\]\n])|( *\,)|(?= *[\]\n])'
+              captures:
+                1: invalid.illegal.mcfunction
+                2: support.class.mcfunction
+              pop: true
+            - include: selector.argument.resource_location
+            - include: selector.argument.tagged_resource_location
+            - include: selector.argument.range
+            - include: selector.argument.number
+            - include: selector.argument.boolean
+            - include: selector.argument.property_map
+            - include: selector.argument.nbt_compound
+            - include: selector.argument.quoted_string
+            - include: selector.argument.single_quoted_string
+            - include: selector.argument.unquoted_string
+            - include: selector.argument.unknown
+        - match: '[^\]\n]+'
+          scope: invalid.illegal.mcfunction
+  command.token.selector_without_arguments:
+    - match: '(?<= )(\@[a-z])(?=[ \n]|$)'
+      scope: meta.command.token.selector_without_arguments.mcfunction
+      captures:
+        1: support.class.mcfunction
+  command.token.single_quoted_string:
+    - match: (?<= )(\')
+      captures:
+        1: string.quoted.mcfunction
+      push:
+        - meta_scope: meta.command.token.single_quoted_string.mcfunction
+        - match: '(?=\n)|(\'')([^ \n]*)'
+          captures:
+            1: string.quoted.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: common.single_quoted_string
+  command.token.tagged_resource_location:
+    - match: '(?<= )(\#)([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)(?=[ \n]|$)'
+      scope: meta.command.token.tagged_resource_location.mcfunction
+      captures:
+        1: entity.name.function.mcfunction
+        2: entity.name.function.mcfunction
+        3: entity.name.function.mcfunction
+        4: entity.name.function.mcfunction
+  command.token.unknown:
+    - match: '(?<= )([^ \n]*)(?=[ \n]|$)'
+      scope: meta.command.token.unknown.mcfunction
+      captures:
+        1: invalid.illegal.mcfunction
+  command.token.unquoted_string:
+    - match: '(?<= )(\S+)(?=[ \n]|$)'
+      scope: meta.command.token.unquoted_string.mcfunction
+      captures:
+        1: string.unquoted.mcfunction
+  command.token.uuid:
+    - match: '(?<= )([0-9a-fA-F]+(?:(-)[0-9a-fA-F]+){4})(?=[ \n]|$)'
+      scope: meta.command.token.uuid.mcfunction
+      captures:
+        1: support.class.mcfunction
+  command.tokens:
+    - include: command.token.nbt_compound
+    - include: command.token.nbt_list
+    - include: command.token.selector_with_arguments
+    - include: command.token.selector_without_arguments
+    - include: command.token.block_predicate
+    - include: command.token.block_predicate_without_namespace
+    - include: command.token.resource_location
+    - include: command.token.tagged_resource_location
+    - include: command.token.range
+    - include: command.token.number
+    - include: command.token.coordinate
+    - include: command.token.boolean
+    - include: command.token.operation
+    - include: command.token.root_redirect
+    - include: command.token.greedy_parent
+    - include: command.token.literal
+    - include: command.token.uuid
+    - include: command.token.fakeplayer
+    - include: command.token.nbt_path
+    - include: command.token.quoted_string
+    - include: command.token.single_quoted_string
+    - include: command.token.unquoted_string
+    - include: command.token.unknown
+  comment.block:
+    - match: '^[ \t]*((#)[ \t]*)'
+      captures:
+        1: comment.block.mcfunction
+        2: markup.list.mcfunction
+      push:
+        - meta_scope: meta.comment.block_line.mcfunction
+        - match: $
+          pop: true
+        - include: comment.block.line
+  comment.block.line:
+    - match: ((\@\w*)\b(.*))$
+      scope: meta.comment.block.annotation.mcfunction
+      captures:
+        1: comment.block.mcfunction
+        2: markup.heading.mcfunction
+        3: comment.block.mcfunction
+    - match: ((>)((.*)))$
+      scope: meta.comment.block.heading.mcfunction
+      captures:
+        1: comment.block.mcfunction
+        2: markup.list.mcfunction
+        3: markup.bold.mcfunction
+        4: markup.list.mcfunction
+    - match: (.*)$
+      scope: meta.comment.block.text.mcfunction
+      captures:
+        1: comment.block.mcfunction
+  common.quoted_string:
+    - match: '[^\\\"\n]'
+      scope: string.quoted.mcfunction
+    - match: '\\[^\n]'
+      scope: constant.character.escape.mcfunction
+    - match: \\
+      scope: invalid.illegal.mcfunction
+  common.single_quoted_string:
+    - match: '[^\\\''\n]'
+      scope: string.quoted.mcfunction
+    - match: '\\[^\n]'
+      scope: constant.character.escape.mcfunction
+    - match: \\
+      scope: invalid.illegal.mcfunction
+  nbt.compound:
+    - match: " +"
+    - match: '(,)? *([A-Za-z0-9_\.\-]+|\"[^\n\"]+\") *(\:) *'
+      captures:
+        1: variable.language.mcfunction
+        2: string.interpolated.mcfunction
+        3: variable.language.mcfunction
+      push:
+        - match: ' *(?=[\n\}\,])'
+          pop: true
+        - include: nbt.value
+    - match: '[^\n\}\,]+'
+      scope: invalid.illegal.mcfunction
+  nbt.list:
+    - match: " +"
+    - match: '(,)? *(?=[^\n\]\,])'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: ' *(?=[\n\]\,])'
+          pop: true
+        - include: nbt.value
+    - match: '[^\n\]\,]+'
+      scope: invalid.illegal.mcfunction
+  nbt.value:
+    - match: '(\{)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: '(?=\n)|(\})'
+          captures:
+            1: variable.language.mcfunction
+          pop: true
+        - include: nbt.compound
+    - match: '(\[)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: '(?=\n)|(\])'
+          captures:
+            1: variable.language.mcfunction
+          pop: true
+        - include: nbt.list
+    - match: (\")
+      captures:
+        1: string.quoted.mcfunction
+      push:
+        - match: (?=\n)|(\")
+          captures:
+            1: string.quoted.mcfunction
+          pop: true
+        - include: common.quoted_string
+    - match: (\')
+      captures:
+        1: string.quoted.mcfunction
+      push:
+        - match: (?=\n)|(\')
+          captures:
+            1: string.quoted.mcfunction
+          pop: true
+        - include: common.single_quoted_string
+    - match: (true|false)
+      scope: constant.numeric.mcfunction
+    - match: (\-?\d*\.?\d+)
+      scope: constant.numeric.mcfunction
+    - match: '([^\s\{\}\[\]\,\:\=]+)'
+      scope: string.unquoted.mcfunction
+    - match: '[^\n\,\]\}]+'
+      scope: invalid.illegal.mcfunction
+  nbt_path.index:
+    - match: '(?<=\[)(\-?\d+)(?=\])'
+      captures:
+        1: constant.numeric.mcfunction
+    - match: '(\{)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: '(?=\n)|(\})([^\]\,\n]*)'
+          captures:
+            1: variable.language.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: nbt.compound
+    - match: '[^\n\]]+'
+      scope: invalid.illegal.mcfunction
+  nbt_path.property:
+    - match: '(\.)?(\w+)?(\[)'
+      captures:
+        1: variable.language.mcfunction
+        2: string.interpolated.mcfunction
+        3: variable.language.mcfunction
+      push:
+        - match: '(\])|(?=\n)'
+          captures:
+            1: variable.language.mcfunction
+          pop: true
+        - include: nbt_path.index
+    - match: '(\.)?(\w+)(\{)'
+      captures:
+        1: variable.language.mcfunction
+        2: string.interpolated.mcfunction
+        3: variable.language.mcfunction
+      push:
+        - match: '(\})|(?=\n)'
+          captures:
+            1: variable.language.mcfunction
+          pop: true
+        - include: nbt.compound
+    - match: (\.)?(\w+)
+      captures:
+        1: variable.language.mcfunction
+        2: string.interpolated.mcfunction
+    - match: (\.)(?=\.)
+      captures:
+        1: invalid.illegal.mcfunction
+    - match: '[^\.\s]+'
+      scope: invalid.illegal.mcfunction
+  property_map:
+    - match: " +"
+    - match: '(,)? *([A-Za-z0-9_\.\-]+) *(\=) *'
+      captures:
+        1: variable.language.mcfunction
+        2: entity.name.function.mcfunction
+        3: variable.language.mcfunction
+      push:
+        - match: ' *(?=[\n\}\,])'
+          pop: true
+        - include: property_map.values
+    - match: '(,)? *([a-z0-9_\.\-]+\:[a-z0-9_\.\-\/]+|[a-z0-9_\.\-\/]+) *(\=) *'
+      captures:
+        1: variable.language.mcfunction
+        2: entity.name.function.mcfunction
+        3: variable.language.mcfunction
+      push:
+        - match: ' *(?=[\n\}\,])'
+          pop: true
+        - include: property_map.values
+    - match: '[^\n\}\,]+'
+      scope: invalid.illegal.mcfunction
+  property_map.values:
+    - match: (true|false)
+      captures:
+        1: constant.numeric.mcfunction
+    - match: (\-?\d*\.?\d+)?(\.\.)(\-?\d*\.?\d+)?
+      captures:
+        1: constant.numeric.mcfunction
+        2: keyword.control.mcfunction
+        3: constant.numeric.mcfunction
+    - match: (\-?\d*\.?\d+)
+      captures:
+        1: constant.numeric.mcfunction
+    - match: '(\{) *'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - match: '(?=\n)|(\}) *([^\}\,\n]*)'
+          captures:
+            1: variable.language.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: property_map
+  selector.argument.boolean:
+    - match: '(true|false)(?= *[\,\]\n])'
+      scope: meta.selector.argument.boolean.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  selector.argument.nbt_compound:
+    - match: '(\{)'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - meta_scope: meta.selector.argument.nbt_compound.mcfunction
+        - match: '(?=\n)|(\}) *([^\]\,\n]*)'
+          captures:
+            1: variable.language.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: nbt.compound
+  selector.argument.number:
+    - match: '(\-?\d*\.?\d+)(?= *[\,\]\n])'
+      scope: meta.selector.argument.number.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+  selector.argument.property_map:
+    - match: '(\{)(?= *([a-z0-9_\.\-]+\:[a-z0-9_\.\-\/]+|[a-z0-9_\.\-\/]+|([A-Za-z0-9_\.\-]+)) *(\=))'
+      captures:
+        1: variable.language.mcfunction
+      push:
+        - meta_scope: meta.selector.argument.property_map.mcfunction
+        - match: '(?=\n)|(\}) *([^\]\,\n]*)'
+          captures:
+            1: variable.language.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: property_map
+  selector.argument.quoted_string:
+    - match: (\")
+      captures:
+        1: string.quoted.mcfunction
+      push:
+        - meta_scope: meta.selector.argument.quoted_string.mcfunction
+        - match: '(?=\n)|(\") *([^\]\,\n]*)'
+          captures:
+            1: string.quoted.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: common.quoted_string
+  selector.argument.range:
+    - match: '(\-?\d*\.?\d+)?(\.\.)(\-?\d*\.?\d+)?(?= *[\,\]\n])'
+      scope: meta.selector.argument.range.mcfunction
+      captures:
+        1: constant.numeric.mcfunction
+        2: keyword.control.mcfunction
+        3: constant.numeric.mcfunction
+  selector.argument.resource_location:
+    - match: '([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)(?= *[\,\]\n])'
+      scope: meta.selector.argument.resource_location.mcfunction
+      captures:
+        1: entity.name.function.mcfunction
+        2: entity.name.function.mcfunction
+        3: entity.name.function.mcfunction
+  selector.argument.single_quoted_string:
+    - match: (\')
+      captures:
+        1: string.quoted.mcfunction
+      push:
+        - meta_scope: meta.selector.argument.single_quoted_string.mcfunction
+        - match: '(?=\n)|(\'') *([^\]\,\n]*)'
+          captures:
+            1: string.quoted.mcfunction
+            2: invalid.illegal.mcfunction
+          pop: true
+        - include: common.single_quoted_string
+  selector.argument.tagged_resource_location:
+    - match: '(\#)([a-z0-9_\.\-]+)(\:)([a-z0-9_\.\-\/]+)(?= *[\,\]\n])'
+      scope: meta.selector.argument.tagged_resource_location.mcfunction
+      captures:
+        1: entity.name.function.mcfunction
+        2: entity.name.function.mcfunction
+        3: entity.name.function.mcfunction
+        4: entity.name.function.mcfunction
+  selector.argument.unknown:
+    - match: '([^\]\n\,]+)'
+      scope: meta.selector.argument.unknown.mcfunction
+      captures:
+        1: invalid.illegal.mcfunction
+  selector.argument.unquoted_string:
+    - match: '([^\s\{\}\[\]\,\:\=\!]+)(?= *[\,\]\n])'
+      scope: meta.selector.argument.unquoted_string.mcfunction
+      captures:
+        1: string.unquoted.mcfunction
+  unknown:
+    - match: ^(.*)$
+      scope: meta.unknown.mcfunction
+      captures:
+        1: invalid.illegal.mcfunction

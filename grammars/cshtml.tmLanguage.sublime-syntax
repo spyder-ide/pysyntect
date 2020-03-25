@@ -1,0 +1,213 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ASP.NET Razor
+scope: text.html.cshtml
+contexts:
+  main:
+    - include: comments
+    - include: razor-directives
+    - include: razor-code-block
+    - include: razor-else-if
+    - include: razor-if
+    - include: razor-else
+    - include: razor-foreach
+    - include: razor-for
+    - include: explicit-razor-expression
+    - include: implicit-razor-expression
+    - include: scope:text.html.basic
+  comments:
+    - match: '@\*'
+      captures:
+        0: punctuation.definition.comment.source.cshtml
+      push:
+        - meta_scope: comment.block.cshtml
+        - match: \*@
+          captures:
+            0: punctuation.definition.comment.source.cshtml
+          pop: true
+  csharp-namespace-identifier:
+    - match: "[_[:alpha:]][_[:alnum:]]*"
+      scope: entity.name.type.namespace.cs
+  csharp-type-name:
+    - match: '([_[:alpha:]][_[:alnum:]]*)\s*(\:\:)'
+      captures:
+        1: entity.name.type.alias.cs
+        2: punctuation.separator.coloncolon.cs
+    - match: '([_[:alpha:]][_[:alnum:]]*)\s*(\.)'
+      captures:
+        1: storage.type.cs
+        2: punctuation.accessor.cs
+    - match: '(\.)\s*([_[:alpha:]][_[:alnum:]]*)'
+      captures:
+        1: punctuation.accessor.cs
+        2: storage.type.cs
+    - match: "[_[:alpha:]][_[:alnum:]]*"
+      scope: storage.type.cs
+  explicit-razor-expression:
+    - match: (@)\(
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.expression.explicit.cshtml
+        - match: \)
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  functions-directive:
+    - match: (@functions)
+      scope: meta.directive.functions.cshtml
+      captures:
+        0: keyword.control.cshtml
+  implements-directive:
+    - match: (@implements)\s+
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.implements.cshtml
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: csharp-type-name
+  implicit-razor-expression:
+    - match: '(?<!@)(@)([a-zA-Z0-9\.\_\(\)]+)'
+      scope: meta.expression.implicit.cshtml
+      captures:
+        0: keyword.control.cshtml
+  inherits-directive:
+    - match: (@inherits)\s+
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.inherits.cshtml
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: csharp-type-name
+  inject-directive:
+    - match: (@inject)\s+
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.inject.cshtml
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: csharp-type-name
+  layout-directive:
+    - match: (@layout)\s+
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.layout.cshtml
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: csharp-type-name
+  model-directive:
+    - match: (@model)\s+
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.model.cshtml
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: csharp-type-name
+  page-directive:
+    - match: (@page)\s+
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.page.cshtml
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  razor-code-block:
+    - match: '@?\{'
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - match: '\}'
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:text.html.cshtml
+        - include: scope:source.cs
+  razor-directives:
+    - include: using-directive
+    - include: model-directive
+    - include: inherits-directive
+    - include: inject-directive
+    - include: implements-directive
+    - include: layout-directive
+    - include: page-directive
+    - include: functions-directive
+  razor-else:
+    - match: (else)
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  razor-else-if:
+    - match: (else\s+if)
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  razor-for:
+    - match: (@for)\s*\(
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - match: \)
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  razor-foreach:
+    - match: (@foreach)\s*\(
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - match: \)
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  razor-if:
+    - match: (@if)
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - match: $
+          captures:
+            0: keyword.control.cshtml
+          pop: true
+        - include: scope:source.cs
+  using-directive:
+    - match: (@)(?=using)(.*)
+      captures:
+        0: keyword.control.cshtml
+      push:
+        - meta_scope: meta.directive.using.cshtml
+        - match: (?=$)
+          captures:
+            0: keyword.control.cshtml
+          pop: true

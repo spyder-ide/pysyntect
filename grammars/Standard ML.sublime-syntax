@@ -1,0 +1,169 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Standard ML
+file_extensions:
+  - sml
+  - sig
+scope: source.ml
+contexts:
+  main:
+    - include: comments
+    - match: \b(val|datatype|signature|type|op|sharing|struct|as|let|in|abstype|local|where|case|of|fn|raise|exception|handle|ref|infix|infixr|before|end|structure|withtype)\b
+      scope: keyword.other.ml
+    - match: \b(let)\b
+      captures:
+        1: keyword.other.ml
+        2: keyword.other.ml
+      push:
+        - meta_scope: meta.exp.let.ml
+        - match: \b(end)\b
+          captures:
+            1: keyword.other.ml
+            2: keyword.other.ml
+          pop: true
+        - include: main
+    - match: \b(sig)\b
+      captures:
+        1: keyword.other.delimiter.ml
+        2: keyword.other.delimiter.ml
+      push:
+        - meta_scope: meta.module.sigdec.ml
+        - match: \b(end)\b
+          captures:
+            1: keyword.other.delimiter.ml
+            2: keyword.other.delimiter.ml
+          pop: true
+        - include: spec
+    - match: \b(if|then|else)\b
+      scope: keyword.control.ml
+    - match: '\b(fun|and)\s+([\w]+)\b'
+      captures:
+        1: keyword.control.fun.ml
+        2: entity.name.function.ml
+      push:
+        - meta_scope: meta.definition.fun.ml
+        - match: (?=val|type|eqtype|datatype|structure|local)
+          captures:
+            1: keyword.control.fun.ml
+            2: entity.name.function.ml
+          pop: true
+        - include: scope:source.ml
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ml
+      push:
+        - meta_scope: string.quoted.double.ml
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ml
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ml
+    - match: (#")(\\)?.(")
+      scope: constant.character.ml
+      captures:
+        1: punctuation.definition.constant.ml
+        3: punctuation.definition.constant.ml
+    - match: \b\d*\.?\d+\b
+      scope: constant.numeric.ml
+    - match: \b(andalso|orelse|not)\b
+      scope: keyword.operator.logical.ml
+    - match: |-
+        (?x)\b
+        (functor|structure|signature|funsig)\s+
+        (\w+)\s* # identifier
+      captures:
+        1: storage.type.module.binder.ml
+        2: entity.name.type.module.ml
+      push:
+        - meta_scope: meta.module.dec.ml
+        - match: (?==|:|\()
+          captures:
+            1: storage.type.module.binder.ml
+            2: entity.name.type.module.ml
+          pop: true
+    - match: \b(open)\b
+      scope: keyword.other.module.ml
+    - match: \b(nil|true|false|NONE|SOME)\b
+      scope: constant.language.ml
+    - match: \b(type|eqtype) .* =
+      captures:
+        1: keyword.other.typeabbrev.ml
+        2: variable.other.typename.ml
+      push:
+        - meta_scope: meta.typeabbrev.ml
+        - match: $
+          captures:
+            1: keyword.other.typeabbrev.ml
+            2: variable.other.typename.ml
+          pop: true
+        - match: '(([a-zA-Z0-9\.\* ]|(\->))*)'
+          scope: meta.typeexp.ml
+  comments:
+    - match: \(\*
+      captures:
+        0: punctuation.definition.comment.begin.ml
+      push:
+        - meta_scope: comment.block.ml
+        - match: \*\)
+          captures:
+            0: punctuation.definition.comment.end.ml
+          pop: true
+        - include: comments
+  spec:
+    - match: '\b(exception|type)\s+([a-zA-Z][a-zA-Z0-9''_]*)'
+      scope: meta.spec.ml.type
+      captures:
+        1: keyword.other.ml
+        2: entity.name.type.abbrev.ml
+    - match: '\b(datatype)\s+([a-zA-Z][a-zA-Z0-9''_]*)\s*(?==)'
+      captures:
+        1: keyword.other.ml
+        2: entity.name.type.datatype.ml
+      push:
+        - meta_scope: meta.spec.ml.datatype
+        - match: (?=val|type|eqtype|datatype|structure|include|exception)
+          captures:
+            1: keyword.other.ml
+            2: entity.name.type.datatype.ml
+          pop: true
+        - match: '\b(and)\s+([a-zA-Z][a-zA-Z0-9''_]*)\s*(?==)'
+          scope: meta.spec.ml.datatype
+          captures:
+            1: keyword.other.ml
+            2: entity.name.type.datatype.ml
+        - match: |-
+            (?x)
+            =\s*([a-zA-Z][a-zA-Z0-9'_]*)(\s+of)?
+          scope: meta.datatype.rule.main.ml
+          captures:
+            1: variable.other.dcon.ml
+            2: keyword.other.ml
+        - match: '\|\s*([a-zA-Z][a-zA-Z0-9''_]*)(\s+of)?'
+          scope: meta.datatype.rule.other.ml
+          captures:
+            1: variable.other.dcon.ml
+            2: keyword.other.ml
+    - match: '\b(val)\s*([^:]+)\s*:'
+      scope: meta.spec.ml.val
+      captures:
+        1: keyword.other.ml
+    - match: '\b(structure)\s*(\w+)\s*:'
+      captures:
+        1: keyword.other.ml
+        2: entity.name.type.module.ml
+      push:
+        - meta_scope: meta.spec.ml.structure
+        - match: (?=val|type|eqtype|datatype|structure|include)
+          captures:
+            1: keyword.other.ml
+            2: entity.name.type.module.ml
+          pop: true
+        - match: \b(sharing)\b
+          scope: keyword.other.ml
+    - match: \b(include)\b
+      scope: meta.spec.ml.include
+      captures:
+        1: keyword.other.ml
+    - include: comments

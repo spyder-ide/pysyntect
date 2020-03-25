@@ -1,0 +1,33 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TOC (WoW)
+comment: World of Warcraft TOC
+file_extensions:
+  - toc
+scope: source.toc
+contexts:
+  main:
+    - match: "^## "
+      push:
+        - meta_scope: keyword.tag.toc
+        - match: (:|\Z)
+          pop: true
+        - match: "([Xx]-[^:]+)"
+          scope: entity.name.tag.custom.toc
+        - match: (Title-|Notes-|Description-)(enUS|enGB|frFR|deDE|esES|esMX|itIT|ptBR|ruRU|koKR|zhTW|zhCN)
+          scope: entity.name.tag.localized.toc
+        - match: '(Interface|Title|Notes|Description|RequiredDeps|Dependencies|\bDep[^:]+|OptionalDeps|LoadOnDemand|LoadWith|LoadManagers|SavedVariablesPerCharacter|SavedVariables|DefaultState|Secure|Author|Version)'
+          scope: entity.name.tag.toc
+        - match: '\S[^:]+'
+          scope: invalid.tag.toc
+    - match: '(\|c)([a-fA-F0-9]{8})'
+      captures:
+        1: constant.character.escape.toc
+        2: string.escape.coloring.toc
+    - match: (\|r)
+      scope: constant.character.escape.toc
+    - match: "(?<!^## )#.*$"
+      scope: comment.toc
+    - match: '^(?!#)[^ ].+\.xml'
+      scope: meta.require.xml.toc

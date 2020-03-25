@@ -1,0 +1,397 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Pic
+file_extensions:
+  - chem
+  - pic
+first_line_match: '^#[!/].*\bpic2plot\b'
+scope: source.pic
+contexts:
+  name:
+    - match: (?!\d)\w+
+      scope: variable.other.pic
+  main:
+    - include: comment
+    - include: keywords
+    - include: backref
+    - include: macros
+    - include: string
+    - include: number
+    - include: escaped-newline
+    - include: operators
+    - include: brackets
+    - include: punctuation
+    - include: primitives
+    - include: attributes
+    - include: globals
+    - include: function-call
+    - include: label
+    - include: name
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.pic
+      push:
+        - meta_scope: comment.line.pic
+        - match: $
+          pop: true
+  attributes:
+    - match: |-
+        (?x)\b
+        (cw|dashed|diameter|diam|dotted|down|height|ht|invisible
+        |invis|left|radius|rad|right|same|up|width|wid)\b
+      scope: variable.other.property.$1.pic
+  backref:
+    - match: '\b(last|(?:\d*1[1-3]th|\d*0th|(?:(?!11st)\d)*1st|\d*2nd|(?:(?!13rd)\d*)3rd|\d*[4-9]th)(?:[ \t]+last)?)\b'
+      scope: variable.language.backreference.pic
+      captures:
+        0: entity.name.pic
+  binary:
+    - match: '^(?=.*[\x00-\x06\x{FFFD}])'
+      push:
+        - meta_scope: raw.binary.data
+        - match: (?=A)B
+          pop: true
+  boolean:
+    - match: \b(true|false|on|off)\b
+      scope: constant.boolean.$1.dformat.pic
+  brackets:
+    - match: \(
+      captures:
+        0: punctuation.definition.bracket.round.pic
+      push:
+        - match: '(?=\))|^(?=\.P[EF]\b)'
+          pop: true
+        - include: main
+    - match: '\['
+      captures:
+        0: punctuation.definition.bracket.square.pic
+      push:
+        - match: '(?=\])|^(?=\.P[EF]\b)'
+          pop: true
+        - include: main
+    - match: '\{'
+      captures:
+        0: punctuation.definition.bracket.curly.pic
+      push:
+        - match: '(?=\})|^(?=\.P[EF]\b)'
+          pop: true
+        - include: main
+  chem:
+    - include: label
+    - match: '\b((?:(?:double|triple|front|back)[ \t]+)?\bbond)\b'
+      scope: keyword.function.bond.pic.chem
+      captures:
+        0: support.function.pic.chem
+        1: entity.name.function.pic.chem
+    - match: '(?:\baromatic[ \t]+)?\b(?:benzene|(?:flat)?ring\d*)'
+      scope: keyword.function.ring.pic.chem
+      captures:
+        0: entity.name.function.pic.chem
+    - match: \b(pointing)\b
+      scope: keyword.operator.direction.pic.chem
+    - match: '\b(size)\b[ \t]*(\d+)'
+      scope: keyword.function.set-size.pic.chem
+      captures:
+        1: entity.name.function.pic.chem
+        2: constant.numeric.parameter.pic.chem
+    - match: \bBP\b
+      scope: keyword.control.branch-point.pic.chem
+    - match: '(?=[A-Z])(?!BP)([\w\(\).]+)'
+      scope: string.unquoted.group-name.pic.chem
+      captures:
+    - match: \(
+      captures:
+        0: punctuation.definition.bracket.round.chem.pic
+      push:
+        - match: '(?=\))|^(?=\.P[EF]\b|^[.'']\s*cend\b)'
+          pop: true
+        - include: chem
+    - match: '\['
+      captures:
+        0: punctuation.definition.bracket.square.chem.pic
+      push:
+        - match: '(?=\])|^(?=\.P[EF]\b|^[.'']\s*cend\b)'
+          pop: true
+        - include: chem
+    - match: '\{'
+      captures:
+        0: punctuation.definition.bracket.curly.chem.pic
+      push:
+        - match: '(?=\})|^(?=\.P[EF]\b|^[.'']\s*cend\b)'
+          pop: true
+        - include: chem
+    - include: main
+  dformat:
+    - include: pic-line
+    - match: ^style\b
+      captures:
+        0: keyword.function.pic
+      push:
+        - meta_scope: meta.format.dformat.pic
+        - match: $
+          pop: true
+        - include: boolean
+        - match: |-
+            (?x)\b
+            (addr|addrdelta|addrht|bitwid|charwid|fill|linedisp
+            |linethrutext|recht|recspread|reset|textht)\b
+          scope: constant.language.dformat.pic
+        - include: number
+    - match: ^\S.*$\R?
+      captures:
+        0: markup.bold.heading.dformat.pic
+      push:
+        - meta_scope: meta.record.dformat.pic
+        - match: ^(?=\S)
+          pop: true
+        - match: '^([ \t]+[^:\s]+:)?(?:(?<=:)|[ \t]+)(\S+)\s+(.*)$'
+          captures:
+            0: markup.list.unnumbered.dformat.pic
+  embedded-latex:
+    - match: ^(?:\\\w|%).*$
+      scope: source.embedded.tex.pic
+      captures:
+  embedded-roff:
+    - match: '^(?=[.''][ \t]*(?:\w|\\))'
+      push:
+        - match: (?<!\\)$|(\\".*)$
+          pop: true
+        - include: scope:text.roff
+  escaped-newline:
+    - match: \\$\R?
+      captures:
+        0: punctuation.definition.escape.pic
+      push:
+        - meta_scope: constant.character.escape.newline.pic
+        - match: "^(?:[.'])?"
+          pop: true
+  function-call:
+    - match: \b(?!\d)(\w+)(\()
+      captures:
+        0: support.function.pic
+        1: entity.name.function.pic
+        2: punctuation.definition.arguments.begin.pic
+      push:
+        - meta_content_scope: meta.function-call.pic
+        - match: \)
+          captures:
+            0: punctuation.definition.arguments.end.pic
+          pop: true
+        - include: main
+  globals:
+    - match: |-
+        (?x)\b
+        (arcrad|arrowhead|arrowht|arrowwid|boxht|boxwid|circlerad|dashwid
+        |ellipseht|ellipsewid|fillval|lineht|linewid|maxpsht|maxpswid
+        |moveht|movewid|scale|textht|textwid)\b
+      scope: support.variable.global.pic
+  grap:
+    - match: \bpid\b
+      scope: variable.language.process-id.pic.grap
+    - match: \bthen\b
+      scope: keyword.control.then.pic.grap
+    - match: \b(in|out|through)\b
+      scope: keyword.operator.pic.grap
+    - include: comment
+    - include: string
+    - include: number
+    - include: boolean
+    - include: punctuation
+    - include: operators
+    - include: function-call
+    - include: macros
+    - include: pic-line
+    - match: |-
+        (?x)\b
+        (assignment|circle|coord|copy|draw|for|frame|graph|grid|if|label
+        |line|new|next|numberlist|pic|plot|print|sh|ticks?)\b
+      scope: keyword.function.pic.grap
+      captures:
+        0: entity.function.name.pic.grap
+    - match: |-
+        (?x)\b
+        (above|arrow|below|bot|bottom|dashed|dotted|down|ht|invis
+        |left|log|radius|right|[lr]just|size|solid|top|up|wid|x|y)\b
+      scope: variable.other.property.$1.pic.grap
+    - match: |-
+        (?x)\b
+        (atan2|cos|exp|int|log|max|min|rand|sin|sqrt|bullet
+        |plus|box|star|dot|times|htick|vtick|square|delta)\b
+      scope: support.function.grap.pic
+    - match: \(
+      captures:
+        0: punctuation.definition.bracket.round.chem.pic
+      push:
+        - match: '(?=\))|^(?=\.P[EF]\b|^[.'']\s*G2\b)'
+          pop: true
+        - include: grap
+    - match: '\['
+      captures:
+        0: punctuation.definition.bracket.square.chem.pic
+      push:
+        - match: '(?=\])|^(?=\.P[EF]\b|^[.'']\s*G2\b)'
+          pop: true
+        - include: grap
+    - match: '\{'
+      captures:
+        0: punctuation.definition.bracket.curly.chem.pic
+      push:
+        - match: '(?=\})|^(?=\.P[EF]\b|^[.'']\s*G2\b)'
+          pop: true
+        - include: grap
+    - include: keywords
+  keywords:
+    - match: '\b(for|do|if|then(?=\s*\{)|else)\b'
+      scope: keyword.control.$1.pic
+    - match: \b(and|at|by|copy|from|reset|sh|then|thru|to|with|of\s+the\s+way\s+between)\b
+      scope: keyword.operator.$1.pic
+  label:
+    - match: '([A-Z][^#("\s:]*)(:)'
+      captures:
+        1: storage.type.label.pic
+        2: punctuation.separator.key-value.pic
+  macros:
+    - match: (define|undef)\b\s*(\w*)
+      scope: meta.function.$1.pic
+      captures:
+        1: storage.type.function.pic
+        2: entity.name.function.pic
+    - match: (\$)\d+
+      scope: variable.other.positional.pic
+      captures:
+        1: punctuation.definition.variable
+    - match: '(until)[ \t]+((")([^"]+)("))\s*$\R?'
+      captures:
+        1: keyword.control.until.pic
+        2: string.quoted.double.pic
+        3: punctuation.definition.string.begin.pic
+        5: punctuation.definition.string.end.pic
+      push:
+        - match: '^[ ]*(\4)\b'
+          captures:
+            1: keyword.control.terminator.pic
+          pop: true
+        - include: main
+  number:
+    - match: '(?:(?<!\d)[-+])?(?:\d+(?:\.\d+)?|\.\d+|\.(?=[Ee]))(?:[Ee][-+]?\d+)?'
+      scope: constant.numeric.pic
+  operators:
+    - match: <->|<-|->
+      scope: keyword.operator.arrow.pic
+    - match: '[=><]=?|!=|&&|\|\|'
+      scope: keyword.operator.comparison.pic
+    - match: ":?="
+      scope: keyword.operator.assignment.pic
+    - match: "[-/+*%^]"
+      scope: keyword.operator.arithmetic.pic
+  pic-line:
+    - match: ^(pic)\b
+      captures:
+        1: keyword.control.dformat.pic
+      push:
+        - match: $
+          pop: true
+        - include: main
+  primitives:
+    - match: \b(box|line|arrow|circle|ellipse|arc|move|spline|print|command|plot)\b
+      scope: keyword.function.pic
+      captures:
+        0: entity.function.name.pic
+  punctuation:
+    - match: '\}'
+      scope: punctuation.definition.bracket.curly.pic
+    - match: \)
+      scope: punctuation.definition.bracket.round.pic
+    - match: '\]'
+      scope: punctuation.definition.bracket.square.pic
+    - match: ;
+      scope: punctuation.terminator.statement.pic
+    - match: ","
+      scope: punctuation.separator.comma.pic
+    - match: <|>
+      scope: punctuation.definition.bracket.angle.pic
+    - match: \.(?!\d)
+      scope: punctuation.delimiter.period.full-stop.pic
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.pic
+      push:
+        - meta_scope: string.quoted.double.pic
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.pic
+          pop: true
+        - match: '(\\)[\\"]'
+          scope: constant.character.escape.pic
+          captures:
+            1: punctuation.definition.escape.pic
+        - match: '(?:[^"\\]|\\[^"])+'
+          captures:
+  tags:
+    - match: '^([.''])[ \t]*(PS)[ \t]*(<)(.*)(?=$|\\")'
+      scope: invalid.deprecated.function.picture.macro.roff
+      captures:
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+        3: punctuation.definition.filename.roff
+    - match: '^([.''])[ \t]*(PS)\b([\d \t]*(?:#.*)?)?(\\[#"].*)?$'
+      captures:
+        0: meta.function.begin.picture.section.macro.roff
+        1: punctuation.definition.macro.roff
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: source.embedded.pic
+        - match: '^([.''])[ \t]*(P[EF])\b'
+          captures:
+            0: meta.function.end.picture.section.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.name.function.roff
+          pop: true
+        - include: main
+    - match: '^([.''])[ \t]*(cstart)\b\s*(\S.*)?'
+      captures:
+        0: meta.function.begin.chemical.picture.section.macro.roff
+        1: punctuation.definition.macro.pic.chem
+        2: entity.function.name.roff
+        3: invalid.illegal.unexpected-characters.pic.chem
+      push:
+        - meta_content_scope: source.embedded.chem.pic
+        - match: '^([.''])[ \t]*(cend)\b'
+          captures:
+            0: meta.function.end.chemical.picture.section.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: chem
+    - match: '^([.''])[ \t]*(begin[ \t]+dformat)\b'
+      captures:
+        0: meta.function.begin.dformat.picture.section.macro.roff
+        1: punctuation.definition.macro.pic.dformat
+        2: entity.function.name.roff
+      push:
+        - meta_content_scope: source.embedded.dformat.pic
+        - match: '^([.''])[ \t]*(end)\b'
+          captures:
+            0: meta.function.end.dformat.picture.section.macro.roff
+            1: punctuation.definition.macro.roff
+            2: entity.function.name.roff
+          pop: true
+        - include: dformat
+    - match: '^([.''])[ \t]*(G1)\b(\s*\d+)?(\s*\\".*$)?'
+      captures:
+        0: meta.function.begin.graph.picture.section.macro.roff
+        1: punctuation.definition.macro.pic.grap
+        2: entity.function.name.roff
+        3: constant.numeric.parameter.pic.grap
+      push:
+        - meta_content_scope: source.embedded.grap.pic
+        - match: '^([.''])[ \t]*(G2)\b'
+          captures:
+            0: meta.function.end.graph.picture.section.macro.roff
+            1: punctuation.definition.macro.pic.grap
+            2: entity.function.name.roff
+          pop: true
+        - include: grap

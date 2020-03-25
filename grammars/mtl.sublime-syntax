@@ -1,0 +1,399 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Wavefront Material
+file_extensions:
+  - mtl
+scope: source.wavefront.mtl
+contexts:
+  main:
+    - include: comment
+    - include: newmtl
+    - include: colour
+    - include: texture
+    - include: reflection
+    - include: number
+  comment:
+    - match: "#"
+      captures:
+        0: punctuation.definition.comment.wavefront.mtl
+      push:
+        - meta_scope: comment.line.number-sign.wavefront.mtl
+        - match: $
+          pop: true
+  colour:
+    - include: ka
+    - include: kd
+    - include: ks
+    - include: ke
+    - include: tf
+    - include: illum
+    - include: d
+    - include: tr
+    - include: ns
+    - include: sharpness
+    - include: ni
+  d:
+    - match: '^\s*(d)(?:\s+((-)halo))?\s+([-\d.]+)'
+      scope: meta.dissolve.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.halo.wavefront.mtl
+        3: punctuation.definition.dash.wavefront.mtl
+        4: entity.value.factor.wavefront.mtl
+  illum:
+    - match: ^\s*(illum)\s+(\d+)
+      scope: meta.illumination-model.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: constant.numeric.integer.wavefront.mtl
+  ka:
+    - match: '^\s*(Ka)\s+(spectral)\s+(?!#)(\S+)(?<!#)(?:\s+([-\d.]+))?'
+      scope: meta.ambient-reflectivity.spectral-curve.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: string.filename.wavefront.mtl
+        4: entity.value.factor.wavefront.mtl
+    - match: '^\s*(Ka)\s+(xyz)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.ambient-reflectivity.ciexyz.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: entity.value.red.wavefront.mtl
+        4: entity.value.green.wavefront.mtl
+        5: entity.value.blue.wavefront.mtl
+    - match: '^\s*(Ka)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.ambient-reflectivity.rgb.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.red.wavefront.mtl
+        3: entity.value.green.wavefront.mtl
+        4: entity.value.blue.wavefront.mtl
+  kd:
+    - match: '^\s*(Kd)\s+(spectral)\s+(?!#)(\S+)(?<!#)(?:\s+([-\d.]+))?'
+      scope: meta.diffuse-reflectivity.spectral-curve.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: string.filename.wavefront.mtl
+        4: entity.value.factor.wavefront.mtl
+    - match: '^\s*(Kd)\s+(xyz)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.diffuse-reflectivity.ciexyz.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: entity.value.red.wavefront.mtl
+        4: entity.value.green.wavefront.mtl
+        5: entity.value.blue.wavefront.mtl
+    - match: '^\s*(Kd)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.diffuse-reflectivity.rgb.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.red.wavefront.mtl
+        3: entity.value.green.wavefront.mtl
+        4: entity.value.blue.wavefront.mtl
+  ke:
+    - match: '^\s*(Ke)\s+(spectral)\s+(?!#)(\S+)(?<!#)(?:\s+([-\d.]+))?'
+      scope: meta.emissive-colour.spectral-curve.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: string.filename.wavefront.mtl
+        4: entity.value.factor.wavefront.mtl
+    - match: '^\s*(Ke)\s+(xyz)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.emissive-colour.ciexyz.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: entity.value.red.wavefront.mtl
+        4: entity.value.green.wavefront.mtl
+        5: entity.value.blue.wavefront.mtl
+    - match: '^\s*(Ke)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.emissive-colour.rgb.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.red.wavefront.mtl
+        3: entity.value.green.wavefront.mtl
+        4: entity.value.blue.wavefront.mtl
+  ks:
+    - match: '^\s*(Ks)\s+(spectral)\s+(?!#)(\S+)(?<!#)(?:\s+([-\d.]+))?'
+      scope: meta.specular-reflectivity.spectral-curve.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: string.filename.wavefront.mtl
+        4: entity.value.factor.wavefront.mtl
+    - match: '^\s*(Ks)\s+(xyz)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.specular-reflectivity.ciexyz.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: entity.value.red.wavefront.mtl
+        4: entity.value.green.wavefront.mtl
+        5: entity.value.blue.wavefront.mtl
+    - match: '^\s*(Ks)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.diffuse-reflectivity.rgb.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.red.wavefront.mtl
+        3: entity.value.green.wavefront.mtl
+        4: entity.value.blue.wavefront.mtl
+  newmtl:
+    - match: ^\s*(newmtl)(?=\s|$)(?:\s+(\w+))?
+      scope: meta.constructor.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: variable.parameter.material-name.wavefront.mtl
+  ni:
+    - match: '^\s*(Ni)\s+([-\d.]+)'
+      scope: meta.optical-density.ior.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.wavefront.mtl
+  ns:
+    - match: '^\s*(Ns)\s+([-\d.]+)'
+      scope: meta.specular-exponent.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.exponent.wavefront.mtl
+  number:
+    - match: '(?<=[\s,]|^)-?\d+(?![-\d.])'
+      scope: constant.numeric.integer.wavefront.mtl
+    - match: '(?<=[\s,]|^)-?(\d+)(?:(\.)(\d+))?\b'
+      scope: constant.numeric.float.wavefront.mtl
+      captures:
+        1: leading.decimal
+        2: decimal.separator
+        3: trailing.decimal
+    - match: '(?<=[\s,]|^)-?(\.)(\d+)\b'
+      scope: constant.numeric.float.no-leading-digits.wavefront.mtl
+      captures:
+        1: decimal.separator
+        2: trailing.decimal
+  reflection:
+    - match: ^\s*(refl)\s+((-)type)\s+(sphere|cube_(?:top|bottom|front|back|left|right))(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: keyword.option.type.wavefront.mtl
+        3: punctuation.definition.dash.wavefront.mtl
+        4: constant.language.mapping-type.$4.wavefront.mtl
+      push:
+        - meta_scope: meta.reflection-map.type-$4.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+  sharpness:
+    - match: '^\s*(sharpness)\s+([-\d.]+)'
+      scope: meta.sharpness.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.wavefront.mtl
+  texture:
+    - match: ^\s*(map_Ka)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.ambient-reflectivity.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(map_Kd)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.diffuse-reflectivity.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(map_Ks)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.specular-reflectivity.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(map_Ke)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.emissive-colour.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(map_Ns)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.specular-exponent.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(map_d)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.dissolve.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(map_aat)(?:\s+(on|off)(?=\s|$|#))?
+      scope: meta.texture-map.antialiasing.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: constant.language.boolean.$2.wavefront.mtl
+    - match: ^\s*(decal)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.decal.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(disp)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.displacement.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: ^\s*(bump)(?=\s|$|#)
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.bump.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+    - match: '^\s*(map_([-\w]+))(?=\s|$|#)'
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+      push:
+        - meta_scope: meta.texture-map.other.$2.wavefront.mtl
+        - meta_content_scope: meta.options.wavefront.mtl
+        - match: (?=$|#)
+          pop: true
+        - include: texture-options
+  texture-options:
+    - match: (?<=\s|^)((-)blendu)\s+(on|off)(?=\s|$|#)
+      scope: meta.texture-option.horizontal-blending.wavefront.mtl
+      captures:
+        1: keyword.option.blendu.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: constant.language.boolean.$3.wavefront.mtl
+    - match: (?<=\s|^)((-)blendv)\s+(on|off)(?=\s|$|#)
+      scope: meta.texture-option.vertical-blending.wavefront.mtl
+      captures:
+        1: keyword.option.blendv.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: constant.language.boolean.$3.wavefront.mtl
+    - match: '(?<=\s|^)((-)bm)\s+([-\d.]+)'
+      scope: meta.texture-option.bump-multiplier.wavefront.mtl
+      captures:
+        1: keyword.option.bm.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.wavefront.mtl
+    - match: '(?<=\s|^)((-)boost)\s+([-\d.]+)'
+      scope: meta.texture-option.boost.wavefront.mtl
+      captures:
+        1: keyword.option.boost.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.wavefront.mtl
+    - match: (?<=\s|^)((-)cc)\s+(on|off)(?=\s|$|#)
+      scope: meta.texture-option.colour-correction.wavefront.mtl
+      captures:
+        1: keyword.option.cc.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: constant.language.boolean.$3.wavefront.mtl
+    - match: (?<=\s|^)((-)clamp)\s+(on|off)(?=\s|$|#)
+      scope: meta.texture-option.clamping.wavefront.mtl
+      captures:
+        1: keyword.option.clamp.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: constant.language.boolean.$3.wavefront.mtl
+    - match: '(?<=\s|^)((-)imfchan)(?:\s+([rgbmlz])(?=\s|$|#))?'
+      scope: meta.texture-option.channel.wavefront.mtl
+      captures:
+        1: keyword.option.imfchan.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: constant.language.boolean.$3.wavefront.mtl
+    - match: '(?<=\s|^)((-)mm)\s+([-\d.]+)(?:\s+([-\d.]+))?'
+      scope: meta.texture-option.modify-range.wavefront.mtl
+      captures:
+        1: keyword.option.mm.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.base.wavefront.mtl
+        4: entity.value.gain.wavefront.mtl
+    - match: '(?<=\s|^)((-)o)\s+([-\d.]+)(?:\s+([-\d.]+))?(?:\s+([-\d.]+))?'
+      scope: meta.texture-option.offset.wavefront.mtl
+      captures:
+        1: keyword.option.o.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.u-offset.wavefront.mtl
+        4: entity.value.v-offset.wavefront.mtl
+        5: entity.value.w-offset.wavefront.mtl
+    - match: '(?<=\s|^)((-)s)\s+([-\d.]+)(?:\s+([-\d.]+))?(?:\s+([-\d.]+))?'
+      scope: meta.texture-option.scale.wavefront.mtl
+      captures:
+        1: keyword.option.s.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.u-scale.wavefront.mtl
+        4: entity.value.v-scale.wavefront.mtl
+        5: entity.value.w-scale.wavefront.mtl
+    - match: '(?<=\s|^)((-)t)\s+([-\d.]+)(?:\s+([-\d.]+))?(?:\s+([-\d.]+))?'
+      scope: meta.texture-option.turbulence.wavefront.mtl
+      captures:
+        1: keyword.option.t.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.u-value.wavefront.mtl
+        4: entity.value.v-value.wavefront.mtl
+        5: entity.value.w-value.wavefront.mtl
+    - match: '(?<=\s|^)((-)texres)\s+([-\d.]+)'
+      scope: meta.texture-option.resolution.wavefront.mtl
+      captures:
+        1: keyword.option.texres.wavefront.mtl
+        2: punctuation.definition.dash.wavefront.mtl
+        3: entity.value.wavefront.mtl
+    - match: (?!#)\S+(?<!#)
+      scope: string.filename.wavefront.mtl
+  tf:
+    - match: '^\s*(Tf)\s+(spectral)\s+(?!#)(\S+)(?<!#)(?:\s+([-\d.]+))?'
+      scope: meta.transmission-filter.spectral-curve.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: string.filename.wavefront.mtl
+        4: entity.value.factor.wavefront.mtl
+    - match: '^\s*(Tf)\s+(xyz)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.transmission-filter.ciexyz.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: storage.modifier.$2.wavefront.mtl
+        3: entity.value.red.wavefront.mtl
+        4: entity.value.green.wavefront.mtl
+        5: entity.value.blue.wavefront.mtl
+    - match: '^\s*(Tf)\s+([-\d.]+)(?:\s+([-\d.]+)\s+([-\d.]+))?'
+      scope: meta.transmission-filter.rgb.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.red.wavefront.mtl
+        3: entity.value.green.wavefront.mtl
+        4: entity.value.blue.wavefront.mtl
+  tr:
+    - match: '^\s*(Tr)\s+([-\d.]+)'
+      scope: meta.transparency.wavefront.mtl
+      captures:
+        1: keyword.function.$1.wavefront.mtl
+        2: entity.value.factor.wavefront.mtl

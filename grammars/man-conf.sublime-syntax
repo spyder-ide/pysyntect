@@ -1,0 +1,63 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: man.conf
+file_extensions:
+  - man.conf
+scope: source.man-conf
+contexts:
+  main:
+    - include: scope:etc#comment
+    - include: bin
+    - include: fhs
+    - include: programs
+    - include: sections
+    - include: defaultOpts
+    - include: decompressor
+  arg:
+    - match: '[^\s:]+'
+      scope: constant.language.other.man-conf
+  bin:
+    - match: ^\s*(MANBIN|MANPATH_MAP|MANPATH|manpath|output|_whatdb)(?=\s)
+      captures:
+        1: keyword.operator.field.man-conf
+      push:
+        - meta_scope: "meta.field.${1:/downcase}.man-conf"
+        - match: $
+          pop: true
+        - include: scope:etc#str
+        - include: scope:etc#colon
+        - include: arg
+  decompressor:
+    - match: '^\s*((\.)[a-zA-Z0-9]+)(.*)'
+      scope: meta.field.decompressor.man-conf
+      captures:
+        1: variable.parameter.decompressor.suffix.man-conf
+        2: punctuation.definition.field.dot.period.full-stop.man-conf
+  defaultOpts:
+    - match: ^\s*(MANDEFOPTIONS)(?=\s|$)(.*)
+      scope: meta.field.default-options.man-conf
+      captures:
+        1: "keyword.control.${1:/downcase}.man-conf"
+  fhs:
+    - match: ^\s*(FSSTND|FHS|NOAUTOPATH|NOCACHE)(?=\s|$)
+      captures:
+        1: "keyword.control.${1:/downcase}.man-conf"
+  programArgs:
+    - include: scope:etc#str
+    - include: scope:source.opts
+    - include: arg
+  programs:
+    - match: |-
+        (?x) ^ \s*
+        (BROWSER|CAT|COL|COMPRESS_EXT|COMPRESS|CMP|EQN|GRAP|HTMLPAGER
+        |JNEQN|JNROFF|NEQN|NROFF|PAGER|PIC|REFER|TBL|TROFF|VGRIND)
+        (?=\s|$) (.*)
+      scope: "meta.field.${1:/downcase}-path.man-conf"
+      captures:
+        1: "keyword.control.${1:/downcase}.man-conf"
+  sections:
+    - match: ^\s*(MANSECT)(?=\s|$)(.*)
+      scope: meta.field.mansect.man-conf
+      captures:
+        1: "keyword.control.${1:/downcase}.man-conf"

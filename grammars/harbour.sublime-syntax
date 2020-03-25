@@ -1,0 +1,251 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: harbour
+file_extensions:
+  - prg
+  - ch
+  - hb
+scope: source.harbour
+contexts:
+  main:
+    - include: block_doc_comment
+    - include: block_comment
+    - include: line_doc_comment
+    - include: line_comment
+    - include: line_Ampersand_comment
+    - include: line_asterisk_comment
+    - include: line_note_comment
+    - include: sigils
+    - match: '#\!?\['
+      comment: Attribute
+      push:
+        - meta_scope: meta.attribute.harbour
+        - match: '\]'
+          pop: true
+        - include: string_literal
+    - match: "'"
+      comment: Single-quote string
+      push:
+        - meta_scope: string.quoted.single.harbour
+        - match: "'"
+          pop: true
+    - match: '(?<=\s|,|\(|=)\['
+      comment: square bracket string
+      push:
+        - meta_scope: string.quoted.square.harbour
+        - match: '\]'
+          pop: true
+    - include: string_literal
+    - match: '\b[0-9][0-9_]*\.[0-9][0-9_]*([eE][+-][0-9_]+)?(f32|f64)?\b'
+      comment: Floating point number (fraction)
+      scope: constant.numeric.float.harbour
+    - match: '\b[0-9][0-9_]*(\.[0-9][0-9_]*)?[eE][+-][0-9_]+(f32|f64)?\b'
+      comment: Floating point number (exponent)
+      scope: constant.numeric.float.harbour
+    - match: '\b[0-9][0-9_]*(\.[0-9][0-9_]*)?([eE][+-][0-9_]+)?(f32|f64)\b'
+      comment: Floating point number (typed)
+      scope: constant.numeric.float.harbour
+    - match: '\b[0-9][0-9_]*([ui](8|16|32|64)?)?\b'
+      comment: Integer number (decimal)
+      scope: constant.numeric.integer.decimal.harbour
+    - match: '\b0x[a-fA-F0-9_]+([ui](8|16|32|64)?)?\b'
+      comment: Integer number (hexadecimal)
+      scope: constant.numeric.integer.hexadecimal.harbour
+    - match: '\b0o[0-7_]+([ui](8|16|32|64)?)?\b'
+      comment: Integer number (octal)
+      scope: constant.numeric.integer.octal.harbour
+    - match: '\b0b[01_]+([ui](8|16|32|64)?)?\b'
+      comment: Integer number (binary)
+      scope: constant.numeric.integer.binary.harbour
+    - match: \b(static|STATIC|THREAD STATIC)\b
+      comment: Static storage modifier
+      scope: storage.modifier.static.harbour
+    - match: (TRUE|FALSE|\.T\.|\.F\.)
+      comment: Boolean constant
+      scope: constant.language.boolean.harbour
+    - match: (K_DOWN|K_PGDN|K_CTRL_PGDN|K_UP|K_PGUP|K_CTRL_PGUP|K_RIGHT|K_LEFT|K_HOME|K_END|K_CTRL_LEFT|K_CTRL_RIGHT|K_CTRL_HOME|K_CTRL_END)
+      comment: Keyboard harbour constants
+      scope: constant.language.keyboard.harbour
+    - match: '\b(s_)?(mtx)?[a,b,c,d,h,l,n,o,u,x][A-Z][A-Za-z0-9_]*\b'
+      comment: variable name hungary notation
+      scope: variable.name.hungary.harbour
+    - match: '\b_[a-z][A-Za-z0-9_]*|\s(i|j)\s\b'
+      comment: variable name
+      scope: variable.name.special.harbour
+    - match: \b(?i)(EXIT|ELSEIF|ELSE|IF|ENDIF|FOR|EACH|IN|TO|STEP|DESCEND|NEXT|LOOP|DO CASE|ENDCASE|SWITCH|CASE|OTHERWISE|ENDSWITCH|RETURN|ENDCLASS|VAR|DATA|INIT|WHILE|DO WHILE|ENDDO|BEGIN SEQUENCE|END SEQUENCE|RECOVER USING|WITH|BREAK|PARAMETERS|END|REQUEST|ANNOUNCE)\b
+      comment: Control keyword
+      scope: keyword.control.harbour
+    - match: \b(?i)(GO TOP|SELECT|SAY|GET|PICTURE|SEEK|REPLACE|APPEND BLANK|USE|INDEX ON|TAG)\b
+      comment: xBase keywords
+      scope: keyword.command.xbase.harbour
+    - match: \b(?i)(HSEEK|RREPLACE|START PRINT|ENDPRINT)\b
+      comment: xBase keywords
+      scope: keyword.command.xbase.harbour
+    - match: \b(?i)(LOCAL|PRIVATE|PROTECTED|PUBLIC|FIELD|field|MEMVAR)\b
+      comment: Keyword
+      scope: keyword.other.harbour
+    - include: std_types
+    - include: self
+    - include: nil
+    - match: ^\s*#\s*(error|warning|stdout)\b
+      captures:
+        1: keyword.control.import.error.harbour
+      push:
+        - meta_scope: meta.preprocessor.diagnostic.harbour
+        - match: (?<!\\)(?=\n)
+          captures:
+            1: keyword.control.import.error.harbour
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.harbour
+    - match: ^\s*#\s*(include|require)\b\s+
+      captures:
+        1: keyword.control.import.include.harbour
+      push:
+        - meta_scope: meta.preprocessor.harbour.include
+        - match: (?=(?://|/\*))|(?<!\\)(?=\n)
+          captures:
+            1: keyword.control.import.include.harbour
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.harbour
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.harbour
+          push:
+            - meta_scope: string.quoted.double.include.harbour
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.harbour
+              pop: true
+    - match: (?i)^\s*#\s*(define|defined|elif|else|if|ifdef|ifndef|endif|line|pragma|undef|command|xcommand|translate|xtranslate)\b
+      captures:
+        1: keyword.control.import.harbour
+      push:
+        - meta_scope: meta.preprocessor.harbour
+        - match: (?=(?://|/\*))|(?<!\\)(?=\n)
+          captures:
+            1: keyword.control.import.harbour
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.harbour
+    - match: (:=|-\>|\+=|-=)
+      scope: keyword.operator.assignment.harbour
+    - match: (\<|\<=|\>=|==|!=|!|\<\>|\>|\$|\s\.OR\.\s|\s\.AND\.\s|\s\.NOT\.\s)
+      scope: keyword.operator.comparison.harbour
+    - match: \b(?i)(log_write|pp|to_str|RTrim|TRIM|Trim|PadR|Padr|PADR|PadC|PadL|Space)!
+      comment: Standard library macro
+      scope: support.function.std.harbour
+    - match: '\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\('
+      comment: Function call
+      captures:
+        1: entity.name.function.harbour
+    - match: '\b([a-zA-Z_][a-zA-Z0-9_]*):([a-zA-Z_][a-zA-Z0-9_]*)\s*\('
+      comment: Method call
+      captures:
+        1: entity.name.method.harbour
+    - match: '\b([a-zA-Z_][a-zA-Z0-9_]*):([a-zA-Z_][a-zA-Z0-9_]*)'
+      comment: Class variable usage
+      captures:
+        1: variable.name.object.harbour
+        2: variable.name.member.harbour
+    - match: '\b(?i)((?:(?:static|init|exit)\s+)?(?:func(?:t(?:i(?:o(?:n)?)?)?)?|PROC(?:E(?:D(?:U(?:R(?:E)?)?)?)?)?))\s+([a-zA-Z_][a-zA-Z0-9_]*)'
+      comment: Function definition
+      captures:
+        1: keyword.other.fn.harbour
+        2: entity.name.function.harbour
+      push:
+        - match: '[\n]'
+          pop: true
+        - include: main
+    - match: '\b(?i)((?:CREATE\s+)?(?:CLASS))\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\s+(INHERIT)\s+([a-zA-Z_][a-zA-Z0-9_]*))?'
+      comment: CLASS definition
+      captures:
+        1: keyword.class.harbour
+        2: entity.name.class.harbour
+        3: keyword.class.inherit.harbour
+        4: entity.name.parent.class.harbour
+      push:
+        - match: '[\n]'
+          pop: true
+        - include: main
+    - match: '\b(?i)(METHOD|STATIC METHOD|METHOD PROCEDURE)\s+((?:(?:[a-zA-Z_][a-zA-Z0-9_]*):)?(?:[a-zA-Z_][a-zA-Z0-9_]*))'
+      comment: Method definition
+      captures:
+        1: keyword.method.fn.harbour
+        2: entity.name.method.harbour
+      push:
+        - match: '[\n]'
+          pop: true
+        - include: main
+    - match: ":"
+      comment: Variable declaration
+      push:
+        - match: '[=;,\)\|]'
+          pop: true
+        - include: main
+  block_comment:
+    - match: /\*
+      comment: Block comment
+      push:
+        - meta_scope: comment.block.harbour
+        - match: \*/
+          pop: true
+        - include: block_doc_comment
+        - include: block_comment
+  block_doc_comment:
+    - match: '/\*[!\*][^\*]'
+      comment: Block documentation comment
+      push:
+        - meta_scope: comment.block.documentation.harbour
+        - match: \*/
+          pop: true
+        - include: block_doc_comment
+        - include: block_comment
+  escaped_character:
+    - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+      scope: constant.character.escape.harbour
+  line_Ampersand_comment:
+    - match: "&&.*$"
+      comment: Single-line comment
+      scope: comment.line.double-slash.harbour
+  line_asterisk_comment:
+    - match: ^\s*\*.*$
+      comment: Single-line comment
+      scope: comment.line.star.harbour
+  line_comment:
+    - match: //.*$
+      comment: Single-line comment
+      scope: comment.line.double-slash.harbour
+  line_doc_comment:
+    - match: "//[!/][^/].*$"
+      comment: Single-line documentation comment
+      scope: comment.line.documentation.harbour
+  line_note_comment:
+    - match: ^\s*NOTE\s.*$
+      comment: Single-line note comment
+      scope: comment.line.note.harbour
+  nil:
+    - match: \b(NIL|nil)\b
+      comment: Nil variable
+      scope: variable.nil.language.harbour
+  self:
+    - match: \b(Self|SELF|self)\b
+      comment: Self variable
+      scope: variable.self.language.harbour
+  sigils:
+    - match: '[@]|[:]{2}|[+]{2}(?=[a-zA-Z0-9_\(\[\|\"]+)'
+      comment: Sigil
+      scope: keyword.operator.sigil.harbou
+  std_types:
+    - match: \b(Vec|StrBuf|Path|Option|Result|Reader|Writer|Stream|Seek|Buffer|IoError|IoResult|Sender|SyncSender|Receiver|Cell|RefCell|Any)\b
+      comment: Standard library type
+      scope: support.class.std.harbour
+  string_literal:
+    - match: '"'
+      comment: Double-quote string
+      push:
+        - meta_scope: string.quoted.double.harbour
+        - match: '"'
+          pop: true

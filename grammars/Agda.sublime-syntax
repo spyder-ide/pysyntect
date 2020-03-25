@@ -1,0 +1,49 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Agda
+file_extensions:
+  - agda
+scope: source.agda
+contexts:
+  main:
+    - match: "--"
+      push:
+        - meta_scope: comment.line.double-dash.agda
+        - match: $
+          pop: true
+    - match: "{-[^#]"
+      push:
+        - meta_scope: comment.block.agda
+        - match: "-}"
+          pop: true
+    - match: "{-#"
+      push:
+        - meta_scope: support.other.agda
+        - match: "#-}"
+          pop: true
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.agda
+        - match: '"'
+          pop: true
+    - match: '''([^\\'']|\\[''\\"[:alnum:]]+)'''
+      scope: constant.char.agda
+    - match: '(?<=^|[[:space:]\(\){}])(-?\d+|0x[0-9A-F]+|-?\d+\.\d+((e|E)(\+|-)?\d+)?|-?\d+(e|E)(\+|-)?\d+)(?=[[:space:]\(\){}])'
+      scope: constant.numeric.agda
+    - match: '\b(data|record|module|constructor|open *import|open|import)[[:space:]]+([^;\(\){}@"[:space:]]+)'
+      captures:
+        1: keyword.other.agda
+        2: entity.name.type.agda
+    - match: '((?<=^|[.;\(\){}@"[:space:]])\?(?=[.;\(\){}@"[:space:]])|{!.*!})'
+      scope: entity.name.tag.agda
+    - match: \b(abstract|constructor|data|do|eta-equality|field|forall|hiding|import|in|inductive|infix|infixl|infixr|instance|let|macro|module|mutual|no-eta-equality|open|overlap|pattern|postulate|primitive|private|public|quote|quoteContext|quoteGoal|quoteTerm|record|renaming|rewrite|syntax|tactic|unquote|unquoteDecl|unquoteDef|using|variable|where|with)\b
+      scope: keyword.other.agda
+    - match: '\b(Set|Prop)[0123456789₀₁₂₃₄₅₆₇₈₉]*(?=[[:space:]\(\)\{\}])'
+      scope: constant.language.agda
+    - match: '(?<=^|[[:space:]\(\)\{\}])(λ|→|->|∀|=|←|:)(?=[[:space:]\(\)\{\}])'
+      scope: keyword.other.agda
+    - match: '^(([[:space:]]+|abstract|instance|macro|pattern|postulate|primitive|private|syntax|variable|where|let)*)([^;\(\){}@"[:space:]]+)[[:space:]]+(?=:)'
+      captures:
+        1: keyword.other.agda
+        3: entity.name.agda

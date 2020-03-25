@@ -1,0 +1,97 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ObjectScript Macros
+file_extensions:
+  - inc
+scope: source.objectscript_macros
+contexts:
+  main:
+    - include: include
+    - include: dim
+    - include: define
+    - include: def1arg
+    - include: ifdef
+    - include: comment-line
+  comment-line:
+    - match: ^///.*$
+      scope: comment.line.objectscript
+    - match: \s+//.*$
+      scope: comment.line.objectscript
+    - match: \s+;.*$
+      scope: comment.line.objectscript
+    - match: ^\s*#;.*$
+      scope: comment.line.objectscript
+    - match: /\*
+      captures:
+        0: punctuation.definition.objectscript
+      push:
+        - meta_scope: comment.block.objectscript
+        - match: \*/
+          captures:
+            0: punctuation.definition.objectscript
+          pop: true
+  continue:
+    - match: (\s+\#\#(?i)(continue)\s*)
+      scope: keyword.control.objectscript
+  def1arg:
+    - match: '^\s*(\#\s*(?:(?i)def1arg))\s+((?<id>[a-zA-Z%][a-zA-Z0-9]*))(?:(\()(\s*\g<id>\s*)(\)))'
+      captures:
+        1: keyword.control.objectscript
+        2: entity.name.objectscript
+        4: punctuation.definition.objectscript
+        5: variable.parameter.objectscript
+        6: punctuation.definition.objectscript
+      push:
+        - meta_scope: meta.preprocessor.objectscript
+        - match: (?<!\#\#continue)\n
+          pop: true
+        - include: comment-line
+        - include: continue
+        - include: macros
+        - include: scope:source.objectscript
+  define:
+    - match: '^\s*(\#\s*(?:(?i)define))\s+((?<id>[a-zA-Z%][a-zA-Z0-9]*))(?:(\()(\s*\g<id>\s*((,)\s*\g<id>\s*)*)(\)))?'
+      captures:
+        1: keyword.control.objectscript
+        2: entity.name.objectscript
+        4: punctuation.definition.objectscript
+        5: variable.parameter.objectscript
+        7: punctuation.definition.objectscript
+      push:
+        - meta_scope: meta.preprocessor.objectscript
+        - match: (?<!\#\#continue)\n
+          pop: true
+        - include: comment-line
+        - include: continue
+        - include: macros
+        - include: scope:source.objectscript
+  dim:
+    - match: '^\s*(\#\s*(?:(?i)dim))\s+((?<id>[a-zA-Z%][a-zA-Z0-9]*))(?:\s*(,)\s*((\g<id>)*))*(?:\s+((?i)As)(?:\s(\g<id>(?:\.\g<id>)*)))?'
+      scope: meta.preprocessor.objectscript
+      captures:
+        1: keyword.control.objectscript
+        2: variable.name
+        4: punctuation.definition.objectscript
+        5: variable.name
+        7: keyword.control.objectscript
+        8: entity.name.class.objectscript
+  ifdef:
+    - match: ^\s*(#\s*(?i)(?:if|ifdef|ifndef|elif|else|undef|endif))\b
+      captures:
+        1: keyword.control.objectscript
+      push:
+        - match: (?=(?:;|//|/\*))|$
+          pop: true
+        - include: comment-line
+  include:
+    - match: '^\s*(\#\s*(?:(?i)include))\s+([a-zA-Z%][a-zA-Z0-9]*)'
+      captures:
+        1: keyword.other.objectscript
+        2: entity.name.objectscript
+      push:
+        - match: (?=$)
+          pop: true
+  macros:
+    - match: '\$\$\$[a-zA-Z]([a-zA-Z0-9])*'
+      scope: support.constant

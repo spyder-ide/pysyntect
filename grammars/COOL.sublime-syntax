@@ -1,0 +1,48 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: COOL
+comment: This adds support for the COOL programming language used in CS 143 (Compilers) at Stanford
+file_extensions:
+  - cl
+scope: source.cool
+contexts:
+  main:
+    - match: '--(.*)\n'
+      scope: comment.line.double-dash
+    - match: \(\*
+      push:
+        - meta_scope: comment.block.documentation
+        - match: \*\)
+          pop: true
+    - match: (Int|String|Bool|Object|IO)
+      scope: support.class
+    - match: (abort\(\)|type_name\(\)|copy\(\))
+      scope: support.function
+    - match: \b(if|fi|else|then|loop|pool|while|case|esac)\b
+      scope: keyword.control
+    - match: \b(in|inherits|isvoid|let|new|of|new|not)\b
+      scope: keyword.operator
+    - match: \b(true|false)\b
+      scope: constant.language
+    - match: '(?x)\b((?i:( [0-9]+ ( '' [0-9]+ )* )))'
+      scope: constant.numeric
+    - match: '\b([A-Z]([A-Z]|[a-z]|[0-9]|_)*|SELF_TYPE)\b'
+      scope: entity.name.type
+    - match: \b(class)\b
+      scope: storage.modifier
+    - match: \b(self)\b
+      scope: variable.language
+    - match: '\b[a-z]([A-z]|[a-z]|[0-9]|_)*\b'
+      scope: variable.parameter
+    - match: '\b[a-z]*\(.*\)\b'
+      scope: entity.name.function
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double
+        - match: '"'
+          pop: true
+  formal_param:
+    - match: '\s#variable.parameter : entity.name.type\s'
+  formals:
+    - match: \s(#formal_param, \#formals|\#formal_param|)\s

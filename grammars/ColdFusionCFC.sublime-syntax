@@ -1,0 +1,91 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ColdFusion Component
+file_extensions:
+  - cfc
+first_line_match: ""
+scope: source.cfscript.cfc
+contexts:
+  main:
+    - match: '(?:^\s+)?(<)((?i:cfcomponent))(?![^>]*/>)'
+      captures:
+        0: meta.tag.block.cf.component.cfml
+        1: punctuation.definition.tag.cf.begin.cfml
+        2: entity.name.tag.cf.component.cfml
+        3: punctuation.definition.tag.cf.end.cfml
+      push:
+        - meta_content_scope: text.html.cfm.embedded.cfml
+        - match: (</)((?i:cfcomponent))(>)(?:\s*\n)?
+          captures:
+            0: meta.tag.block.cf.component.cfml
+            1: punctuation.definition.tag.cf.begin.cfml
+            2: entity.name.tag.cf.component.cfml
+            3: punctuation.definition.tag.cf.end.cfml
+          pop: true
+        - match: (?<=cfcomponent)\s
+          push:
+            - meta_scope: meta.tag.block.cf.component.cfml
+            - match: (?=>)
+              pop: true
+            - include: tag-stuff
+        - match: (>)
+          captures:
+            0: meta.tag.block.cf.component.cfml
+            1: punctuation.definition.tag.cf.end.cfml
+          push:
+            - match: (?=</(?i:cfcomponent))
+              pop: true
+            - include: scope:text.html.cfm
+    - include: cfcomments
+    - include: scope:source.cfscript
+  cfcomments:
+    - match: <!---.*--->
+      scope: comment.line.cfml
+    - match: <!---
+      captures:
+        0: punctuation.definition.comment.cfml
+      push:
+        - meta_scope: comment.block.cfml
+        - match: "--->"
+          captures:
+            0: punctuation.definition.comment.cfml
+          pop: true
+        - include: cfcomments
+  entities:
+    - match: "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)"
+      scope: constant.character.entity.html
+      captures:
+        1: punctuation.definition.entity.html
+        3: punctuation.definition.entity.html
+    - match: "&"
+      scope: invalid.illegal.bad-ampersand.html
+  string-double-quoted:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.double.html
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: entities
+  string-single-quoted:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.single.html
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: entities
+  tag-generic-attribute:
+    - match: '\b([a-zA-Z\-:]+)'
+      scope: entity.other.attribute-name.html
+  tag-stuff:
+    - include: tag-generic-attribute
+    - include: string-double-quoted
+    - include: string-single-quoted

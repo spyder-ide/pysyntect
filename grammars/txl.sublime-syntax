@@ -1,0 +1,42 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TXL
+file_extensions:
+  - txl
+  - grm
+scope: source.txl
+contexts:
+  main:
+    - match: \b(?<!')(define|end|function|keys|compounds|tokens|comments|replace|construct|by|replace|rule|deconstruct|not|where|all|not|assert|export|import|redefine|external|match|skipping|include|then)\b
+      comment: Main keywords
+      scope: keyword.control
+    - match: (?<!')#\s*(pragma|endif|else|define|undef|undefine|ifn|elifn|elifdef|elifndef|ifndef|ifdef|if|end)
+      comment: Preprocessor keywords
+      scope: meta.preprocessor
+      captures:
+        1: keyword.control
+    - match: '(?<!'')%[\({]'
+      comment: Multi-line comments
+      push:
+        - meta_scope: comment
+        - match: '(?<!'')[\)}]%'
+          pop: true
+    - match: (?<!')%.*
+      comment: Comments
+      scope: comment
+    - match: '(?<!'')\[(not|opt|repeat|list|see|push|pop|\+|-|/|\*|=|<|>|\^|\.|div|rem|:|#|index|_|length|select|head|tail|,|~=|>=|<=|grep|\$|quote|unquote|parse|unparse|reparse|typeof|istype|read|write|fget|getp|fput|putp|fputp|fputs|fclose|fopen|fgets|message|pragma|quit|system|pipe|attr) .+?\]'
+      comment: Built in functions, conditionals, repeats, etc
+      scope: entity.name.function
+    - match: '(?<!'')\[(NL|EX(_\d+)?|IN(_\d+)?|SP(_\d+)?|TAB(_\d+)?|SPON|SPOFF|\!|round|trunc|toupper|tolower|get|put|gets|print|printattr|debug|breakpoint)\]'
+      comment: Formatting hints
+      scope: constant.language
+    - match: '(?<!'')\[.+?\]'
+      comment: Regular non-terminals
+      scope: storage.type
+    - match: '\b(\d+)|(\d+\.\d+([\+-][Ee]\d+)?)\b'
+      comment: Numbers (including floating point)
+      scope: constant.numeric
+    - match: '".*"'
+      comment: String literals
+      scope: string.quoted.double

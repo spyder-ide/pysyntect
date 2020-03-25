@@ -1,0 +1,80 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Jolie
+file_extensions:
+  - ol
+  - iol
+scope: source.jolie
+contexts:
+  main:
+    - include: code
+  block_comments:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.jolie
+        - match: \*/
+          pop: true
+  code:
+    - include: block_comments
+    - include: line_comments
+    - include: constants_language
+    - include: constants_numeric
+    - include: strings
+    - include: keywords_control
+    - include: keywords_with_colon
+    - include: keywords_other
+    - include: keywords_types
+    - include: keywords_modifiers
+    - include: invocations
+    - include: operators
+    - include: definitions
+  constants_language:
+    - match: \b(true|false)\b
+      scope: constant.language.jolie
+  constants_numeric:
+    - match: \b\d+\b
+      scope: constant.numeric.jolie
+  definitions:
+    - match: \b(inputPort|outputPort|interface|type|define|service)\s+(\w+)\b
+      captures:
+        1: keyword.other.jolie
+        2: meta.class.identifier.jolie
+  invocations:
+    - match: \b(\w+)\s*(@)\s*(\w+)\b
+      captures:
+        1: meta.method.jolie
+        2: keyword.operator.jolie
+        3: meta.class.jolie
+  keywords_control:
+    - match: \b(if|else|while|for|foreach|provide|until|throw|forward|scope)\b
+      scope: keyword.control.jolie
+  keywords_modifiers:
+    - match: \b(csets|global)\b
+      scope: storage.modifiers.jolie
+  keywords_other:
+    - match: \b(constants|cH|instanceof|execution|comp|concurrent|nullProcess|single|sequential|main|init|cset|is_defined|embedded|extender|courier|forward|install|undef|include|synchronized|throws|throw)\b
+      scope: keyword.other.jolie
+  keywords_types:
+    - match: \b(void|bool|int|string|long|double|any|raw)\b
+      scope: storage.type.jolie
+  keywords_with_colon:
+    - match: '\b(location|Location|protocol|Protocol|interfaces|Interfaces|aggregates|Aggregates|redirects|Redirects|Jolie|JavaScript|Java|OneWay|RequestResponse)\b\s*:'
+      scope: keyword.other.with_colon.jolie
+  line_comments:
+    - match: //
+      push:
+        - meta_scope: comment.line.double-slash.jolie
+        - match: \n
+          pop: true
+  operators:
+    - match: \b(<<|&&|\|\||\+|\-|/|\*|=|==|\+\+|--|\+=|-=|\*=|/=|!|%|%=)\b
+      scope: keyword.operator.jolie
+  strings:
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.jolie
+        - match: '"'
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.jolie

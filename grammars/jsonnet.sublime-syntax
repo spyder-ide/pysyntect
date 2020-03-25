@@ -1,0 +1,115 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Jsonnet
+file_extensions:
+  - jsonnet
+scope: source.jsonnet
+contexts:
+  main:
+    - match: '\b(\d+([Ee][+-]?\d+)?)\b'
+      scope: constant.numeric.jsonnet
+    - match: '\b\d+[.]\d*([Ee][+-]?\d+)?\b'
+      scope: constant.numeric.jsonnet
+    - match: '\b[.]\d+([Ee][+-]?\d+)?\b'
+      scope: constant.numeric.jsonnet
+    - match: '\bstd[.]is(String|Number|Boolean|Object|Array|Function)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](acos|asin|atan|ceil|char|codepoint|cos|exp|exponent)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](filter|floor|force|length|log|makeArray|mantissa|sign)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](objectFields(All)?|objectHas(All)?|equals|prune)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](pow|sin|sqrt|tan|type|max|min|mod|thisFile)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](abs|assertEqual|escapeString(Bash|Dollars|Json|Python))\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](filterMap|flattenArrays|foldl|foldr|format|join)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](mapWithIndex|mapWithKey|deepJoin|mergePatch)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.]manifest(Ini|Python(Vars)?|Json(Ex)?|Yaml(Doc|Stream)|XmlJsonml)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](lines|map|find|findSubstr|splitLimit|strReplace|ascii(Upper|Lower))\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](set|set(Diff|Inter|Member|Union)|sort|resolvePath)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.]base64(Decode(Bytes)?)?\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](split|stringChars|substr|toString|startsWith|endsWith)\b'
+      scope: support.function.jsonnet
+    - match: '\bstd[.](parseInt|parseOctal|parseHex|range|uniq|slice|count)\b'
+      scope: support.function.jsonnet
+    - match: '\b[$]\b'
+      scope: variable.language.jsonnet
+    - match: '"'
+      push:
+        - meta_scope: string.double.jsonnet
+        - match: '"'
+          pop: true
+        - match: '\\[''"\\/bfnrt]'
+          scope: constant.character.escape.jsonnet
+        - match: '\\u[0-9a-fA-F]{4}'
+          scope: constant.character.escape.jsonnet
+        - match: '\\[^''"\\/bfnrtu]'
+          scope: invalid.illegal.jsonnet
+    - match: "'"
+      push:
+        - meta_scope: string.single.jsonnet
+        - match: "'"
+          pop: true
+        - match: '\\[''"\\/bfnrt]'
+          scope: constant.character.escape.jsonnet
+        - match: '\\u[0-9a-fA-F]{4}'
+          scope: constant.character.escape.jsonnet
+        - match: '\\[^''"\\/bfnrtu]'
+          scope: invalid.illegal.jsonnet
+    - match: '@"'
+      push:
+        - meta_scope: string.double.verbatim.jsonnet
+        - match: '"(?!")'
+          pop: true
+        - match: '""'
+          scope: constant.character.escape.jsonnet
+    - match: "@'"
+      push:
+        - meta_scope: string.single.verbatim.jsonnet
+        - match: "'(?!')"
+          pop: true
+        - match: "''"
+          scope: constant.character.escape.jsonnet
+    - match: ^(\s*)(.*)(\|\|\|)
+      captures:
+        3: string.block.jsonnet
+      push:
+        - meta_content_scope: string.block.jsonnet
+        - match: ^(?!$)(\1)(\|\|\|)
+          captures:
+            2: string.block.jsonnet
+          pop: true
+    - match: /\*
+      push:
+        - meta_scope: comment.block.jsonnet
+        - match: \*/
+          pop: true
+    - match: //.*$
+      scope: comment.line.jsonnet
+    - match: "#.*$"
+      scope: comment.block.jsonnet
+    - match: '\b[a-zA-Z_][a-z0-9A-Z_]*\s*(\([^)]*\))?\s*+?::?:?'
+      scope: entity.name.function.jsonnet
+    - match: \b(import|importstr)\b
+      scope: storage.type.jsonnet
+    - match: \b(function)\b
+      scope: keyword.other.jsonnet
+    - match: \b(self|super)\b
+      scope: variable.language.jsonnet
+    - match: \b(if|then|else|for|in)\b
+      scope: keyword.control.jsonnet
+    - match: \b(local|tailstrict)\b
+      scope: keyword.other.jsonnet
+    - match: \b(true|false|null)\b
+      scope: constant.language.jsonnet
+    - match: \b(error|assert)\b
+      scope: keyword.control.jsonnet

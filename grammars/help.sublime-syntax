@@ -1,0 +1,170 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Vim Help
+file_extensions:
+  - doc/vi_diff.txt
+scope: text.vim-help
+contexts:
+  main:
+    - include: tag
+    - include: link
+    - include: special
+    - include: option
+    - include: command
+    - include: codeBlock
+    - include: manualTitle
+    - include: columnHeading
+    - include: sectionDelimiter
+    - include: vimVersion
+    - include: url
+    - include: other
+  codeBlock:
+    - match: (?:(?<=\s)|^)(>)$
+      captures:
+        1: keyword.control.example.begin.vim-help
+      push:
+        - meta_scope: meta.example.vim-help
+        - meta_content_scope: markup.raw.code.verbatim.vim-help
+        - match: ^(<)|(?=^\S)
+          captures:
+            1: keyword.control.example.end.vim-help
+          pop: true
+  columnHeading:
+    - match: ^\s*\S.*(~)$
+      scope: markup.heading.column-title.vim-help
+      captures:
+        1: keyword.operator.column-marker.tilde.vim-help
+  command:
+    - match: '(`)([^` \t]+)(`)'
+      scope: markup.raw.command.vim-help
+      captures:
+        1: punctuation.definition.link.begin.vim-help
+        3: punctuation.definition.link.end.vim-help
+  link:
+    - match: '(\|)([^"*|]+)(\|)'
+      scope: meta.link.vim-help
+      captures:
+        1: meta.separator.punctuation.link.begin.vim-help
+        2: constant.other.link.vim-help
+        3: meta.separator.punctuation.link.end.vim-help
+  manualTitle:
+    - match: '^[ \t]+(VIM REFERENCE.*)\s*$'
+      scope: markup.heading.manual-title.vim-help
+      captures:
+        1: constant.other.title-text.vim-help
+  option:
+    - match: "(')[a-z]{2,}(')"
+      scope: entity.name.tag.option.vim-help
+      captures:
+        1: punctuation.definition.begin.option.vim-help
+        2: punctuation.definition.end.option.vim-help
+  other:
+    - match: \b(DEPRECATED|WARNING|(?:Deprecated|Warning)(?=:))(:|\b)
+      scope: "markup.changed.${1:/downcase}.vim-help"
+      captures:
+        2: keyword.operator.assignment.key-value.colon.vim-help
+    - match: '\t[* ]Error\t+[a-z].*'
+      scope: invalid.illegal.error.vim-help
+      captures:
+        1: punctuation.separator.list-item.marker.vim-help
+    - match: '\t[* ]Todo\t+[a-z].*'
+      scope: markup.ignored.todo.vim-help
+      captures:
+        1: punctuation.separator.list-item.marker.vim-help
+    - match: '\t[* ](Comment)\t+([a-z].*)'
+      scope: comment.line.vim-help
+      captures:
+        1: punctuation.separator.list-item.marker.vim-help
+    - match: '\t[* ]Underlined\t+[a-z].*'
+      scope: constant.other.reference.link.vim-help
+    - match: |-
+        (?x) \t (\*|\x20)
+        (Boolean|Character|Conditional|Constant|Debug|Define|Delimiter
+        |Exception|Float|Function|Identifier|Include|Keyword|Label|Macro
+        |Number|Operator|PreCondit|PreProc|Repeat|SpecialChar
+        |SpecialComment|Special|Statement|StorageClass|String
+        |Structure|Tag|Typedef|Type)
+        (\t+ (["Aa-z].*))
+      scope: "meta.${2:/downcase}-line.vim-help"
+      captures:
+        1: punctuation.separator.list-item.marker.vim-help
+        2: "storage.type.${2:/downcase}.vim-help"
+        3: meta.output.vim-help
+        4: "${2:/downcase}.vim-help"
+  sectionDelimiter:
+    - match: ^===.*===$|^---.*--$
+      scope: constant.other.section.delimiter.vim-help
+  special:
+    - match: (<)N(>)
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.angle.begin.vim-help
+        2: punctuation.definition.bracket.angle.end.vim-help
+    - match: (<)N(?=\.(?:$|\s))
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.angle.begin.vim-help
+    - match: (\()N(>)
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.round.begin.vim-help
+        2: punctuation.definition.bracket.angle.end.vim-help
+    - match: '(\[)N(\])'
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.square.begin.vim-help
+        2: punctuation.definition.bracket.square.end.vim-help
+    - match: (N)  (N)
+      captures:
+        1: entity.name.keyword.vim-help
+        2: entity.name.keyword.vim-help
+    - match: N(?=th|-1)
+      scope: entity.name.keyword.vim-help
+    - match: '({)[-a-zA-Z0-9''"*+/:%#=\[\]<>.,]+(})'
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.curly.begin.vim-help
+        2: punctuation.definition.bracket.curly.end.vim-help
+    - match: '(?<=\s)(\[)[-a-z^A-Z0-9_]{2,}(\])'
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.square.begin.vim-help
+        2: punctuation.definition.bracket.square.end.vim-help
+    - match: "(<)[-a-zA-Z0-9_]+(>)"
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.angle.begin.vim-help
+        2: punctuation.definition.bracket.angle.end.vim-help
+    - match: "(<)[SCM]-.(>)"
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.angle.begin.vim-help
+        2: punctuation.definition.bracket.angle.end.vim-help
+    - match: '(\[)(?:\+\+opt|[-+]?num|\+?cmd|addr|arguments|arg|count|group|ident|line|offset|range)(\])'
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.definition.bracket.square.begin.vim-help
+        2: punctuation.definition.bracket.square.end.vim-help
+    - match: '\bCTRL(-)(?:.|Break|Del|Insert|PageDown|PageUp|({)char(}))'
+      scope: entity.name.keyword.vim-help
+      captures:
+        1: punctuation.delimiter.separator.dash.hyphen.vim-help
+        2: punctuation.definition.bracket.curly.begin.vim-help
+        3: punctuation.definition.bracket.curly.end.vim-help
+  tag:
+    - match: '(\*)[#-)!+-~]+(\*)(?=\s|$)'
+      scope: storage.link.hypertext.vim-help
+      captures:
+        1: punctuation.definition.begin.vim-help
+        2: punctuation.definition.end.vim-help
+  url:
+    - match: |-
+        (?x)
+        (?:(?:(?:https?|ftp|gopher)://|(?:mailto|file|news):)[^'\x20\t<>"]+
+        |(?:www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^'\x20\t<>"]+)
+        [a-zA-Z0-9/]
+      scope: constant.other.reference.link.vim-help
+  vimVersion:
+    - match: '\bVim version [0-9][0-9.a-z]*'
+      scope: entity.other.vim-version.vim-help

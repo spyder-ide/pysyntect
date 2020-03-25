@@ -1,0 +1,762 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ballerina
+file_extensions:
+  - bal
+scope: source.ballerina
+contexts:
+  main:
+    - include: serviceDefinition
+    - include: functionDefinition
+    - include: typeDefinition
+    - include: annotationDefinition
+    - include: documentationDef
+    - include: mdDocumentation
+    - include: objectDec
+    - include: record
+    - include: annotationAttachment
+    - include: recordLiteral
+    - include: comment
+    - include: code
+  comment:
+    - match: \/\/.*
+      scope: comment.ballerina
+  annotationAttachment:
+    - match: '@((?:(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)):)?(?:(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))'
+      scope: storage.type.annotation.ballerina
+  annotationDefinition:
+    - match: \bannotation\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: ;
+          pop: true
+        - include: typeDescription
+  booleans:
+    - match: \b(true|false)\b
+      scope: constant.language.boolean.ballerina
+  butClause:
+    - match: "=>"
+      captures:
+        0: keyword.operator.ballerina
+      push:
+        - match: ',|(?=\})'
+          pop: true
+        - include: code
+  butExp:
+    - match: \bbut\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.ballerina.documentation
+          pop: true
+        - include: butExpBody
+        - include: comment
+  butExpBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina.documentation
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina.documentation
+          pop: true
+        - include: parameter
+        - include: butClause
+        - include: comment
+  call:
+    - match: '((?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))\s*(?=\()'
+      scope: entity.name.function.ballerina
+  callableUnitBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: workerDef
+        - include: code
+  code:
+    - include: booleans
+    - include: matchStatement
+    - include: butExp
+    - include: xml
+    - include: stringTemplate
+    - include: keywords
+    - include: strings
+    - include: comment
+    - include: annotationAttachment
+    - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+    - include: maps
+    - include: paranthesised
+    - include: paranthesisedBracket
+    - include: numbers
+  constrainType:
+    - match: <
+      captures:
+        0: punctuation.definition.parameters.begin.ballerina
+      push:
+        - match: ">"
+          captures:
+            0: punctuation.definition.parameters.end.ballerina
+          pop: true
+        - include: comment
+        - include: constrainType
+        - match: '\b((?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))\b'
+          scope: storage.type.ballerina
+  defaultValue:
+    - match: "[=:]"
+      captures:
+        0: keyword.operator.ballerina
+      push:
+        - match: "(?=[,)])"
+          pop: true
+        - include: code
+  documentationBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina.documentation
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina.documentation
+          pop: true
+        - match: "(P|R|T|F|V)({{)(.*)(}})"
+          captures:
+            1: keyword.other.ballerina.documentation
+            2: keyword.other.ballerina.documentation
+            3: variable.parameter.ballerina.documentation
+            4: keyword.other.ballerina.documentation
+        - match: \```
+          push:
+            - meta_scope: comment.block.code.ballerina.documentation
+            - match: \```
+              pop: true
+        - match: \``
+          push:
+            - meta_scope: comment.block.code.ballerina.documentation
+            - match: \``
+              pop: true
+        - match: \`
+          push:
+            - meta_scope: comment.block.code.ballerina.documentation
+            - match: \`
+              pop: true
+        - match: .
+          scope: comment.block.ballerina.documentation
+  documentationDef:
+    - match: \b(?:documentation|deprecated)\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}'
+          captures:
+            0: delimiter.curly
+          pop: true
+        - include: documentationBody
+        - include: comment
+  errorDestructure:
+    - match: error
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: (?==>)
+          pop: true
+        - include: code
+  functionDefinition:
+    - match: \bfunction\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}|(?=;|=)'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: functionParameters
+        - include: functionReturns
+        - match: extern\b
+          scope: keyword.ballerina
+        - include: functionName
+        - include: callableUnitBody
+        - include: comment
+  functionName:
+    - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+      scope: entity.name.function.ballerina
+  functionParameters:
+    - match: \(
+      captures:
+        0: delimiter.parenthesis
+      push:
+        - match: \)
+          captures:
+            0: delimiter.parenthesis
+          pop: true
+        - match: public
+          scope: keyword
+        - include: annotationAttachment
+        - include: recordLiteral
+        - include: parameter
+        - include: parameterTuple
+        - include: defaultValue
+        - include: comment
+  functionReturns:
+    - match: \breturns\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '(?=\{|;|,|=)'
+          captures:
+            0: curly
+          pop: true
+        - include: record
+        - include: objectDec
+        - include: tupleType
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: storage.type.ballerina
+        - include: comment
+  functionType:
+    - match: \bfunction\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '(?=\,)|(?=\|)|(?=\:)|(?==>)|(?=\))|(?=\])'
+          pop: true
+        - include: comment
+        - include: functionTypeParamList
+        - include: functionTypeReturns
+  functionTypeParamList:
+    - match: \(
+      captures:
+        0: delimiter.parenthesis
+      push:
+        - match: \)
+          captures:
+            0: delimiter.parenthesis
+          pop: true
+        - match: public
+          scope: keyword
+        - include: annotationAttachment
+        - include: recordLiteral
+        - include: record
+        - include: objectDec
+        - include: functionType
+        - include: constrainType
+        - include: parameterTuple
+        - include: functionTypeType
+        - include: comment
+  functionTypeReturns:
+    - match: \breturns\b
+      captures:
+        0: keyword
+      push:
+        - match: '(?=\,)|(?:\|)|(?=\])|(?=\))'
+          pop: true
+        - include: functionTypeReturnsParameter
+        - include: comment
+  functionTypeReturnsParameter:
+    - match: '((?=record|object|function)|(?:(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)))'
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: '(?=\,)|(?:\|)|(?:\:)|(?==>)|(?=\))|(?=\])'
+          pop: true
+        - include: record
+        - include: objectDec
+        - include: functionType
+        - include: constrainType
+        - include: defaultValue
+        - include: comment
+        - include: parameterTuple
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: variable.parameter.ballerina
+  functionTypeType:
+    - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: '(?=\,)|(?:\|)|(?=\])|(?=\))'
+          pop: true
+  keywords:
+    - match: \b(if|else|iterator|try|catch|finally|fork|join|all|some|while|foreach|in|throw|return|returns|break|timeout|transaction|abort|retry|retries|continue|bind|with|typeof|enum|wait)\b
+      scope: keyword.control.ballerina
+    - match: \b(import|version|public|private|attach|as|native|handle|documentation|lock|new|record|limit|ascending|descending|check|checkpanic|panic|trap|start|flush|done|untainted|tainted|onretry|committed|aborted|scope|compensate|compensation|primarykey|channel|abstract|extern|final|listener|remote|client|is|__init)\b
+      scope: keyword.other.ballerina
+    - match: \b(forever|from|on|select|group|by|having|order|where|followed|insert|into|update|set|for|window|query)\b
+      scope: keyword.other.siddhi.ballerina
+    - match: \b(annotation|package|type|connector|function|resource|service|action|worker|struct|transformer|object)\b
+      scope: keyword.other.ballerina
+    - match: \b(const|true|false|reply|create|parameter)\b
+      scope: keyword.other.ballerina
+    - match: (!|%|\+|\-|~=|==|=|!=|<|>|&|\||\?:|\.\.\.)
+      scope: keyword.operator.ballerina
+    - include: types
+  literal:
+    - include: booleans
+    - include: numbers
+    - include: strings
+    - include: maps
+  maps:
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: code
+  matchBindingPattern:
+    - match: var
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: (?==>)
+          pop: true
+        - include: errorDestructure
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: variable.parameter.ballerina
+  matchStatement:
+    - match: \bmatch\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}'
+          pop: true
+        - include: matchStatementBody
+        - include: comment
+        - include: code
+  matchStatementBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina.documentation
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina.documentation
+          pop: true
+        - include: literal
+        - include: matchBindingPattern
+        - include: matchStatementPatternClause
+        - include: comment
+  matchStatementPatternClause:
+    - match: "=>"
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '((\})|;|,)'
+          pop: true
+        - include: callableUnitBody
+        - include: code
+  mdDocumentation:
+    - include: mdDocumentationReturnParamDescription
+    - include: mdDocumentationParamDescription
+    - match: "#.*"
+      scope: comment.mddocs.ballerina
+  mdDocumentationParamDescription:
+    - match: '(#)(?: ?)(\+)(?: *)((?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))?(?: *)(-)?(.*)'
+      captures:
+        1: comment.mddocs.ballerina
+        2: keyword.ballerina
+        3: variable.parameter.ballerina
+        4: keyword.ballerina
+        5: comment.mddocs.paramdesc.ballerina
+      push:
+        - match: '(?=[^#\r\n]|(?:# ?\+))'
+          pop: true
+        - match: "#.*"
+          scope: comment.mddocs.paramdesc.ballerina
+  mdDocumentationReturnParamDescription:
+    - match: '(#)(?: ?)(\+)(?: *)(return)(?: *)(-)?(.*)'
+      captures:
+        1: comment.mddocs.ballerina
+        2: keyword.ballerina
+        3: keyword.ballerina
+        4: keyword.ballerina
+        5: comment.mddocs.returnparamdesc.ballerina
+      push:
+        - match: '(?=[^#\r\n]|(?:# ?\+))'
+          pop: true
+        - match: "#.*"
+          scope: comment.mddocs.returnparamdesc.ballerina
+  numbers:
+    - match: '\b0[xX][\da-f]+\b|\b\d+(?:\.(?:\d+|$))?'
+      scope: constant.numeric.decimal.ballerina
+  objectBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: mdDocumentation
+        - include: documentationDef
+        - include: functionDefinition
+        - include: annotationAttachment
+        - match: (public|private|extern|resource|remote)
+          scope: keyword.ballerina
+        - include: comment
+        - include: variableDefInline
+        - include: variableDef
+        - include: code
+  objectDec:
+    - match: \bobject\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}'
+          captures:
+            0: delimiter.curly
+          pop: true
+        - include: objectBody
+        - include: comment
+  objectInitBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: comment
+        - include: code
+  objectInitParameters:
+    - match: \(
+      captures:
+        0: punctuation.definition.parameters.begin.ballerina
+      push:
+        - match: \)
+          captures:
+            0: punctuation.definition.parameters.end.ballerina
+          pop: true
+        - include: code
+        - match: '\b((?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))\b'
+          scope: variable.parameter.ballerina
+  objectMemberFunctionDec:
+    - match: \bfunction\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '(?=(?:\}|;))'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: functionParameters
+        - include: functionReturns
+        - include: functionName
+        - include: callableUnitBody
+        - include: comment
+  parameter:
+    - match: '((?=record|object|function)|(?:(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)))'
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: '(?:\,)|(?:\|)|(?:\:)|(?==>)|(?=\))|(?=\])'
+          pop: true
+        - include: record
+        - include: objectDec
+        - include: functionType
+        - include: constrainType
+        - include: defaultValue
+        - include: comment
+        - include: parameterTuple
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: variable.parameter.ballerina
+  parameterTuple:
+    - match: '\['
+      push:
+        - match: (?=\,)|(?=\|)|(?=\:)|(?==>)|(?=\))
+          pop: true
+        - include: record
+        - include: objectDec
+        - include: parameterTupleType
+        - include: parameterTupleEnd
+        - include: comment
+  parameterTupleEnd:
+    - match: '\]'
+      push:
+        - match: (?=\,)|(?=\|)|(?=\:)|(?==>)|(?=\))
+          pop: true
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: variable.parameter.ballerina
+  parameterTupleType:
+    - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: '(?:\,)|(?:\|)|(?=\])'
+          pop: true
+  paranthesised:
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: comment
+        - include: code
+  paranthesisedBracket:
+    - match: '\['
+      push:
+        - match: '\]'
+          pop: true
+        - include: comment
+        - include: code
+  record:
+    - match: \brecord\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}'
+          captures:
+            0: delimiter.curly
+          pop: true
+        - include: recordBody
+        - include: comment
+  recordBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: annotationAttachment
+        - include: comment
+        - include: variableDefInline
+        - include: variableDef
+        - include: code
+  recordLiteral:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: code
+  serviceBody:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.block.ballerina
+      push:
+        - match: '(?=\})'
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: comment
+        - include: mdDocumentation
+        - include: documentationDef
+        - include: annotationAttachment
+        - include: functionDefinition
+        - include: recordLiteral
+        - include: code
+  serviceDefinition:
+    - match: \bservice\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}|;|='
+          captures:
+            0: punctuation.definition.block.ballerina
+          pop: true
+        - include: comment
+        - include: serviceBody
+        - include: serviceOn
+        - include: serviceName
+  serviceName:
+    - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+      scope: entity.name.function.ballerina
+  serviceOn:
+    - match: on
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: "(?={)"
+          pop: true
+        - include: code
+  stringTemplate:
+    - match: (\bstring)(\s*)(`)
+      captures:
+        1: keyword.ballerina
+        2: ""
+        3: string.template.ballerina
+      push:
+        - match: "`"
+          captures:
+            0: string.template.ballerina
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ballerina
+        - include: templateVariable
+        - match: .
+          scope: string
+  strings:
+    - match: \"
+      captures:
+        0: string.begin.ballerina
+      push:
+        - match: \"
+          captures:
+            0: string.end.ballerina
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ballerina
+        - match: .
+          scope: string
+  templateVariable:
+    - match: '\${'
+      captures:
+        0: constant.character.escape.ballerina
+      push:
+        - match: "}"
+          captures:
+            0: constant.character.escape.ballerina
+          pop: true
+        - include: code
+  tupleType:
+    - match: '\['
+      push:
+        - match: '(?=\]|;)'
+          pop: true
+        - include: comment
+        - include: constrainType
+        - match: '\b((?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))\b'
+          scope: storage.type.ballerina
+  typeDefinition:
+    - match: \btype\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: ;
+          captures:
+            0: source.ballerina
+          pop: true
+        - include: comment
+        - include: typeDescription
+  typeDescription:
+    - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+      captures:
+        0: entity.name.function.ballerina
+      push:
+        - match: (?=;)
+          captures:
+            0: source.ballerina
+          pop: true
+        - include: comment
+        - include: objectDec
+        - include: record
+        - include: literal
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: storage.type.ballerina
+  types:
+    - match: \b(boolean|int|float|string|var|any|anydata|datatable|table|byte|future|typedesc)\b
+      scope: storage.type.ballerina
+    - match: \b(map|exception|json|xml|xmlns|error)\b
+      scope: storage.type.ballerina
+    - match: \b(stream|streamlet|aggregation)\b
+      scope: storage.type.ballerina
+  variableDef:
+    - match: '(?:(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))(?: |\t)|(?=\()'
+      captures:
+        0: storage.type.ballerina
+      push:
+        - match: '(?:(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+))|(?=\,)|(?=;)|\.\.\.'
+          captures:
+            0: source.ballerina
+          pop: true
+        - include: tupleType
+        - include: constrainType
+        - include: comment
+  variableDefInline:
+    - match: (?=record)|(?=object)
+      push:
+        - match: (?=;)
+          pop: true
+        - include: record
+        - include: objectDec
+        - match: '(?:''?(?:(?:[^ (){}\[\]\-?*=><?;"'',.\s\\])|\\(?:[ (){}\[\]\-?*=><?;"'',.\s])|\\)+)'
+          scope: source.ballerina
+  workerBody:
+    - match: '\{'
+      push:
+        - match: '(?=\})'
+          pop: true
+        - include: code
+  workerDef:
+    - match: \bworker\b
+      captures:
+        0: keyword.ballerina
+      push:
+        - match: '\}'
+          pop: true
+        - include: workerBody
+  xml:
+    - match: (\bxml)(\s*)(`)
+      captures:
+        1: keyword.ballerina
+        2: ""
+        3: string.template.ballerina
+      push:
+        - match: "`"
+          captures:
+            0: string.template.ballerina
+          pop: true
+        - include: xmlTag
+        - include: xmlComment
+        - include: templateVariable
+        - match: .
+          scope: text.xml.ballerina
+  xmlComment:
+    - match: <!--
+      captures:
+        0: comment.block.xml.ballerina
+      push:
+        - meta_scope: comment.block.xml.ballerina
+        - match: "-->"
+          captures:
+            0: comment.block.xml.ballerina
+          pop: true
+  xmlDoubleQuotedString:
+    - match: \"
+      captures:
+        0: string.begin.ballerina
+      push:
+        - match: \"
+          captures:
+            0: string.end.ballerina
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ballerina
+        - match: .
+          scope: string
+  xmlSingleQuotedString:
+    - match: \'
+      captures:
+        0: string.begin.ballerina
+      push:
+        - match: \'
+          captures:
+            0: string.end.ballerina
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ballerina
+        - match: .
+          scope: string
+  xmlTag:
+    - match: '(<\/?\??)\s*([-_a-zA-Z0-9]+)'
+      captures:
+        1: punctuation.definition.tag.begin.xml.ballerina
+        2: entity.name.tag.xml.ballerina
+      push:
+        - match: \??\/?>
+          captures:
+            0: punctuation.definition.tag.begin.xml.ballerina
+          pop: true
+        - include: xmlSingleQuotedString
+        - include: xmlDoubleQuotedString
+        - match: "([a-zA-Z-]+)"
+          scope: entity.other.attribute-name.xml.ballerina

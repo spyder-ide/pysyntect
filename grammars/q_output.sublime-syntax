@@ -1,0 +1,169 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: q output
+file_extensions:
+  - mly
+scope: source.q_output
+contexts:
+  main:
+    - match: (^error:)\s*(.*)
+      comment: Variable Definition
+      scope: source.q_output
+      captures:
+        2: message.error.q_output
+    - match: '(%{)\s*$'
+      captures:
+        1: punctuation.section.header.begin.q_output
+      push:
+        - meta_scope: meta.header.q_output
+        - match: '^\s*(%})'
+          captures:
+            1: punctuation.section.header.end.q_output
+          pop: true
+        - include: scope:source.ocaml
+    - match: '(?<=%})\s*$'
+      push:
+        - meta_scope: meta.declarations.q_output
+        - match: (?:^)(?=%%)
+          pop: true
+        - include: comments
+        - include: declaration-matches
+    - match: (%%)\s*$
+      captures:
+        1: punctuation.section.rules.begin.q_output
+      push:
+        - meta_scope: meta.rules.q_output
+        - match: ^\s*(%%)
+          captures:
+            1: punctuation.section.rules.end.q_output
+          pop: true
+        - include: comments
+        - include: rules
+    - include: scope:source.ocaml
+    - include: comments
+    - match: (’|‘|“|”)
+      scope: invalid.illegal.unrecognized-character.ocaml
+  comments:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.q_output
+        - match: \*/
+          pop: true
+        - include: comments
+    - match: '(?=[^\\])(")'
+      push:
+        - meta_scope: comment.block.string.quoted.double.q_output
+        - match: '"'
+          pop: true
+        - match: '\\(x[a-fA-F0-9][a-fA-F0-9]|[0-2]\d\d|[bnrt''"\\])'
+          scope: comment.block.string.constant.character.escape.q_output
+  declaration-matches:
+    - match: (%)(token)
+      captures:
+        1: keyword.other.decorator.token.q_output
+        2: keyword.other.token.q_output
+      push:
+        - meta_scope: meta.token.declaration.q_output
+        - match: ^\s*($|(^\s*(?=%)))
+          pop: true
+        - include: symbol-types
+        - match: "[A-Z][A-Za-z0-9_]*"
+          scope: entity.name.type.token.q_output
+        - include: comments
+    - match: (%)(left|right|nonassoc)
+      captures:
+        1: keyword.other.decorator.token.associativity.q_output
+        2: keyword.other.token.associativity.q_output
+      push:
+        - meta_scope: meta.token.associativity.q_output
+        - match: (^\s*$)|(^\s*(?=%))
+          pop: true
+        - match: "[A-Z][A-Za-z0-9_]*"
+          scope: entity.name.type.token.q_output
+        - match: "[a-z][A-Za-z0-9_]*"
+          scope: entity.name.function.non-terminal.reference.q_output
+        - include: comments
+    - match: (%)(start)
+      captures:
+        1: keyword.other.decorator.start-symbol.q_output
+        2: keyword.other.start-symbol.q_output
+      push:
+        - meta_scope: meta.start-symbol.q_output
+        - match: (^\s*$)|(^\s*(?=%))
+          pop: true
+        - match: "[a-z][A-Za-z0-9_]*"
+          scope: entity.name.function.non-terminal.reference.q_output
+        - include: comments
+    - match: (%)(type)
+      captures:
+        1: keyword.other.decorator.symbol-type.q_output
+        2: keyword.other.symbol-type.q_output
+      push:
+        - meta_scope: meta.symbol-type.q_output
+        - match: $\s*(?!%)
+          pop: true
+        - include: symbol-types
+        - match: "[A-Z][A-Za-z0-9_]*"
+          scope: entity.name.type.token.reference.q_output
+        - match: "[a-z][A-Za-z0-9_]*"
+          scope: entity.name.function.non-terminal.reference.q_output
+        - include: comments
+  precs:
+    - match: '(%)(prec)\s+(([a-z][a-zA-Z0-9_]*)|(([A-Z][a-zA-Z0-9_]*)))'
+      scope: meta.precidence.declaration
+      captures:
+        1: keyword.other.decorator.precedence.q_output
+        2: keyword.other.precedence.q_output
+        4: entity.name.function.non-terminal.reference.q_output
+        5: entity.name.type.token.reference.q_output
+  references:
+    - match: "[a-z][a-zA-Z0-9_]*"
+      scope: entity.name.function.non-terminal.reference.q_output
+    - match: "[A-Z][a-zA-Z0-9_]*"
+      scope: entity.name.type.token.reference.q_output
+  rule-patterns:
+    - match: ((?<!\||:)(\||:)(?!\||:))
+      captures:
+        0: punctuation.separator.rule.q_output
+      push:
+        - meta_scope: meta.rule-match.ocaml
+        - match: \s*(?=\||;)
+          pop: true
+        - include: precs
+        - include: semantic-actions
+        - include: references
+        - include: comments
+  rules:
+    - match: "[a-z][a-zA-Z_]*"
+      captures:
+        0: entity.name.function.non-terminal.q_output
+      push:
+        - meta_scope: meta.non-terminal.q_output
+        - match: ;
+          captures:
+            0: punctuation.separator.rule.q_output
+          pop: true
+        - include: rule-patterns
+  semantic-actions:
+    - match: '[^\'']({)'
+      captures:
+        1: punctuation.definition.action.semantic.q_output
+      push:
+        - meta_scope: meta.action.semantic.q_output
+        - match: "(})"
+          captures:
+            1: punctuation.definition.action.semantic.q_output
+          pop: true
+        - include: scope:source.ocaml
+  symbol-types:
+    - match: <
+      captures:
+        0: punctuation.definition.type-declaration.begin.q_output
+      push:
+        - meta_scope: meta.token.type-declaration.q_output
+        - match: ">"
+          captures:
+            0: punctuation.definition.type-declaration.end.q_output
+          pop: true
+        - include: scope:source.ocaml

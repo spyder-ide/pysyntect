@@ -1,0 +1,90 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Shen
+file_extensions:
+  - shen
+scope: source.shen
+contexts:
+  main:
+    - include: expressions
+  atoms:
+    - match: (\")
+      comment: Multiline Strings
+      push:
+        - meta_scope: string.quoted.double
+        - match: (\")
+          pop: true
+        - match: (~A|~R|~S|~%|c#\d+;)
+          scope: constant.character.escape
+        - match: "(c#[^;]*;)"
+          scope: invalid.illegal
+    - match: '(?<=^|[\s()\[\]])[+-]*\d+\.?\d*(?=$|[\s;()\[\]])'
+      comment: Numbers
+      scope: constant.numeric
+    - match: '(?<=^|[\s()\[\]])[+-]*\d+\.?\d*[^\s;()\[\]]+(?=$|[\s;()\[\]])'
+      comment: Malformed Numbers
+      scope: invalid.illegal
+    - match: '(?<=\()(and|or|if|do|lambda|freeze|let|cond|cases|trap-error|where|package|defun|/.|define|defmacro|defcc|defprolog|datatype)(?=$|[\s;()\[\]{}])'
+      comment: Special Forms
+      scope: keyword.control
+    - match: '(?<=^|[\s()\[\]{}])(->|<-|-->|<--|==>|<==|:=|__+)(?=$|[\s;()\[\]{}])'
+      comment: Special Operators
+      scope: keyword.control
+    - match: '(?<=^|[\s()\[\]{}])(=|==|<|>|<=|>=|\+|-|\*|/)(?=$|[\s;()\[\]{}])'
+      comment: Standard Operators
+      scope: keyword.operator
+    - match: '(?<=\(define\s)([^\s()\[\]{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Definition Names
+      scope: entity.name.function
+    - match: '(?<=\(defmacro\s)([^\s()\[\]{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Macro Names
+      scope: entity.name.function
+    - match: '(?<=\(defprolog\s)([^\s()\[\]{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Prolog Names
+      scope: entity.name.function
+    - match: '(?<=\(package\s)([^\s()\[\]{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Package Names
+      scope: entity.name.section
+    - match: '(?<=\(datatype\s)([^\s()\[\]{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Data Types
+      scope: entity.name.type
+    - match: '(?<=^|[\s()\[\]{}])([A-Z][^\s()\[\];{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Local Variables
+      scope: variable.language
+    - match: '(?<=^|[\s()\[\]])(<[^\s()\[\]]*>)(?=$|[\s;()\[\]])'
+      comment: Yacc Rule
+      scope: entity.name.tag
+    - match: '(?<=^|[\s)\[\]{}])([^A-Z\s()\[\]:;\|{}][^\s()\[\];{}]*)(?=$|[\s;()\[\]{}])'
+      comment: Idle Symbols
+      scope: constant.language
+    - match: '(\(\)|\[\])'
+      comment: Empty Lists
+      scope: constant.language
+  comments:
+    - match: (\\\\.*$)
+      scope: comment.line
+    - match: (\\\*)
+      push:
+        - meta_scope: comment.block
+        - match: (\*\\)
+          pop: true
+  expressions:
+    - include: comments
+    - include: atoms
+    - include: parens
+    - include: squares
+  parens:
+    - match: (\()
+      push:
+        - meta_scope: meta.group
+        - match: (\))
+          pop: true
+        - include: expressions
+  squares:
+    - match: '(\[)'
+      push:
+        - meta_scope: meta.group
+        - match: '(\])'
+          pop: true
+        - include: expressions

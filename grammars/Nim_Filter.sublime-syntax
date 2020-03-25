@@ -1,0 +1,86 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nim Source Code Filter
+file_extensions:
+  - nimf
+scope: source.nim_filter
+contexts:
+  main:
+    - match: \A(#!)
+      push:
+        - meta_scope: meta.start.nim_filter
+        - match: \z(!?\n)
+          pop: true
+        - match: '^\s*#'
+          push:
+            - meta_scope: comment.line.nim_filter
+            - match: \n
+              pop: true
+            - match: '\b((\d[_\d]*\.[_\d]+([eE][\+\-]?\d[_\d]*)?)|([eE][\+\-]?\d[_\d]*))(''[fF](32|64))?'
+              scope: constant.numeric.float.decimal.nim_filter
+            - match: '\b(0[xX][0-9A-Fa-f][_0-9A-Fa-f]*)(''[iIuU](8|16|32|64))?'
+              scope: constant.numeric.integer.hexadecimal.nim_filter
+            - match: '\b(0o[0-7][_0-7]*)(''[iIuUfF](8|16|32|64))?'
+              comment: For simplicity's sake, we don't enforce floats only having 32 and 64 prefix types.
+              scope: constant.numeric.integer.octal.nim_filter
+            - match: '\b(0(b|B)[01][_01]*)(''[iIuUfF](8|16|32|64))?'
+              scope: constant.numeric.integer.binary.nim_filter
+            - match: '\b(\d[_\d]*)(''[iIuUfF](8|16|32|64))?'
+              scope: constant.numeric.integer.decimal.nim_filter
+            - match: \b(true|false|inf|nil)\b
+              comment: Language Constants.
+              scope: constant.language.nim_filter
+            - match: \b(block|break|case|continue|do|elif|else|end|except|finally|for|if|raise|return|try|when|while|yield)\b
+              comment: Keywords that affect program control flow or scope.
+              scope: keyword.control.nim_filter
+            - match: (\b(and|in|is|isnot|not|notin|or|xor)\b)
+              comment: Keyword boolean operators for expressions.
+              scope: keyword.operator.boolean.nim_filter
+            - match: (\b()\b|(=|\+|-|\*|/|<|>|@|\$|~|&|%|!|\?|\^|\.|:|\\)+)
+              comment: Generic operators for expressions.
+              scope: keyword.operator.nim_filter
+            - match: (\b(addr|as|asm|atomic|bind|cast|concept|const|discard|distinct|div|enum|export|from|import|include|let|mod|object|of|ptr|ref|shl|shr|static|tuple|type|var)\b)
+              comment: Other keywords.
+              scope: keyword.other.nim_filter
+            - match: (\b(converter|generic|interface|lambda|mixin|out|shared|with|without)\b)
+              comment: Invalid and unused keywords.
+              scope: keyword.invalid.nim_filter
+            - match: \b(((uint|int|float)(8|16|32|64)?)|bool|string|cstring|char|tobject|typedesc)\b
+              comment: Built-in, concrete types.
+              scope: storage.type.concrete.nim_filter
+            - match: \b(range|array|seq|natural|set|ref|ptr)\b
+              comment: Built-in, generic types.
+              scope: storage.type.generic.nim_filter
+            - match: \b(proc|iterator|method|template|macro)\b
+              comment: Function types
+              scope: storage.type.function.nim_filter
+            - match: \b(echo|newException)\b
+              comment: Common functions
+              scope: keyword.function.nim_filter
+            - match: \b(openarray|varargs|void)\b
+              comment: Special types.
+              scope: storage.type.generic.nim_filter
+            - match: '(\w[_\w]*)?\"\"\"'
+              comment: (Raw) Triple Quoted String
+              push:
+                - meta_scope: string.quoted.triple.nim_filter
+                - match: '\"\"\"[^"]'
+                  pop: true
+            - match: r\"
+              comment: Raw Double Quoted String
+              push:
+                - meta_scope: string.quoted.double.raw.nim_filter
+                - match: \"
+                  pop: true
+                - match: \"\"
+            - match: '(\w[_\w]*)?\"'
+              comment: Double Quoted String
+              push:
+                - meta_scope: string.quoted.double.nim_filter
+                - match: \"
+                  pop: true
+                - match: '(\\([abenrclftv]|["'']|[0-9])|x[0-9A-Fa-f]{2})'
+            - match: '\''(\\\d{1,3}|\\?[^\n]?)\'''
+              comment: Single quoted character literal
+              scope: string.quoted.single.nim_filter

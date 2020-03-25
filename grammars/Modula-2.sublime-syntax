@@ -1,0 +1,56 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Modula-2
+file_extensions:
+  - mod
+  - def
+scope: source.modula2
+contexts:
+  main:
+    - match: \b(PROCEDURE|DEFINITION MODULE|IMPLEMENTATION MODULE|MODULE)\b\s+(\w+(\.\w+)?)
+      comment: Reconocimiento de las palabras de inicio.
+      captures:
+        1: storage.type.function.modula2
+        2: entity.name.function.modula2
+    - match: \b(END)\b\s+(\w+(\.\w+)?)
+      comment: Reconocimiento de las palabras de fin.
+      captures:
+        1: keyword.control.modula2
+        2: entity.name.function.end.modula2
+    - match: \b(ABS|ADDRES|ADR|BITSET|BOOLEAN|BYTE|CAP|CARDINAL|CHAR|CHR|DEC|DISPOSE|EXCL|FALSE|FLOAT|HALT|HIGH|INC|INCL|INTEGER|LONGCARD|LONGINT|LONGREAL|LONGWORD|NEW|NULLPROC|ODD|ORD|PROC|REAL|SHORTADDR|SHORTCARD|SHORTINT|SIZE|TRUE|TRUNC|VAL|VSIZE|WORD)\b
+      comment: Definicion de identificadores predefinidos.
+      scope: meta.function.modula2
+      captures:
+        1: storage.type.function.modula2
+        2: entity.name.function.modula2
+    - match: \b(AND|ARRAY|BEGIN|BY|CASE|CONST|DIV|DO|ELSE|ELSIF|END|EXIT|EXPORT|FOR|FORWARD|FROM|GOTO|IF|IMPORT|IN|LABEL|LOOP|MOD|NOT|OF|OR|POINTER|QUALIFIED|RECORD|REPEAT|RETURN|SET|THEN|TO|DOWNTO|TYPE|UNTIL|VAR|WHILE|WITH|NIL)\b
+      comment: Definicion de palabras reservadas.
+      scope: keyword.control.modula2
+    - include: block_comment
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.modula2
+      push:
+        - meta_scope: string.quoted.double.modula2
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.modula2
+          pop: true
+        - match: \.
+          scope: constant.character.escape.modula2
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\b'
+      scope: constant.numeric.modula2
+    - match: (\(|\)|\+|-|\*|/|:|;|\.|\^|=|:=|<|>|#)
+      scope: variable.parameter.function.modula2
+  block_comment:
+    - match: \(\*
+      captures:
+        0: punctuation.definition.comment.modula2
+      push:
+        - meta_scope: comment.block.modula2.one
+        - include: block_comment
+        - match: \*\)
+          captures:
+            0: punctuation.definition.comment.modula2
+          pop: true

@@ -1,0 +1,492 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Spin
+comment: |
+  todo:
+          list comprehension / generator comprehension scope.
+file_extensions:
+  - spin
+first_line_match: '^#!/.*\bspin[0-9.-]*\b'
+scope: source.spin
+contexts:
+  main:
+    - match: "{"
+      captures:
+        0: punctuation.definition.comment.php
+      push:
+        - meta_scope: comment.block.spin
+        - match: "}(?!.*})"
+          captures:
+            0: punctuation.definition.comment.php
+          pop: true
+    - match: (').*$\n?
+      scope: comment.line.single-quote.spin
+      captures:
+        1: punctuation.definition.comment.spin
+    - match: "(?i:(%[0-9A-Fa-f]*)L)"
+      scope: constant.numeric.integer.long.hexadecimal.spin
+    - match: '(?i:(\$[0-9A-Fa-f_]*)|(%[01_]*))'
+      scope: constant.numeric.integer.hexadecimal.spin
+    - match: '\b(?i:(((\d+(\.(?=[^a-zA-Z])\d*)?|(?<=[^0-9a-zA-Z])\.\d+)(e[\-\+]?\d+)?))J)'
+      scope: constant.numeric.complex.spin
+    - match: '\b(?i:(\d+\.\d*(e[\-\+]?\d+)?))(?=[^a-zA-Z])'
+      scope: constant.numeric.float.spin
+    - match: '(?<=[^0-9a-zA-Z])(?i:(\.\d+(e[\-\+]?\d+)?))'
+      scope: constant.numeric.float.spin
+    - match: '\b(?i:(\d+e[\-\+]?\d+))'
+      scope: constant.numeric.float.spin
+    - match: '\b(?i:([0-9]+[0-9_]*)L)'
+      scope: constant.numeric.integer.long.decimal.spin
+    - match: '\b([0-9]+[0-9_]*)'
+      scope: constant.numeric.integer.decimal.spin
+    - match: \b(global)\b
+      captures:
+        1: storage.modifier.global.spin
+    - match: \b(?:(import)|(from))\b
+      captures:
+        1: keyword.control.import.spin
+        2: keyword.control.import.from.spin
+    - match: \b((?i:if)|(?i:repeat)|(?i:else)|(?i:elseif))\b
+      comment: keywords that delimit flow blocks or alter flow from within a block
+      scope: keyword.control.flow.spin
+    - match: \b(and|in|is|not|or)\b
+      comment: keyword operators that evaluate to True or False
+      scope: keyword.operator.logical.spin
+    - match: '\b(_CLKMODE|_clkmode|_clkMode|_Clkmode|_XINFREQ|_xinfreq|_xinFreq|_Xinfreq|ABORT|Abort|abort|QUIT|Quit|quit|NEXT|Next|next|WHILE|While|while|UNTIL|Until|until|FROM|From|from|TO|To|to|RETURN|Return|return|DIR[a-zA-Z](?=\[)|Dir[a-zA-Z](?=\[)|dir[a-zA-Z](?=\[)|OUT[a-zA-Z](?=\[)|Out[a-zA-Z](?=\[)|out[a-zA-Z](?=\[)|IN[a-zA-Z](?=\[)|In[a-zA-Z](?=\[)|in[a-zA-Z](?=\[))\b'
+      comment: keywords that haven't fit into other groups (yet).
+      captures:
+        1: keyword.other.spin
+    - match: <>
+      scope: invalid.deprecated.operator.spin
+    - match: <\=|>\=|\=\=|<|>|\!\=
+      scope: keyword.operator.comparison.spin
+    - match: \+\=|-\=|:\=|:|\*\=|/\=|//\=|%\=|&\=|\|\=|\^\=|>>\=|<<\=|\*\*\=
+      scope: keyword.operator.assignment.augmented.spin
+    - match: \+|\-|\*|\*\*|/|//|<<|>>|&|\||\^|~|\!
+      scope: keyword.operator.arithmetic.spin
+    - match: \=
+      scope: keyword.operator.assignment.spin
+    - match: '^\s*(class)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\:)'
+      captures:
+        1: storage.type.class.spin
+      push:
+        - meta_scope: meta.class.old-style.spin
+        - meta_content_scope: entity.name.type.class.spin
+        - match: \s*(:)
+          captures:
+            1: punctuation.section.class.begin.spin
+          pop: true
+        - include: entity_name_class
+    - match: '^\s*(class)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\()'
+      captures:
+        1: storage.type.class.spin
+      push:
+        - meta_scope: meta.class.spin
+        - match: (\))\s*(?:(\:)|(.*$\n?))
+          captures:
+            1: punctuation.definition.inheritance.end.spin
+            2: punctuation.section.class.begin.spin
+            3: invalid.illegal.missing-section-begin.spin
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.type.class.spin
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_class
+        - match: (\()
+          captures:
+            1: punctuation.definition.inheritance.begin.spin
+          push:
+            - meta_content_scope: meta.class.inheritance.spin
+            - match: (?=\)|:)
+              pop: true
+            - match: (?<=\(|,)\s*
+              push:
+                - meta_content_scope: entity.other.inherited-class.spin
+                - match: \s*(?:(,)|(?=\)))
+                  captures:
+                    1: punctuation.separator.inheritance.spin
+                  pop: true
+                - include: main
+    - match: '^\s*(class)\s+(?=[a-zA-Z_][a-zA-Z_0-9])'
+      captures:
+        1: storage.type.class.spin
+      push:
+        - meta_scope: meta.class.spin
+        - match: (\()|\s*($\n?|#.*$\n?)
+          captures:
+            1: punctuation.definition.inheritance.begin.spin
+            2: invalid.illegal.missing-inheritance.spin
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.type.class.spin
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_function
+    - match: '^(PUB|Pub|pub|PRI|Pri|pri)\s+(?=[A-Za-z_][A-Za-z0-9_]*\s*\()'
+      captures:
+        1: storage.type.function.spin
+      push:
+        - meta_scope: meta.function.spin
+        - match: (\)|\n)\s*(?:(\:|(?=\||'))|(.*$\n?))
+          captures:
+            1: punctuation.definition.parameters.end.spin
+            2: punctuation.section.function.begin.spin
+            3: invalid.illegal.missing-section-begin.spin
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.spin
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_function
+        - match: (\()
+          captures:
+            1: punctuation.definition.parameters.begin.spin
+          push:
+            - meta_content_scope: meta.function.parameters.spin
+            - match: "(?![a-zA-Z0-9_])"
+              pop: true
+            - include: keyword_arguments
+            - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,\s*)|(?=[\n\)]))'
+              captures:
+                1: variable.parameter.function.spin
+                2: punctuation.separator.parameters.spin
+    - match: '^(PUB|Pub|pub|PRI|Pri|pri)\s+(?=[A-Za-z_][A-Za-z0-9_]*)'
+      captures:
+        1: storage.type.function.spin
+      push:
+        - meta_scope: meta.function.spin
+        - match: "(?![A-Za-z0-9_,])"
+          captures:
+            1: punctuation.definition.parameters.begin.spin
+            2: invalid.illegal.missing-parameters.spin
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.spin
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_function
+    - match: '^\s*(?=@\s*[A-Za-z_][A-Za-z0-9_]*(?:[a-zA-Z_][a-zA-Z_0-9]*)*\s*\()'
+      comment: a decorator may be a function call which returns a decorator.
+      push:
+        - meta_scope: meta.function.decorator.spin
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.spin
+          pop: true
+        - match: '(?=(@)\s*[A-Za-z_][A-Za-z0-9_]*(?:[A-Za-z_][A-Za-z0-9_]*)*\s*\()'
+          captures:
+            1: punctuation.definition.decorator.spin
+          push:
+            - meta_content_scope: entity.name.function.decorator.spin
+            - match: (?=\s*\()
+              pop: true
+            - include: dotted_name
+        - match: (\()
+          captures:
+            1: punctuation.definition.arguments.begin.spin
+          push:
+            - meta_content_scope: meta.function.decorator.arguments.spin
+            - match: (?=\))
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: '[(,]\s*(?=@[A-Za-z_][A-Za-z0-9_]*(?:[a-zA-Z_][a-zA-Z_0-9]*)*)'
+      push:
+        - meta_scope: meta.function.decorator.spin
+        - meta_content_scope: entity.name.function.decorator.spin
+        - match: "(?![@A-Za-z0-9_])"
+          pop: true
+        - match: '(?=(@)\s*[A-Za-z_][A-Za-z0-9_]*([A-Za-z_][A-Za-z0-9_]*)*)'
+          captures:
+            1: punctuation.definition.decorator.spin
+          push:
+            - match: "(?![@A-Za-z0-9_])"
+              pop: true
+            - include: dotted_name
+    - match: '(?<=\)|\])\s*(\()'
+      captures:
+        1: punctuation.definition.arguments.begin.spin
+      push:
+        - meta_scope: meta.function-call.spin
+        - meta_content_scope: meta.function-call.arguments.spin
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.spin
+          pop: true
+        - include: keyword_arguments
+        - include: main
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*\s*\()'
+      push:
+        - meta_scope: meta.function-call.spin
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.spin
+          pop: true
+        - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*\()'
+          push:
+            - match: (?=\s*\()
+              pop: true
+            - include: dotted_name
+        - match: (\()
+          captures:
+            1: punctuation.definition.arguments.begin.spin
+          push:
+            - meta_content_scope: meta.function-call.arguments.spin
+            - match: (?=\))
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*\s*\[)'
+      push:
+        - meta_scope: meta.item-access.spin
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.arguments.end.spin
+          pop: true
+        - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*\[)'
+          push:
+            - match: '(?=\s*\[)'
+              pop: true
+            - include: dotted_name
+        - match: '(\[)'
+          captures:
+            1: punctuation.definition.arguments.begin.spin
+          push:
+            - meta_content_scope: meta.item-access.arguments.spin
+            - match: '(?=\])'
+              pop: true
+            - include: main
+    - match: '(?<=\)|\])\s*(\[)'
+      captures:
+        1: punctuation.definition.arguments.begin.spin
+      push:
+        - meta_scope: meta.item-access.spin
+        - meta_content_scope: meta.item-access.arguments.spin
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.arguments.end.spin
+          pop: true
+        - include: main
+    - match: \b(def|lambda)\b
+      captures:
+        1: storage.type.function.spin
+    - match: ^\b(class|OBJ|Obj|obj|DAT|Dat|dat|CON|Con|con|VAR|Var|var)\b
+      captures:
+        1: storage.type.class.spin
+    - include: line_continuation
+    - include: language_variables
+    - match: '\b(cnt|CNT|Cnt|CLKFREQ|ClkFreq|clkFreq|clkfreq|P8X32A|P8x32a|P8X32a|p8x32a|XTAL([0-9]+)|Xtal([0-9]+)|xtal([0-9]+)|PLL([0-9]+)X|PLL([0-9]+)x|Pll([0-9]+)x|pll([0-9]+)X|pll([0-9]+)x)\b'
+      scope: constant.language.spin
+    - include: string_quoted_double
+    - include: dotted_name
+    - match: (\()
+      push:
+        - match: (\))
+          pop: true
+        - include: main
+    - match: '(\[)(\s*(\]))\b'
+      captures:
+        1: punctuation.definition.list.begin.spin
+        2: meta.empty-list.spin
+        3: punctuation.definition.list.end.spin
+    - match: '(\[)'
+      captures:
+        1: punctuation.definition.list.begin.spin
+      push:
+        - meta_scope: meta.structure.list.spin
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.list.end.spin
+          pop: true
+        - match: '(?<=\[|\,)\s*(?![\],])'
+          push:
+            - meta_content_scope: meta.structure.list.item.spin
+            - match: '\s*(?:(,)|(?=\]))'
+              captures:
+                1: punctuation.separator.list.spin
+              pop: true
+            - include: main
+    - match: (\()(\s*(\)))
+      scope: meta.structure.tuple.spin
+      captures:
+        1: punctuation.definition.tuple.begin.spin
+        2: meta.empty-tuple.spin
+        3: punctuation.definition.tuple.end.spin
+    - match: '(\{)(\s*(\}))'
+      scope: meta.structure.dictionary.spin
+      captures:
+        1: punctuation.definition.dictionary.begin.spin
+        2: meta.empty-dictionary.spin
+        3: punctuation.definition.dictionary.end.spin
+    - match: '(\{)'
+      captures:
+        1: punctuation.definition.dictionary.begin.spin
+      push:
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.dictionary.end.spin
+          pop: true
+  builtin_exceptions:
+    - match: |-
+        (?x)\b(
+                        (
+                            Arithmetic|Assertion|Attribute|Buffer|EOF|Environment|FloatingPoint|IO|
+                            Import|Indentation|Index|Key|Lookup|Memory|Name|NotImplemented|OS|Overflow|
+                            Reference|Runtime|Standard|Syntax|System|Tab|Type|UnboundLocal|
+                            Unicode(Encode|Decode|Translate)?|
+                            Value|VMS|Windows|ZeroDivision
+                        )Error|
+                        ((Pending)?Deprecation|Runtime|Syntax|User|Future|Import|Unicode|Bytes)?Warning|
+                        (Base)?Exception|
+                        SystemExit|StopIteration|NotImplemented|KeyboardInterrupt|GeneratorExit
+        			)\b
+      scope: support.type.exception.spin
+  builtin_functions:
+    - match: |-
+        (?x)\b(
+                        STRING|String|string|WAITCNT|Waitcnt|WaitCnt|waitcnt|waitCnt|COGNEW|CogNew|Cognew|cogNew|cognew|COGSTOP|CogStop|Cogstop|cogStop|cogstop|ABS|Abs|abs|MAX|Max|max|MIN|Min|min|NEG|Neg|neg|STRSIZE|StrSize|StrSIZE|strSIZE|strSize|Strsize|strsize|LONGFILL|LongFILL|longFILL|LongFill|longFill|Longfill|longfill|BYTEMOVE|ByteMove|ByteMOVE|byteMOVE|byteMove|Bytemove|bytemove|BYTEFILL|ByteFILL|ByteFill|Bytefill|byteFILL|ByteFILL|byteFill|bytefill|LOOKUPZ|LookUpz|lookUpz|LookUpZ|lookUpZ|LookUPZ|Lookupz|lookupz|CONSTANT|Constant|constant
+        			)\b(?=\s*\()
+      scope: support.function.builtin.spin
+  builtin_types:
+    - match: |-
+        (?x)\b(
+        	LONG|Long|long|BYTE|Byte|byte|WORD|Word|word|RES|Res|res
+        )\b
+      scope: support.type.spin
+  constant_placeholder:
+    - match: '(?i:(\([a-z_]+\))?#?0?\-?[ ]?\+?([0-9]*|\*)(\.([0-9]*|\*))?[hL]?[a-z])'
+      scope: constant.other.placeholder.spin
+  docstrings:
+    - match: '^\s*(?=[uU]?[rR]?\{\{)'
+      push:
+        - meta_scope: comment.block.spin
+        - match: '(?<=\}\})'
+          pop: true
+        - include: string_quoted_double
+  dotted_name:
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)'
+      push:
+        - match: '(?![A-Za-z0-9_\.])'
+          pop: true
+        - match: '(\.)(?=[A-Za-z_][A-Za-z0-9_]*)'
+          push:
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: magic_function_names
+            - include: magic_variable_names
+            - include: illegal_names
+            - include: generic_names
+        - match: '(?<!\.)(?=[A-Za-z_][A-Za-z0-9_]*)'
+          push:
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: builtin_functions
+            - include: builtin_types
+            - include: builtin_exceptions
+            - include: illegal_names
+            - include: magic_function_names
+            - include: magic_variable_names
+            - include: language_variables
+            - include: generic_names
+  entity_name_class:
+    - include: illegal_names
+    - include: generic_names
+  entity_name_function:
+    - include: magic_function_names
+    - include: illegal_names
+    - include: generic_names
+  escaped_char:
+    - match: '(\\x[0-9A-F]{2})|(\\[0-7]{3})|(\\\n)|(\\\\)|(\\\")|(\\'')|(\\a)|(\\b)|(\\f)|(\\n)|(\\r)|(\\t)|(\\v)'
+      captures:
+        1: constant.character.escape.hex.spin
+        2: constant.character.escape.octal.spin
+        3: constant.character.escape.newline.spin
+        4: constant.character.escape.backlash.spin
+        5: constant.character.escape.double-quote.spin
+        6: constant.character.escape.single-quote.spin
+        7: constant.character.escape.bell.spin
+        8: constant.character.escape.backspace.spin
+        9: constant.character.escape.formfeed.spin
+        10: constant.character.escape.linefeed.spin
+        11: constant.character.escape.return.spin
+        12: constant.character.escape.tab.spin
+        13: constant.character.escape.vertical-tab.spin
+  escaped_unicode_char:
+    - match: '(\\U[0-9A-Fa-f]{8})|(\\u[0-9A-Fa-f]{4})|(\\N\{[a-zA-Z ]+\})'
+      captures:
+        1: constant.character.escape.unicode.16-bit-hex.spin
+        2: constant.character.escape.unicode.32-bit-hex.spin
+        3: constant.character.escape.unicode.name.spin
+  function_name:
+    - include: magic_function_names
+    - include: magic_variable_names
+    - include: builtin_exceptions
+    - include: builtin_functions
+    - include: builtin_types
+    - include: generic_names
+  generic_names:
+    - match: "[A-Za-z_][A-Za-z0-9_]*"
+  illegal_names:
+    - match: \b(and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|with|yield)\b
+      scope: invalid.illegal.name.spin
+  keyword_arguments:
+    - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(=)(?!=)'
+      captures:
+        1: variable.parameter.function.spin
+        2: keyword.operator.assignment.spin
+      push:
+        - match: '\s*(?:(?=$\n?|[\)\:]))'
+          captures:
+            1: punctuation.separator.parameters.spin
+          pop: true
+        - include: main
+  language_variables:
+    - match: \b(self|cls)\b
+      scope: variable.language.spin
+  line_continuation:
+    - match: (\\)(.*)$\n?
+      captures:
+        1: punctuation.separator.continuation.line.spin
+        2: invalid.illegal.unexpected-text.spin
+  magic_function_names:
+    - match: |-
+        (?x)\b(__(?:
+        	abs|add|AND|And|and|OR|NOT|Not|not|Or|or|call|cmp|coerce|complex|contains|del|delattr|
+        	delete|delitem|delslice|div|divmod|enter|eq|exit|float|
+        	floordiv|ge|get|getattr|getattribute|getitem|getslice|gt|
+        	hash|hex|iadd|iand|idiv|ifloordiv|ilshift|imod|imul|init|
+        	int|invert|ior|ipow|irshift|isub|iter|itruediv|ixor|le|len|
+        	long|lshift|lt|mod|mul|ne|neg|new|nonzero|oct|or|pos|pow|
+        	radd|rand|rdiv|rdivmod|repr|rfloordiv|rlshift|rmod|rmul|ror|
+        	rpow|rrshift|rshift|rsub|rtruediv|rxor|set|setattr|setitem|
+        	setslice|str|sub|truediv|unicode|xor
+        )__)\b
+      comment: these methods have magic interpretation by spin and are generally called indirectly through syntactic constructs
+      scope: support.function.magic.spin
+  magic_variable_names:
+    - match: \b__(all|bases|class|debug|dict|doc|file|members|metaclass|methods|name|slots|weakref)__\b
+      comment: magic variables which a class/module may have.
+      scope: support.variable.magic.spin
+  regular_expressions: []
+  string_quoted_double:
+    - match: (")
+      comment: double quoted string
+      captures:
+        1: punctuation.definition.string.begin.spin
+      push:
+        - meta_scope: string.quoted.double.single-line.spin
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.spin
+            2: meta.empty-string.double.spin
+            3: invalid.illegal.unclosed-string.spin
+          pop: true
+        - include: escaped_char
+  strings:
+    - include: string_quoted_double

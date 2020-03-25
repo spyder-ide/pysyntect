@@ -1,0 +1,56 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: JUnit Test Report
+first_line_match: "^Testsuite:"
+scope: text.junit-test-report
+contexts:
+  main:
+    - match: (Testsuite:) (.+)$\n
+      scope: meta.testsuite.name.junit-test-report
+      captures:
+        1: meta.testsuite.label.junit-test-report
+        2: entity.name.testsuite.junit-test-report
+    - match: '(Testcase:) (.+) took ([\d\.]+) sec$\n'
+      scope: meta.testcase.name.junit-test-report
+      captures:
+        1: meta.testcase.label.junit-test-report
+        2: entity.name.testcase.junit-test-report
+    - match: at\s+(?=.+?\(.+?\)$)
+      push:
+        - meta_scope: meta.stackframe.junit-test-report
+        - match: $\n
+          pop: true
+        - match: '(?<=\.)[^\.]+?(?=\()'
+          scope: meta.stackframe.method.junit-test-report
+        - match: \((.+)(:)(.+)\)$
+          captures:
+            1: meta.stackframe.source.junit-test-report
+            3: meta.stackframe.source.line.junit-test-report
+    - match: '------------- Standard Output ---------------$\n'
+      push:
+        - meta_scope: meta.section.output.junit-test-report
+        - match: '------------- ---------------- ---------------$\n'
+          pop: true
+        - match: '--Output from (.+?)--$\n'
+          captures:
+            1: entity.name.testcase.junit-test-report
+          push:
+            - meta_scope: meta.output.junit-test-report
+            - meta_content_scope: meta.output.content.junit-test-report
+            - match: (?=--Output from|------------- ---------------- ---------------)
+              pop: true
+    - match: '------------- Standard Error -----------------$\n'
+      push:
+        - meta_scope: meta.section.error.junit-test-report
+        - meta_content_scope: meta.error.junit-test-report
+        - match: '------------- ---------------- ---------------$\n'
+          pop: true
+        - match: '--Output from (.+?)--$\n'
+          captures:
+            1: entity.name.testcase.junit-test-report
+          push:
+            - meta_scope: meta.error.junit-test-report
+            - meta_content_scope: meta.error.content.junit-test-report
+            - match: (?=--Output from|------------- ---------------- ---------------)
+              pop: true

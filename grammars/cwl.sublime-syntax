@@ -1,0 +1,62 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CWL
+file_extensions:
+  - cwl
+scope: source.cwl
+contexts:
+  main:
+    - match: "'"
+      push:
+        - meta_scope: string.quoted.single.cwl
+        - match: "'"
+          pop: true
+        - match: \.
+          scope: constant.character.escape.cwl
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.cwl
+        - match: '"'
+          pop: true
+        - match: \.
+          scope: constant.character.escape.cwl
+    - match: \b(inputs|outputs|steps|id|requirements|hints|label|doc|secondaryFiles|streamable|outputBinding|format|outputSource|linkMerge|type|glob|loadContents|outputEval|merge_nested|merge_flattened|location|path|basename|dirname|nameroot|nameext|checksum|size|format|contents|listing|fields|symbols|items|in|out|run|scatter|scatterMethod|source|default|valueFrom|expressionLib|types|linkMerge|inputBinding|position|prefix|separate|itemSeparator|valueFrom|shellQuote|packages|package|version|specs|entry|entryname|writable|baseCommand|arguments|stdin|stderr|stdout|successCodes|temporaryFailCodes|permanentFailCodes|dockerLoad|dockerFile|dockerImport|dockerImageId|dockerOutputDirectory|envDef|envName|envValue|coresMin|coresMax|ramMin|ramMax|tmpdirMin|tmpdirMax|outdirMin|outdirMax)(?=:)
+      scope: keyword.control.cwl
+    - match: "cwlVersion:"
+      captures:
+        0: cwlVersion.keyword.control.cwl
+      push:
+        - meta_scope: cwlVersion.cwl
+        - match: $
+          captures:
+            0: cwlVersion.definition.string.end.cwl
+          pop: true
+        - match: \b(draft-2|draft-3.dev1|draft3-dev2|draft3-dev3|draft3-dev4|draft3-dev5|draft3|draft4.dev1|draft4.dev2|draft4.dev3|v1.0.dev4|v1.0)\b
+          scope: storage.constant.cwl
+    - match: "dockerPull:"
+      captures:
+        0: dockerPull.keyword.control.cwl
+      push:
+        - meta_scope: dockerPull.cwl
+        - match: $
+          captures:
+            0: dockerPull.definition.string.end.cwl
+          pop: true
+        - match: \b(.*)$
+          scope: storage.variable.cwl
+    - match: "class:"
+      captures:
+        0: class.keyword.control.cwl
+      push:
+        - meta_scope: class.cwl
+        - match: $
+          captures:
+            0: class.definition.string.end.cwl
+          pop: true
+        - match: \b(CommandLineTool|ExpressionTool|Workflow|InlineJavascriptRequirement|SchemaDefRequirement|DockerRequirement|SoftwareRequirement|InitialWorkDirRequirement|EnvVarRequirement|ShellCommandRequirement|ResourceRequirement)\b
+          scope: support.type.cwl
+    - match: ':\s+(null|boolean|int|long|float|double|string|File|Directory)\b'
+      scope: storage.type.cwl
+    - match: "#.*$"
+      scope: comment.line.number-sign.cwl

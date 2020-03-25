@@ -1,0 +1,65 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ini
+file_extensions:
+  - ini
+  - conf
+scope: source.ini
+contexts:
+  main:
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.ini
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.ini
+          push:
+            - meta_scope: comment.line.number-sign.ini
+            - match: \n
+              pop: true
+    - match: '(^[ \t]+)?(?=;)'
+      captures:
+        1: punctuation.whitespace.comment.leading.ini
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: ;
+          captures:
+            0: punctuation.definition.comment.ini
+          push:
+            - meta_scope: comment.line.semicolon.ini
+            - match: \n
+              pop: true
+    - match: '\b([a-zA-Z0-9_.-]+)\b\s*(=)'
+      captures:
+        1: keyword.other.definition.ini
+        2: punctuation.separator.key-value.ini
+    - match: '^(\[)(.*?)(\])'
+      scope: entity.name.section.group-title.ini
+      captures:
+        1: punctuation.definition.entity.ini
+        3: punctuation.definition.entity.ini
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.ini
+      push:
+        - meta_scope: string.quoted.single.ini
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.ini
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.ini
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.ini
+      push:
+        - meta_scope: string.quoted.double.ini
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.ini
+          pop: true
