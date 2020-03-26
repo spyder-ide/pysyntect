@@ -3,7 +3,7 @@
 """Python wrapper around syntect library."""
 
 from .syntect import (highlight, load_syntax_folder, Style, Color,
-                      FontStyleConst)
+                      FontStyleConst, __version__)
 
 
 class FontStyle:
@@ -13,8 +13,14 @@ class FontStyle:
     UNDERLINE = FontStyleConst.underline()
 
 
+# Package functions
 highlight
+load_syntax_folder
+
+# Package classes
 Style
 Color
 FontStyle
-load_syntax_folder
+
+# Package version
+__version__
