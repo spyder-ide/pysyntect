@@ -2,8 +2,25 @@
 from typing import List, Tuple
 
 
-class SyntaxSetHandle:
+class Syntax:
+    name: str
+    language: str
+
+
+class SyntaxSet:
     languages: List[str] = ...
+
+    def find_syntax_by_extension(self, extension: str) -> Syntax: ...
+
+
+class Theme:
+    name: str
+
+
+class ThemeSet:
+    themes: List[str]
+
+    def __getitem__(self, theme: str) -> Theme: ...
 
 
 class Color:
@@ -19,5 +36,7 @@ class Style:
     font_style: int = ...
 
 
-def load_syntax_folder(path: str) -> SyntaxSetHandle: ...
-def highlight(text: str, language: str) -> List[Tuple[Style, str]]: ...
+def load_theme_folder(path: str) -> ThemeSet: ...
+def load_syntax_folder(path: str) -> SyntaxSet: ...
+def highlight(text: str, language: str, syntax_set: SyntaxSet,
+              theme: Theme) -> List[Tuple[Style, str]]: ...
