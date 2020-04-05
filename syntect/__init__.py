@@ -3,8 +3,8 @@
 """Python wrapper around syntect library."""
 
 from .syntect import (highlight, load_syntax_folder, load_theme_folder,
-                      Style, Color, FontStyleConst, Syntax, Theme,
-                      SyntaxSet, ThemeSet, __version__)
+                      escape_to_console, Style, Color, FontStyleConst,
+                      Syntax, Theme, SyntaxSet, ThemeSet, __version__)
 
 
 class FontStyle:
@@ -18,6 +18,7 @@ class FontStyle:
 highlight
 load_syntax_folder
 load_theme_folder
+escape_to_console
 
 # Package classes
 Style
