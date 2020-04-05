@@ -34,6 +34,9 @@ jobs:
                 auto-update-conda: true
                 auto-activate-base: false
                 python-version: ${{ matrix.PYTHON_VERSION }}
+            - name: Print Rust version
+              shell: bash -l {0}
+              run: rustc --version
             - name: Build pysyntect
               shell: bash -l {0}
               run: pip install -U . --verbose
