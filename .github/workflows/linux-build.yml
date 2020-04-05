@@ -36,7 +36,7 @@ jobs:
                 python-version: ${{ matrix.PYTHON_VERSION }}
             - name: Build pysyntect
               shell: bash -l {0}
-              run: pip install -e . --verbose
+              run: pip install -U . --verbose
             - name: Run tests
               shell: bash -l {0}
               run: pytest -v -x syntect/tests
