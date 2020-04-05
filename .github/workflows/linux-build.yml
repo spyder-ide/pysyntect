@@ -22,7 +22,7 @@ jobs:
             - name: Checkout branch
               uses: actions/checkout@v1
             - name: Install latest Rust nightly
-              uses: actions-rs/toolchain@va1
+              uses: actions-rs/toolchain@v1
               with:
                 toolchain: nightly
                 override: true
