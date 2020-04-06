@@ -30,6 +30,11 @@ jobs:
             - name: Print Rust version
               shell: bash -l {0}
               run: rustc --version
+            - name: Install LLVM
+              shell: bash -l {0}
+              run: |
+                curl -fsSL -o LLVM9.exe https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe
+                7z x LLVM9.exe -y -o"C:/Program Files/LLVM"
             - name: Install Conda
               uses: goanpeca/setup-miniconda@v1
               with:
