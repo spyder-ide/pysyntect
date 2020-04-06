@@ -45,7 +45,10 @@ jobs:
               run: pip install maturin toml pytest
             - name: Build pysyntect
               shell: bash -l {0}
-              run: maturin develop
+              run: maturin build -i $(which python)
+            - name: Install pysyntect locally
+              shell: bash -l {0}
+              run: pip install target/wheels/*.whl
             - name: Run tests
               shell: bash -l {0}
               run: pytest -v -x syntect/tests
