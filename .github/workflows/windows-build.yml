@@ -49,9 +49,14 @@ jobs:
               shell: bash -l {0}
               run: pip install maturin toml pytest
             - name: Build pysyntect
-              shell: cmd
-              run: maturin develop
-              # run: maturin build -i $(which python)
+              shell: bash -l {0}
+              run: maturin build -i $(which python)
+            - name: Decompress wheel to extract compiled binary
+              shell: bash -l {0}
+              run: |
+                cd target/wheels
+                unzip *.whl
+                find . -type f -name "*.pyd" | xargs mv -t ../../syntect
             # - name: Install pysyntect locally
             #   shell: bash -l {0}
             #   run: pip install target/wheels/*.whl
