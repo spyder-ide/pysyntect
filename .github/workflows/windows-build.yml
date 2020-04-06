@@ -49,7 +49,7 @@ jobs:
               shell: bash -l {0}
               run: pip install maturin toml pytest
             - name: Build pysyntect
-              shell: powershell
+              shell: cmd
               run: maturin develop
               # run: maturin build -i $(which python)
             # - name: Install pysyntect locally
