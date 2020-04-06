@@ -1,4 +1,4 @@
-name: MacOs build
+name: MacOS build
 
 on:
     push:
@@ -9,7 +9,7 @@ on:
             - master
 jobs:
     linux:
-        name: MacOs Py${{ matrix.PYTHON_VERSION }}
+        name: MacOS Py${{ matrix.PYTHON_VERSION }}
         runs-on: macos-latest
         env:
             PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
