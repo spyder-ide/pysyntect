@@ -10,6 +10,9 @@ use syntect::highlighting::{Style, ThemeSet};
 use syntect::parsing::SyntaxSet;
 use syntect::util::{as_24_bit_terminal_escaped, LinesWithEndings};
 
+// Package version
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 // Class wrappers around syntect structs
 #[pyclass(name=Color)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,6 +129,23 @@ impl SyntaxSetHandle {
     }
 }
 
+#[pyclass(name=ThemeSet)]
+pub struct ThemeSetHandle {
+    pub theme_set: ThemeSet,
+}
+
+#[pymethods]
+impl ThemeSetHandle {
+    #[getter]
+    fn themes(&self) -> PyResult<Vec<&String>> {
+        let mut themes = Vec::<&String>::new();
+        for key in self.theme_set.themes.keys() {
+            themes.push(key)
+        }
+        Ok(themes)
+    }
+}
+
 // Exception classes
 create_exception!(pysyntect, LoadingError, exceptions::Exception);
 
@@ -192,11 +212,25 @@ fn load_syntax_folder(folder: &'static str) -> PyResult<SyntaxSetHandle> {
     }
 }
 
+#[pyfunction]
+fn load_theme_folder(folder: &'static str) -> PyResult<ThemeSetHandle> {
+    let theme_set = ThemeSet::load_from_folder(folder);
+    match theme_set {
+        Ok(result) => {
+            let theme_handle = ThemeSetHandle { theme_set: result };
+            Ok(theme_handle)
+        }
+        Err(err) => Err(LoadingError::py_err(err.to_string())),
+    }
+}
+
 /// This module is a python module implemented in Rust.
 #[pymodule]
 fn syntect(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add("__version__", VERSION)?;
     m.add_wrapped(wrap_pyfunction!(highlight))?;
     m.add_wrapped(wrap_pyfunction!(load_syntax_folder))?;
+    m.add_wrapped(wrap_pyfunction!(load_theme_folder))?;
     m.add_class::<StyleWrap>()?;
     m.add_class::<ColorWrap>()?;
     m.add_class::<FontStyleWrap>()?;
