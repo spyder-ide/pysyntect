@@ -1,6 +1,6 @@
 
 # Language syntax files
-This folder contains the language syntax definition files in ``sublime-syntax`` format. All the following language declarations were taken from the [GitHub linguist tool](https://github.com/github/linguist/). Right now, this library lacks an straight-forward, automatic way of converting all the diverse syntax defintions formats (``plist``, ``cson``, ``yaml``, ``json``, ``tmLanguage``) into the ``sublime-syntax`` format. Additionally, some of the files may need manual corrections in order to be correct, thus all the conversions were done manually at this point.
+This folder contains the language syntax definition files in ``sublime-syntax`` format. All the following language declarations were taken from the [GitHub linguist tool](https://github.com/github/linguist/). Right now, this library lacks a straight-forward, automatic way of converting all the diverse syntax defintions formats (``plist``, ``cson``, ``yaml``, ``json``, ``tmLanguage``) into the ``sublime-syntax`` format. Additionally, some of the files may need manual fixes in order to be syntactically correct, thus all the conversions were done manually at this point.
 
 If you find out that a language has a new update that is not present on this repository, feel free to convert it and open a Pull Request. Here are some hints to convert syntax grammars across different formats.
 
