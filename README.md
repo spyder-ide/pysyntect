@@ -21,6 +21,17 @@ Python bindings for the [Syntect](https://github.com/trishume/syntect) library. 
 <!-- ![Elixir example](./doc/elixir.png) -->
 <!-- ![Rust example](./doc/rust.png) -->
 
+## Installing
+To install pysyntect, you can use both conda or pip package managers:
+
+```bash
+# Using Conda (Recommended)
+conda install pysyntect -c spyder-ide
+
+# Using pip
+pip install pysyntect
+```
+
 
 ## Dependencies
 To compile pysyntect, you will require the latest nightly release of [Rust](https://rustup.rs/), alongside [Cargo](https://crates.io/). Also, it requires a Python distribution with its corresponding development headers. Finally, this project depends on the following Cargo crates:
