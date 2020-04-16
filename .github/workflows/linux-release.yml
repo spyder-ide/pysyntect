@@ -40,6 +40,11 @@ jobs:
             - name: Build and publish pysyntect
               shell: bash -l {0}
               env:
-                MATURIN_PASSWORD: ${{secrets.MATURIN_PASSWORD}}
-                MATURIN_USERNAME: ${{secrets.MATURIN_USERNAME}}
-              run: maturin publish -i $(which python) -u $MATURIN_USERNAME
+                MATURIN_PASSWORD: ${{ secrets.MATURIN_PASSWORD }}
+                MATURIN_USERNAME: ${{ secrets.MATURIN_USERNAME }}
+              run: |
+                SKIP_SDIST=$([ $PYTHON_VERSION == "3.8" -a $RUNNER_OS == "Linux" ] && echo "" || echo "--no-sdist")
+                echo $PYTHON_VERSION
+                echo $RUNNER_OS
+                echo $SKIP_SDIST
+                maturin publish -i $(which python) -u $MATURIN_USERNAME $SKIP_SDIST
