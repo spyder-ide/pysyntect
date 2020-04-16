@@ -9,9 +9,17 @@
 
 """Python wrapper around syntect library."""
 
+# Standard library imports
+import os
+import os.path as osp
+
+# Local imports
 from .syntect import (highlight, load_syntax_folder, load_theme_folder,
                       escape_to_console, Style, Color, FontStyleConst,
                       Syntax, Theme, SyntaxSet, ThemeSet, __version__)
+
+HERE = osp.dirname(osp.abspath(__file__))
+GRAMMARS = osp.join(HERE, 'grammars')
 
 
 class FontStyle:
@@ -19,6 +27,11 @@ class FontStyle:
     BOLD = FontStyleConst.bold()
     ITALIC = FontStyleConst.italic()
     UNDERLINE = FontStyleConst.underline()
+
+
+def load_default_syntax():
+    """Load the default syntax definitions included with pysyntect."""
+    return load_syntax_folder(GRAMMARS)
 
 
 # Package functions
