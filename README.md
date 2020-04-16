@@ -16,7 +16,7 @@
 Python bindings for the [Syntect](https://github.com/trishume/syntect) library. Pysyntect provides a lightweight, fast engine to compute syntax highlighting using [Sublime Text syntax definitions](http://www.sublimetext.com/docs/3/syntax.html#include-syntax) and TextMate theme definitions, which are shared by many editors.
 
 <!-- Insert some image here -->
-![Python example](https://raw.githubusercontent.com/spyder-ide/pysyntect/improve_readme/doc/python.png)
+![Python example](https://raw.githubusercontent.com/spyder-ide/pysyntect/master/doc/python.png)
 <!-- ![C example](./doc/c.png) -->
 <!-- ![Elixir example](./doc/elixir.png) -->
 <!-- ![Rust example](./doc/rust.png) -->
