@@ -27,7 +27,7 @@ To compile pysyntect, you will require the latest nightly release of [Rust](http
 
 * [PyO3](https://github.com/PyO3/pyo3): Library used to produce Python bindings from Rust code.
 * [Syntect](https://github.com/trishume/syntect): Syntax highlighting library in Rust.
-* [Maturin](https://github.com/PyO3/pyo3): Build system to build and publish Rust-based Python packages
+* [Maturin](https://github.com/PyO3/maturin): Build system to build and publish Rust-based Python packages
 
 ## Compilling locally
 Besides Rust, you will require the latest version of maturin installed to compile this project locally:
