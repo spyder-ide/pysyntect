@@ -16,6 +16,11 @@
 Python bindings for the [Syntect](https://github.com/trishume/syntect) library. Pysyntect provides a lightweight, fast engine to compute syntax highlighting using [Sublime Text syntax definitions](http://www.sublimetext.com/docs/3/syntax.html#include-syntax) and TextMate theme definitions, which are shared by many editors.
 
 <!-- Insert some image here -->
+![Python example](./doc/python.png)
+![C example](./doc/c.png)
+![Elixir example](./doc/elixir.png)
+![Rust example](./doc/rust.png)
+
 
 ## Dependencies
 To compile pysyntect, you will require the latest nightly release of [Rust](https://rustup.rs/), alongside [Cargo](https://crates.io/). Also, it requires a Python distribution with its corresponding development headers. Finally, this project depends on the following Cargo crates:
