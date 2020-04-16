@@ -1,5 +1,5 @@
 # pysyntect
-[![Project License - MIT](https://img.shields.io/pypi/l/pysyntect.svg)](./LICENSE)
+[![Project License - MIT](https://img.shields.io/pypi/l/pysyntect.svg)](https://raw.githubusercontent.com/spyder-ide/pysyntect/master/LICENSE)
 [![pypi version](https://img.shields.io/pypi/v/pysyntect.svg)](https://pypi.org/project/pysyntect/)
 [![conda version](https://img.shields.io/conda/vn/conda-forge/pysyntect.svg)](https://www.anaconda.com/download/)
 [![download count](https://img.shields.io/conda/dn/conda-forge/pysyntect.svg)](https://www.anaconda.com/download/)
@@ -16,7 +16,7 @@
 Python bindings for the [Syntect](https://github.com/trishume/syntect) library. Pysyntect provides a lightweight, fast engine to compute syntax highlighting using [Sublime Text syntax definitions](http://www.sublimetext.com/docs/3/syntax.html#include-syntax) and TextMate theme definitions, which are shared by many editors.
 
 <!-- Insert some image here -->
-![Python example](./doc/python.png)
+![Python example](https://raw.githubusercontent.com/spyder-ide/pysyntect/improve_readme/doc/python.png)
 <!-- ![C example](./doc/c.png) -->
 <!-- ![Elixir example](./doc/elixir.png) -->
 <!-- ![Rust example](./doc/rust.png) -->
@@ -36,7 +36,7 @@ Besides Rust, you will require the latest version of maturin installed to compil
 pip install maturin toml
 ```
 
-After installing, it is possible to execute the following command to compile pysyntect:
+After installing those packages, it is possible to execute the following command to compile pysyntect:
 
 ```bash
 maturin develop
@@ -48,7 +48,7 @@ In order to produce wheels, ``maturin build`` can be used instead. This project 
 pip install -U .
 ```
 
-### Running tests
+## Running tests
 We use pytest to run tests as it follows (after calling ``maturin develop``):
 
 ```bash
@@ -56,7 +56,7 @@ pytest -v syntect/tests
 ```
 
 ## Package usage
-Pysyntect provides utillities and functions for loading themes and syntax definitions, as well to highlight text strings. Pysyntect supports over 500 [syntax language definitions](./grammars) across many TextMate theme definitions (not included as part of this package).
+Pysyntect provides utillities and functions for loading themes and syntax definitions, as well to highlight text strings. Pysyntect supports over 500 [syntax language definitions](https://github.com/spyder-ide/pysyntect/tree/master/syntect/grammars) across many TextMate theme definitions (not included as part of this package).
 
 ```python
 from syntect import (highlight, load_theme_folder,
@@ -105,7 +105,7 @@ escape_to_console(color_ranges, display_bg=True)
 ```
 
 ## Changelog
-Visit our [CHANGELOG](CHANGELOG.md) file to learn more about our new features and improvements.
+Please see our [CHANGELOG](https://github.com/spyder-ide/pysyntect/blob/master/CHANGELOG.md) file to learn more about our new features and improvements.
 
 
 ## Contribution guidelines
