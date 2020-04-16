@@ -17,9 +17,9 @@ Python bindings for the [Syntect](https://github.com/trishume/syntect) library. 
 
 <!-- Insert some image here -->
 ![Python example](./doc/python.png)
-![C example](./doc/c.png)
-![Elixir example](./doc/elixir.png)
-![Rust example](./doc/rust.png)
+<!-- ![C example](./doc/c.png) -->
+<!-- ![Elixir example](./doc/elixir.png) -->
+<!-- ![Rust example](./doc/rust.png) -->
 
 
 ## Dependencies
