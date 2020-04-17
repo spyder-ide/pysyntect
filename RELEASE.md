@@ -14,5 +14,5 @@ To release a new version of pysyntect:
 13. git push upstream master
 14. git push upstream --tags
 
-<a name="explanation"></a>We need to append '-dev0', as Cargo does not support the '.dev0'
+[<a name="explanation">1</a>] We need to append '-dev0', as Cargo does not support the '.dev0'
 syntax.
