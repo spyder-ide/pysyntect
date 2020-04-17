@@ -1,3 +1,11 @@
+## Version 0.1.1 (2020/04/16)
+
+### Issues Closed
+
+* [Issue 18](https://github.com/spyder-ide/pysyntect/issues/18) - Release v0.1.1
+
+In this release 1 issue was closed.
+
 ## Version 0.1.0 (2020/04/16)
 
 ### Issues Closed
