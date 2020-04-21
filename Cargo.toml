@@ -1,6 +1,6 @@
 [package]
 name = "pysyntect"
-version = "0.1.1-dev0"
+version = "0.1.2"
 authors = ["Edgar Andrés Margffoy Tuay <andfoy@gmail.com>"]
 description = "Python bindings for the syntect syntax highlighter."
 repository = "https://github.com/spyder-ide/pysyntect"
@@ -23,6 +23,7 @@ features = ["extension-module"]
 
 [package.metadata.maturin]
 classifier = [
+    "Development Status :: 4 - Beta",
     "Topic :: Software Development",
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
