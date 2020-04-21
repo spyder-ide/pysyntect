@@ -1,3 +1,18 @@
+## Version 0.1.2 (2020/04/21)
+
+### Issues Closed
+
+* [Issue 20](https://github.com/spyder-ide/pysyntect/issues/20) - Release v0.1.2
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 19](https://github.com/spyder-ide/pysyntect/pull/19) - PR: Standarize all names to ASCII, by [@andfoy](https://github.com/andfoy)
+
+In this release 1 pull request was closed.
+
+
 ## Version 0.1.1 (2020/04/16)
 
 ### Issues Closed
