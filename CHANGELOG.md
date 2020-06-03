@@ -1,3 +1,18 @@
+## Version 0.2.0 (2020/06/03)
+
+### Issues Closed
+
+* [Issue 22](https://github.com/spyder-ide/pysyntect/issues/22) - Release v0.2.0
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 21](https://github.com/spyder-ide/pysyntect/pull/21) - PR: Update syntect version to 4.2, PyO3 to 0.10.1, by [@andfoy](https://github.com/andfoy)
+
+In this release 1 pull request was closed.
+
+
 ## Version 0.1.2 (2020/04/21)
 
 ### Issues Closed
