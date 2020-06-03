@@ -15,10 +15,10 @@ name = "syntect"
 crate-type = ["cdylib"]
 
 [dependencies]
-syntect = "3.3"
+syntect = "4.2"
 
 [dependencies.pyo3]
-version = "0.9.0"
+version = "0.10.1"
 features = ["extension-module"]
 
 [package.metadata.maturin]

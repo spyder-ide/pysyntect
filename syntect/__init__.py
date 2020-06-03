@@ -15,7 +15,8 @@ import os.path as osp
 
 # Local imports
 from .syntect import (highlight, load_syntax_folder, load_theme_folder,
-                      escape_to_console, Style, Color, FontStyleConst,
+                      escape_to_console, escape_to_latex,
+                      Style, Color, FontStyleConst,
                       Syntax, Theme, SyntaxSet, ThemeSet, __version__)
 
 HERE = osp.dirname(osp.abspath(__file__))
@@ -39,6 +40,7 @@ highlight
 load_syntax_folder
 load_theme_folder
 escape_to_console
+escape_to_latex
 
 # Package classes
 Style
