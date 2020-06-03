@@ -18,7 +18,7 @@ use pyo3::class::PyMappingProtocol;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Style, Theme, ThemeSet, Color};
 use syntect::parsing::{SyntaxSet, SyntaxReference};
-use syntect::util::{as_24_bit_terminal_escaped, LinesWithEndings};
+use syntect::util::{as_latex_escaped, as_24_bit_terminal_escaped, LinesWithEndings};
 
 // Package version
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -486,24 +486,25 @@ create_exception!(pysyntect, SyntaxNotFoundError, exceptions::Exception);
 ///     List of style transformations to apply to each token in the text.
 #[pyfunction]
 fn highlight(
-    text: &'static str,
-    language: &str,
+    text: String,
+    language: String,
     syntax_set: SyntaxSetHandle,
     theme: ThemeHandle
-) -> PyResult<Vec<(StyleWrap, &'static str)>> {
+) -> PyResult<Vec<(StyleWrap, String)>> {
     // let ps = SyntaxSet::load_defaults_newlines();
     let ps = syntax_set.syntax_set;
     // let ts = ThemeSet::load_defaults();
 
-    let syntax = ps.find_syntax_by_extension(language).unwrap();
+    let syntax = ps.find_syntax_by_extension(&language).unwrap();
     // for key in ts.themes.keys() {
     //     println!("{}", key);
     // }
     let mut h = HighlightLines::new(syntax, &theme.theme);
     // let mut h = HighlightLines::new(syntax, &ts.themes["Solarized (light)"]);
     // let s = "def tefa(a, b, *args, **kwargs):\n    return a + b";
-    let mut python_output = Vec::<(StyleWrap, &str)>::new();
-    for line in LinesWithEndings::from(text) {
+    let s_slice: &str = &*text;
+    let mut python_output = Vec::<(StyleWrap, String)>::new();
+    for line in LinesWithEndings::from(s_slice) {
         let ranges: Vec<(Style, &str)> = h.highlight(line, &ps);
         for &(ref style, text) in ranges.iter() {
             let py_foreground = ColorWrap {
@@ -520,7 +521,7 @@ fn highlight(
                 style: *style,
             };
 
-            python_output.push((py_style, text));
+            python_output.push((py_style, text.to_string()));
         }
         // let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
         // println!("{}", escaped);
@@ -545,8 +546,8 @@ fn highlight(
 /// LoadingError:
 ///     If there was some error trying to read any of the files.
 #[pyfunction]
-fn load_syntax_folder(folder: &'static str) -> PyResult<SyntaxSetHandle> {
-    let syn_set = SyntaxSet::load_from_folder(folder);
+fn load_syntax_folder(folder: String) -> PyResult<SyntaxSetHandle> {
+    let syn_set = SyntaxSet::load_from_folder(&folder);
     match syn_set {
         Ok(result) => {
             // let syntaxes = result.syntaxes();
@@ -575,8 +576,8 @@ fn load_syntax_folder(folder: &'static str) -> PyResult<SyntaxSetHandle> {
 /// LoadingError:
 ///     If there was some error trying to read any of the files.
 #[pyfunction]
-fn load_theme_folder(folder: &'static str) -> PyResult<ThemeSetHandle> {
-    let theme_set = ThemeSet::load_from_folder(folder);
+fn load_theme_folder(folder: String) -> PyResult<ThemeSetHandle> {
+    let theme_set = ThemeSet::load_from_folder(&folder);
     match theme_set {
         Ok(result) => {
             let theme_handle = ThemeSetHandle { theme_set: result };
@@ -607,6 +608,23 @@ fn escape_to_console(all_ranges: Vec<(StyleWrap, &str)>, display_bg: bool) -> Py
     Ok(())
 }
 
+
+/// Output highlighted text as LaTeX, given a list of pairs (token, style).
+///
+/// Parameters
+/// ------
+/// all_ranges: List[Tuple[Style, str]]
+///     List of tuples (style, token), where each style describes the colors
+///     that should be applied to the corresponding token.
+#[pyfunction]
+fn escape_to_latex(all_ranges: Vec<(StyleWrap, &str)>) -> PyResult<String> {
+    // let output = Vec::<String>::new();
+    let transformed_ranges: Vec<(Style, &str)> = all_ranges.iter().map(
+        |(style_wrap, text)| (style_wrap.style, *text)).collect();
+    let escaped = as_latex_escaped(&transformed_ranges[..]);
+    Ok(escaped)
+}
+
 /// This module is a python module implemented in Rust.
 #[pymodule]
 fn syntect(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -615,6 +633,7 @@ fn syntect(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(load_syntax_folder))?;
     m.add_wrapped(wrap_pyfunction!(load_theme_folder))?;
     m.add_wrapped(wrap_pyfunction!(escape_to_console))?;
+    m.add_wrapped(wrap_pyfunction!(escape_to_latex))?;
     m.add_class::<StyleWrap>()?;
     m.add_class::<ColorWrap>()?;
     m.add_class::<FontStyleWrap>()?;
