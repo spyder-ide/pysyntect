@@ -34,7 +34,7 @@ pip install pysyntect
 
 
 ## Dependencies
-To compile pysyntect, you will require the latest nightly release of [Rust](https://rustup.rs/), alongside [Cargo](https://crates.io/). Also, it requires a Python distribution with its corresponding development headers. Finally, this project depends on the following Cargo crates:
+To compile pysyntect, you will require the latest stable/beta/nightly release of [Rust](https://rustup.rs/), alongside [Cargo](https://crates.io/). Also, it requires a Python distribution with its corresponding development headers. Finally, this project depends on the following Cargo crates:
 
 * [PyO3](https://github.com/PyO3/pyo3): Library used to produce Python bindings from Rust code.
 * [Syntect](https://github.com/trishume/syntect): Syntax highlighting library in Rust.
