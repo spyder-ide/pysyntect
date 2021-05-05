@@ -27,7 +27,7 @@ const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 // ----------------------------------------------------------------------------
 
 /// RGBA color descriptor
-#[pyclass(name=Color)]
+#[pyclass(name="Color")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ColorWrap {
     /// Handle to original color
@@ -62,7 +62,7 @@ impl ColorWrap {
 }
 
 /// Style color description used to highlight a token.
-#[pyclass(name=Style)]
+#[pyclass(name="Style")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StyleWrap {
     /// Foreground color.
@@ -96,7 +96,7 @@ impl StyleWrap {
     }
 }
 
-#[pyclass(name=FontStyleConst)]
+#[pyclass(name="FontStyleConst")]
 pub struct FontStyleWrap {}
 
 #[pymethods]
@@ -125,7 +125,7 @@ impl FontStyleWrap {
 }
 
 /// Handle to a language syntax definition.
-#[pyclass(name=Syntax)]
+#[pyclass(name="Syntax")]
 pub struct SyntaxHandle {
     pub syntax: SyntaxReference
 }
@@ -149,7 +149,7 @@ impl SyntaxHandle {
 
 
 /// Handle to a list of language syntax definitions.
-#[pyclass(name=SyntaxSet)]
+#[pyclass(name="SyntaxSet")]
 #[derive(Debug, Clone)]
 pub struct SyntaxSetHandle {
     pub syntax_set: SyntaxSet,
@@ -196,7 +196,7 @@ impl SyntaxSetHandle {
                };
                Ok(result)
            },
-           None => Err(SyntaxNotFoundError::py_err(
+           None => Err(SyntaxNotFoundError::new_err(
                format!("{} extension not found", extension)))
        }
     }
@@ -219,7 +219,7 @@ fn pack_color(color_opt: Option<Color>) -> Option<ColorWrap> {
 ///
 /// This class points and refers to the main colors and settings defined by
 /// the theme.
-#[pyclass(name=Theme)]
+#[pyclass(name="Theme")]
 #[derive(Debug, Clone)]
 pub struct ThemeHandle {
     pub theme: Theme,
@@ -409,7 +409,7 @@ impl ThemeHandle {
 }
 
 /// Handle to a map of highlighting themes.
-#[pyclass(name=ThemeSet)]
+#[pyclass(name="ThemeSet")]
 pub struct ThemeSetHandle {
     pub theme_set: ThemeSet,
 }
@@ -425,7 +425,7 @@ impl PyMappingProtocol for ThemeSetHandle {
                 };
                 Ok(handler)
             },
-            None => Err(PyErr::new::<exceptions::KeyError, _>(
+            None => Err(exceptions::PyKeyError::new_err(
                 format!("Theme {} does not exist", key)
             ))
         }
@@ -461,8 +461,8 @@ impl ThemeSetHandle {
 }
 
 // Exception classes
-create_exception!(pysyntect, LoadingError, exceptions::Exception);
-create_exception!(pysyntect, SyntaxNotFoundError, exceptions::Exception);
+create_exception!(pysyntect, LoadingError, exceptions::PyException);
+create_exception!(pysyntect, SyntaxNotFoundError, exceptions::PyException);
 
 // Module functions
 // ----------------------------------------------------------------------------
@@ -554,7 +554,7 @@ fn load_syntax_folder(folder: String) -> PyResult<SyntaxSetHandle> {
             let syn_handle = SyntaxSetHandle { syntax_set: result };
             Ok(syn_handle)
         }
-        Err(err) => Err(LoadingError::py_err(err.to_string())),
+        Err(err) => Err(LoadingError::new_err(err.to_string())),
     }
 }
 
@@ -583,7 +583,7 @@ fn load_theme_folder(folder: String) -> PyResult<ThemeSetHandle> {
             let theme_handle = ThemeSetHandle { theme_set: result };
             Ok(theme_handle)
         }
-        Err(err) => Err(LoadingError::py_err(err.to_string())),
+        Err(err) => Err(LoadingError::new_err(err.to_string())),
     }
 }
 

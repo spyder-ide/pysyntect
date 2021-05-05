@@ -15,7 +15,7 @@ name = "syntect"
 crate-type = ["cdylib"]
 
 [dependencies]
-syntect = "4.2"
+syntect = "4.5"
 
 [dependencies.pyo3]
 version = "0.13.2"
@@ -28,8 +28,8 @@ classifier = [
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Operating System :: Microsoft :: Windows',
-    'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8'
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9'
 ]

@@ -17,30 +17,31 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                PYTHON_VERSION: ["3.5", "3.6", "3.7", "3.8"]
+                PYTHON_VERSION: ["3.6", "3.7", "3.8", "3.9"]
         steps:
             - name: Checkout branch
               uses: actions/checkout@v1
             - name: Install latest Rust nightly
               uses: actions-rs/toolchain@v1
               with:
-                toolchain: nightly
+                toolchain: stable
+                target: x86_64-pc-windows-msvc
                 override: true
                 components: rustfmt, clippy
             - name: Print Rust version
               shell: bash -l {0}
               run: rustc --version
-            - name: Install LLVM
-              shell: bash -l {0}
-              run: |
-                curl -fsSL -o LLVM9.exe https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe
-                7z x LLVM9.exe -y -o"C:/Program Files/LLVM"
-            - name: Install Conda
-              uses: goanpeca/setup-miniconda@v1
+            # - name: Install LLVM
+            #   shell: bash -l {0}
+            #   run: |
+            #     curl -fsSL -o LLVM9.exe https://releases.llvm.org/9.0.0/LLVM-9.0.0-win64.exe
+            #     7z x LLVM9.exe -y -o"C:/Program Files/LLVM"
+            - name: Install miniconda
+              uses: conda-incubator/setup-miniconda@v2
               with:
-                activate-environment: test
                 auto-update-conda: true
-                auto-activate-base: false
+                activate-environment: test
+                channels: conda-forge,defaults
                 python-version: ${{ matrix.PYTHON_VERSION }}
             - name: Conda env info
               shell: bash -l {0}
@@ -53,10 +54,10 @@ jobs:
               run: maturin build -i $(which python)
             - name: Decompress wheel to extract compiled binary
               shell: bash -l {0}
-              run: |
-                cd target/wheels
-                unzip *.whl
-                find . -type f -name "*.pyd" | xargs mv -t ../../syntect
+              run: maturin develop
+                # cd target/wheels
+                # unzip *.whl
+                # find . -type f -name "*.pyd" | xargs mv -t ../../syntect
             # - name: Install pysyntect locally
             #   shell: bash -l {0}
             #   run: pip install target/wheels/*.whl
