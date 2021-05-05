@@ -14,25 +14,25 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                PYTHON_VERSION: ["3.5", "3.6", "3.7", "3.8"]
+                PYTHON_VERSION: ["3.6", "3.7", "3.8", "3.9"]
         steps:
             - name: Checkout branch
               uses: actions/checkout@v1
             - name: Install latest Rust nightly
               uses: actions-rs/toolchain@v1
               with:
-                toolchain: nightly
+                toolchain: stable
                 override: true
                 components: rustfmt, clippy
             - name: Print Rust version
               shell: bash -l {0}
               run: rustc --version
-            - name: Install Conda
-              uses: goanpeca/setup-miniconda@v1
+            - name: Install miniconda
+              uses: conda-incubator/setup-miniconda@v2
               with:
-                activate-environment: test
                 auto-update-conda: true
-                auto-activate-base: false
+                activate-environment: test
+                channels: conda-forge,defaults
                 python-version: ${{ matrix.PYTHON_VERSION }}
             - name: Install build/test dependencies
               shell: bash -l {0}
@@ -43,7 +43,7 @@ jobs:
                 MATURIN_PASSWORD: ${{ secrets.MATURIN_PASSWORD }}
                 MATURIN_USERNAME: ${{ secrets.MATURIN_USERNAME }}
               run: |
-                SKIP_SDIST=$([ $PYTHON_VERSION == "3.8" -a $RUNNER_OS == "Linux" ] && echo "" || echo "--no-sdist")
+                SKIP_SDIST=$([ $PYTHON_VERSION == "3.9" -a $RUNNER_OS == "Linux" ] && echo "" || echo "--no-sdist")
                 echo $PYTHON_VERSION
                 echo $RUNNER_OS
                 echo $SKIP_SDIST
