@@ -39,6 +39,17 @@
 			</dict>
 		</dict>
 		<dict>
+            <key>name</key>
+            <string>String</string>
+            <key>scope</key>
+            <string>meta.function-call.generic</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#268BD2</string>
+            </dict>
+        </dict>
+		<dict>
 			<key>name</key>
 			<string>Comment</string>
 			<key>scope</key>
@@ -1910,6 +1921,53 @@
 				<string>#DC322F</string><!-- red -->
 			</dict>
 		</dict>
+
+		 <dict>
+            <key>name</key>
+            <string>self and cls</string>
+            <key>scope</key>
+            <string>variable.language.special, variable.parameter.function.language.special</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#268BD2</string>
+            </dict>
+        </dict>
+
+		<!-- PEP 484: -->
+        <dict>
+            <key>name</key>
+            <string>comment/typehint: base color</string>
+            <key>scope</key>
+            <string>comment.typehint</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#586E75</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>comment/typehint: ignore</string>
+            <key>scope</key>
+            <string>comment.typehint.ignore</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#2AA198</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>comment/typehint: type name</string>
+            <key>scope</key>
+            <string>comment.typehint.type</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#3a7199</string>
+            </dict>
+        </dict>
 
 		<dict>
 			<key>name</key>

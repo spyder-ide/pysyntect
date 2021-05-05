@@ -26,6 +26,17 @@
 			</dict>
 		</dict>
 		<dict>
+            <key>name</key>
+            <string>String</string>
+            <key>scope</key>
+            <string>meta.function-call.generic</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#FFFD87</string>
+            </dict>
+        </dict>
+		<dict>
 			<key>name</key>
 			<string>Comment</string>
 			<key>scope</key>
@@ -423,9 +434,20 @@
 			<key>settings</key>
 			<dict>
 				<key>foreground</key>
-				<string>#FFFD87</string>
+				<string>#FED6AF</string>
 			</dict>
 		</dict>
+		<dict>
+            <key>name</key>
+            <string>self and cls</string>
+            <key>scope</key>
+            <string>variable.language.special, variable.parameter.function.language.special</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#CC9495</string>
+            </dict>
+        </dict>
 		<dict>
 			<key>name</key>
 			<string>built-in function</string>
@@ -737,7 +759,42 @@
                 <key>foreground</key>
                 <string>#D02000</string>
             </dict>
-        </dict></array>
+        </dict>
+		<!-- PEP 484: -->
+        <dict>
+            <key>name</key>
+            <string>comment/typehint: base color</string>
+            <key>scope</key>
+            <string>comment.typehint</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#75715E</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>comment/typehint: ignore</string>
+            <key>scope</key>
+            <string>comment.typehint.ignore</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#DDB700</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>comment/typehint: type name</string>
+            <key>scope</key>
+            <string>comment.typehint.type</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key>
+                <string>#CA7172</string>
+            </dict>
+        </dict>
+	</array>
 	<key>uuid</key>
 	<string>A34A7407-68B9-48E5-883E-E551F7561026</string>
 </dict>

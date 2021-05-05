@@ -1,0 +1,961 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Cython
+comment: |
+  todo:
+          list comprehension / generator comprehension scope.
+file_extensions:
+  - pyx
+  - pxi
+  - pxd
+first_line_match: ^#!/.*\bcython\b
+scope: source.cython
+contexts:
+  main:
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.cython
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.cython
+          push:
+            - meta_scope: comment.line.number-sign.cython
+            - match: \n
+              pop: true
+    - match: '\b(?i:(0x[0-9A-Fa-f]*)L)'
+      scope: constant.numeric.integer.long.hexadecimal.cython
+    - match: '\b(?i:(0x[0-9A-Fa-f]*))'
+      scope: constant.numeric.integer.hexadecimal.cython
+    - match: '\b(?i:(0[0-7]+)L)'
+      scope: constant.numeric.integer.long.octal.cython
+    - match: '\b(0[0-7]+)'
+      scope: constant.numeric.integer.octal.cython
+    - match: '\b(?i:(((\d+(\.(?=[^a-zA-Z_])\d*)?|(?<=[^0-9a-zA-Z_])\.\d+)(e[\-\+]?\d+)?))J)'
+      scope: constant.numeric.complex.cython
+    - match: '\b(?i:(\d+\.\d*(e[\-\+]?\d+)?))(?=[^a-zA-Z_])'
+      scope: constant.numeric.float.cython
+    - match: '(?<=[^0-9a-zA-Z_])(?i:(\.\d+(e[\-\+]?\d+)?))'
+      scope: constant.numeric.float.cython
+    - match: '\b(?i:(\d+e[\-\+]?\d+))'
+      scope: constant.numeric.float.cython
+    - match: '\b(?i:([1-9]+[0-9]*|0)L)'
+      scope: constant.numeric.integer.long.decimal.cython
+    - match: '\b([1-9]+[0-9]*|0)'
+      scope: constant.numeric.integer.decimal.cython
+    - match: \b(global)\b
+      captures:
+        1: storage.modifier.global.cython
+    - match: \b(?:(import|include)|(from))\b
+      captures:
+        1: keyword.control.import.cython
+        2: keyword.control.import.from.cython
+    - match: \b(elif|else|except|finally|for|if|try|while|with|IF|ELIF|ELSE)\b
+      comment: keywords that delimit flow blocks
+      scope: keyword.control.flow.cython
+    - match: \b(break|continue|pass|raise|return|yield)\b
+      comment: keywords that alter flow from within a block
+      scope: keyword.control.flow.cython
+    - match: \b(and|in|is|not|or)\b
+      comment: keyword operators that evaluate to True or False
+      scope: keyword.operator.logical.cython
+    - match: \b(as|assert|del|exec|print)\b
+      comment: keywords that haven't fit into other groups (yet).
+      captures:
+        1: keyword.other.cython
+    - match: \b(asm|__asm__|auto|bool|_Bool|char|_Complex|double|enum|float|_Imaginary|int|long|short|signed|struct|typedef|union|unsigned|void)\b
+      scope: storage.type.cython
+    - match: <\=|>\=|\=\=|<|>|<>
+      scope: keyword.operator.comparison.cython
+    - match: \+\=|-\=|\*\=|/\=|//\=|%\=|&\=|\|\=|\^\=|>>\=|<<\=|\*\*\=
+      scope: keyword.operator.assignment.augmented.cython
+    - match: \+|\-|\*|\*\*|/|//|%|<<|>>|&|\||\^|~
+      scope: keyword.operator.arithmetic.cython
+    - match: \=
+      scope: keyword.operator.assignment.cython
+    - match: '^\s*(class)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\:)'
+      captures:
+        1: storage.type.class.cython
+      push:
+        - meta_scope: meta.class.old-style.cython
+        - meta_content_scope: entity.name.type.class.cython
+        - match: \s*(:)
+          captures:
+            1: punctuation.section.class.begin.cython
+          pop: true
+        - include: entity_name_class
+    - match: '^\s*(property)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\:)'
+      captures:
+        1: storage.type.property.cython
+      push:
+        - meta_scope: meta.property.cython
+        - meta_content_scope: entity.name.type.property.cython
+        - match: \s*(:)
+          captures:
+            1: punctuation.section.property.begin.cython
+          pop: true
+    - match: '^\s*(class)\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\s*\()'
+      captures:
+        1: storage.type.class.cython
+      push:
+        - meta_scope: meta.class.cython
+        - match: (\))\s*(?:(\:)|(.*$\n?))
+          captures:
+            1: punctuation.definition.inheritance.end.cython
+            2: punctuation.section.class.begin.cython
+            3: invalid.illegal.missing-section-begin.cython
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.type.class.cython
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_class
+        - match: (\()
+          captures:
+            1: punctuation.definition.inheritance.begin.cython
+          push:
+            - meta_content_scope: meta.class.inheritance.cython
+            - match: (?=\)|:)
+              pop: true
+            - match: (?<=\(|,)\s*
+              push:
+                - meta_content_scope: entity.other.inherited-class.cython
+                - match: \s*(?:(,)|(?=\)))
+                  captures:
+                    1: punctuation.separator.inheritance.cython
+                  pop: true
+                - include: main
+    - match: '^\s*(class)\s+(?=[a-zA-Z_][a-zA-Z_0-9])'
+      captures:
+        1: storage.type.class.cython
+      push:
+        - meta_scope: meta.class.cython
+        - match: (\()|\s*($\n?|#.*$\n?)
+          captures:
+            1: punctuation.definition.inheritance.begin.cython
+            2: invalid.illegal.missing-inheritance.cython
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.type.class.cython
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_function
+    - match: '^\s*(def)\s+(?=[A-Za-z_][A-Za-z0-9_]*\s*\()'
+      captures:
+        1: storage.type.function.cython
+      push:
+        - meta_scope: meta.function.cython
+        - match: (\))\s*(?:(\:)|(.*$\n?))
+          captures:
+            1: punctuation.definition.parameters.end.cython
+            2: punctuation.section.function.begin.cython
+            3: invalid.illegal.missing-section-begin.cython
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.cython
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_function
+        - match: (\()
+          captures:
+            1: punctuation.definition.parameters.begin.cython
+          push:
+            - meta_content_scope: meta.function.parameters.cython
+            - match: (?=\)\s*\:)
+              pop: true
+            - include: keyword_arguments
+            - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,)|(?=[\n\)]))'
+              captures:
+                1: variable.parameter.function.cython
+                2: punctuation.separator.parameters.cython
+    - match: '^\s*(def)\s+(?=[A-Za-z_][A-Za-z0-9_]*)'
+      captures:
+        1: storage.type.function.cython
+      push:
+        - meta_scope: meta.function.cython
+        - match: (\()|\s*($\n?|#.*$\n?)
+          captures:
+            1: punctuation.definition.parameters.begin.cython
+            2: invalid.illegal.missing-parameters.cython
+          pop: true
+        - match: "(?=[A-Za-z_][A-Za-z0-9_]*)"
+          push:
+            - meta_content_scope: entity.name.function.cython
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: entity_name_function
+    - match: (lambda)(?=\s+)
+      captures:
+        1: storage.type.function.inline.cython
+      push:
+        - meta_scope: meta.function.inline.cython
+        - match: (\:)
+          captures:
+            1: punctuation.definition.parameters.end.cython
+            2: punctuation.section.function.begin.cython
+            3: invalid.illegal.missing-section-begin.cython
+          pop: true
+        - match: \s+
+          push:
+            - meta_content_scope: meta.function.inline.parameters.cython
+            - match: (?=\:)
+              pop: true
+            - include: keyword_arguments
+            - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(?:(,)|(?=[\n\)\:]))'
+              captures:
+                1: variable.parameter.function.cython
+                2: punctuation.separator.parameters.cython
+    - match: '^\s*(?=@\s*[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*\s*\()'
+      comment: a decorator may be a function call which returns a decorator.
+      push:
+        - meta_scope: meta.function.decorator.cython
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.cython
+          pop: true
+        - match: '(?=(@)\s*[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*\()'
+          captures:
+            1: punctuation.definition.decorator.cython
+          push:
+            - meta_content_scope: entity.name.function.decorator.cython
+            - match: (?=\s*\()
+              pop: true
+            - include: dotted_name
+        - match: (\()
+          captures:
+            1: punctuation.definition.arguments.begin.cython
+          push:
+            - meta_content_scope: meta.function.decorator.arguments.cython
+            - match: (?=\))
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: '^\s*(?=@\s*[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*)'
+      push:
+        - meta_scope: meta.function.decorator.cython
+        - meta_content_scope: entity.name.function.decorator.cython
+        - match: (?=\s|$\n?|#)
+          pop: true
+        - match: '(?=(@)\s*[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)'
+          captures:
+            1: punctuation.definition.decorator.cython
+          push:
+            - match: (?=\s|$\n?|#)
+              pop: true
+            - include: dotted_name
+    - match: '(?<=\)|\])\s*(\()'
+      captures:
+        1: punctuation.definition.arguments.begin.cython
+      push:
+        - meta_scope: meta.function-call.cython
+        - meta_content_scope: meta.function-call.arguments.cython
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.cython
+          pop: true
+        - include: keyword_arguments
+        - include: main
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*\s*\()'
+      push:
+        - meta_scope: meta.function-call.cython
+        - match: (\))
+          captures:
+            1: punctuation.definition.arguments.end.cython
+          pop: true
+        - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*\()'
+          push:
+            - match: (?=\s*\()
+              pop: true
+            - include: dotted_name
+        - match: (\()
+          captures:
+            1: punctuation.definition.arguments.begin.cython
+          push:
+            - meta_content_scope: meta.function-call.arguments.cython
+            - match: (?=\))
+              pop: true
+            - include: keyword_arguments
+            - include: main
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[a-zA-Z_][a-zA-Z_0-9]*)*\s*\[)'
+      push:
+        - meta_scope: meta.item-access.cython
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.arguments.end.cython
+          pop: true
+        - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\s*\[)'
+          push:
+            - match: '(?=\s*\[)'
+              pop: true
+            - include: dotted_name
+        - match: '(\[)'
+          captures:
+            1: punctuation.definition.arguments.begin.cython
+          push:
+            - meta_content_scope: meta.item-access.arguments.cython
+            - match: '(?=\])'
+              pop: true
+            - include: main
+    - match: '(?<=\)|\])\s*(\[)'
+      captures:
+        1: punctuation.definition.arguments.begin.cython
+      push:
+        - meta_scope: meta.item-access.cython
+        - meta_content_scope: meta.item-access.arguments.cython
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.arguments.end.cython
+          pop: true
+        - include: main
+    - match: \b(def|lambda)\b
+      captures:
+        1: storage.type.function.cython
+    - match: \b(class)\b
+      captures:
+        1: storage.type.class.cython
+    - include: line_continuation
+    - include: language_variables
+    - match: \b(None|True|False|Ellipsis|NotImplemented|NULL)\b
+      scope: constant.language.cython
+    - include: string_quoted_single
+    - include: string_quoted_double
+    - include: dotted_name
+    - match: (\()
+      push:
+        - match: (\))
+          pop: true
+        - include: main
+    - match: '(\[)(\s*(\]))\b'
+      captures:
+        1: punctuation.definition.list.begin.cython
+        2: meta.empty-list.cython
+        3: punctuation.definition.list.end.cython
+    - match: '(\[)'
+      captures:
+        1: punctuation.definition.list.begin.cython
+      push:
+        - meta_scope: meta.structure.list.cython
+        - match: '(\])'
+          captures:
+            1: punctuation.definition.list.end.cython
+          pop: true
+        - match: '(?<=\[|\,)\s*(?![\],])'
+          push:
+            - meta_content_scope: meta.structure.list.item.cython
+            - match: '\s*(?:(,)|(?=\]))'
+              captures:
+                1: punctuation.separator.list.cython
+              pop: true
+            - include: main
+    - match: (\()(\s*(\)))
+      scope: meta.structure.tuple.cython
+      captures:
+        1: punctuation.definition.tuple.begin.cython
+        2: meta.empty-tuple.cython
+        3: punctuation.definition.tuple.end.cython
+    - match: '(\{)(\s*(\}))'
+      scope: meta.structure.dictionary.cython
+      captures:
+        1: punctuation.definition.dictionary.begin.cython
+        2: meta.empty-dictionary.cython
+        3: punctuation.definition.dictionary.end.cython
+    - match: '(\{)'
+      captures:
+        1: punctuation.definition.dictionary.begin.cython
+      push:
+        - meta_scope: meta.structure.dictionary.cython
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.dictionary.end.cython
+          pop: true
+        - match: '(?<=\{|\,|^)\s*(?![\},])'
+          push:
+            - meta_content_scope: meta.structure.dictionary.key.cython
+            - match: '\s*(?:(?=\})|(\:))'
+              captures:
+                1: punctuation.separator.valuepair.dictionary.cython
+              pop: true
+            - include: main
+        - match: (?<=\:|^)\s*
+          push:
+            - meta_content_scope: meta.structure.dictionary.value.cython
+            - match: '\s*(?:(?=\})|(,))'
+              captures:
+                1: punctuation.separator.dictionary.cython
+              pop: true
+            - include: main
+  builtin_exceptions:
+    - match: (?x)\b((Arithmetic|Assertion|Attribute|EOF|Environment|FloatingPoint|IO|Import|Indentation|Index|Key|Lookup|Memory|Name|OS|Overflow|NotImplemented|Reference|Runtime|Standard|Syntax|System|Tab|Type|UnboundLocal|Unicode(Translate|Encode|Decode)?|Value|ZeroDivision)Error|(Deprecation|Future|Overflow|PendingDeprecation|Runtime|Syntax|User)?Warning|KeyboardInterrupt|NotImplemented|StopIteration|SystemExit|(Base)?Exception)\b
+      scope: support.type.exception.cython
+  builtin_functions:
+    - match: |-
+        (?x)\b(
+                        __import__|all|abs|any|apply|callable|chr|cmp|coerce|compile|delattr|dir|
+                        divmod|eval|execfile|filter|getattr|globals|hasattr|hash|hex|id|
+                        input|intern|isinstance|issubclass|iter|len|locals|map|max|min|oct|
+                        ord|pow|range|raw_input|reduce|reload|repr|round|setattr|sorted|
+                        sum|unichr|vars|zip
+        			)\b
+      scope: support.function.builtin.cython
+  builtin_types:
+    - match: |-
+        (?x)\b(
+        	basestring|bool|buffer|classmethod|complex|dict|enumerate|file|
+        	float|frozenset|int|list|long|object|open|reversed|set|
+        	slice|staticmethod|str|super|tuple|type|unicode|xrange
+        )\b
+      scope: support.type.cython
+  constant_placeholder:
+    - match: '(?i:%(\([a-z_]+\))?#?0?\-?[ ]?\+?([0-9]*|\*)(\.([0-9]*|\*))?[hL]?[a-z%])'
+      scope: constant.other.placeholder.cython
+  docstrings:
+    - match: '^\s*(?=[uU]?[rR]?""")'
+      push:
+        - meta_scope: comment.block.cython
+        - match: (?<=""")
+          pop: true
+        - include: string_quoted_double
+    - match: '^\s*(?=[uU]?[rR]?'''''')'
+      push:
+        - meta_scope: comment.block.cython
+        - match: (?<=''')
+          pop: true
+        - include: string_quoted_single
+  dotted_name:
+    - match: '(?=[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)'
+      push:
+        - match: '(?![A-Za-z0-9_\.])'
+          pop: true
+        - match: '(\.)(?=[A-Za-z_][A-Za-z0-9_]*)'
+          push:
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: magic_function_names
+            - include: magic_variable_names
+            - include: illegal_names
+            - include: generic_names
+        - match: '(?<!\.)(?=[A-Za-z_][A-Za-z0-9_]*)'
+          push:
+            - match: "(?![A-Za-z0-9_])"
+              pop: true
+            - include: builtin_functions
+            - include: builtin_types
+            - include: builtin_exceptions
+            - include: illegal_names
+            - include: magic_function_names
+            - include: magic_variable_names
+            - include: language_variables
+            - include: generic_names
+  entity_name_class:
+    - include: illegal_names
+    - include: generic_names
+  entity_name_function:
+    - include: magic_function_names
+    - include: illegal_names
+    - include: generic_names
+  escaped_char:
+    - match: '(\\x[0-9A-F]{2})|(\\[0-7]{3})|(\\\n)|(\\\\)|(\\\")|(\\'')|(\\a)|(\\b)|(\\f)|(\\n)|(\\r)|(\\t)|(\\v)'
+      captures:
+        1: constant.character.escape.hex.cython
+        2: constant.character.escape.octal.cython
+        3: constant.character.escape.newline.cython
+        4: constant.character.escape.backlash.cython
+        5: constant.character.escape.double-quote.cython
+        6: constant.character.escape.single-quote.cython
+        7: constant.character.escape.bell.cython
+        8: constant.character.escape.backspace.cython
+        9: constant.character.escape.formfeed.cython
+        10: constant.character.escape.linefeed.cython
+        11: constant.character.escape.return.cython
+        12: constant.character.escape.tab.cython
+        13: constant.character.escape.vertical-tab.cython
+  escaped_unicode_char:
+    - match: '(\\U[0-9A-Fa-f]{8})|(\\u[0-9A-Fa-f]{4})|(\\N\{[a-zA-Z ]+\})'
+      captures:
+        1: constant.character.escape.unicode.16-bit-hex.cython
+        2: constant.character.escape.unicode.32-bit-hex.cython
+        3: constant.character.escape.unicode.name.cython
+  function_name:
+    - include: magic_function_names
+    - include: magic_variable_names
+    - include: builtin_exceptions
+    - include: builtin_functions
+    - include: builtin_types
+    - include: generic_names
+  generic_names:
+    - match: "[A-Za-z_][A-Za-z0-9_]*"
+  illegal_names:
+    - match: \b(and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while|with|yield)\b
+      scope: invalid.illegal.name.cython
+  keyword_arguments:
+    - match: '\b([a-zA-Z_][a-zA-Z_0-9]*)\s*(=)(?!=)'
+      captures:
+        1: variable.parameter.function.cython
+        2: keyword.operator.assignment.cython
+      push:
+        - match: '\s*(?:(,)|(?=$\n?|[\)\:]))'
+          captures:
+            1: punctuation.separator.parameters.cython
+          pop: true
+        - include: main
+  language_variables:
+    - match: \b(self|cls)\b
+      scope: variable.language.cython
+  line_continuation:
+    - match: (\\)(.*)$\n?
+      captures:
+        1: punctuation.separator.continuation.line.cython
+        2: invalid.illegal.unexpected-text.cython
+  magic_function_names:
+    - match: |-
+        (?x)\b(__(?:
+        	abs|add|and|call|cmp|coerce|complex|contains|del|delattr|
+        	delete|delitem|delslice|div|divmod|enter|eq|exit|float|
+        	floordiv|ge|get|getattr|getattribute|getitem|getslice|gt|
+        	hash|hex|iadd|iand|idiv|ifloordiv|ilshift|imod|imul|init|
+        	int|invert|ior|ipow|irshift|isub|iter|itruediv|ixor|le|len|
+        	long|lshift|lt|mod|mul|ne|neg|new|nonzero|oct|or|pos|pow|
+        	radd|rand|rdiv|rdivmod|repr|rfloordiv|rlshift|rmod|rmul|ror|
+        	rpow|rrshift|rshift|rsub|rtruediv|rxor|set|setattr|setitem|
+        	setslice|str|sub|truediv|unicode|xor
+        )__)\b
+      comment: these methods have magic interpretation by cython and are generally called indirectly through syntactic constructs
+      scope: support.function.magic.cython
+  magic_variable_names:
+    - match: \b__(all|bases|class|debug|dict|doc|file|members|metaclass|methods|name|slots|weakref)__\b
+      comment: magic variables which a class/module may have.
+      scope: support.variable.magic.cython
+  regular_expressions:
+    - include: scope:source.regexp.python
+  string_quoted_double:
+    - match: '([uU]r)(""")'
+      comment: single quoted unicode-raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.unicode-raw-regex.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+        - include: regular_expressions
+    - match: '([uU]R)(""")'
+      comment: single quoted unicode-raw string without regular expression highlighting
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.unicode-raw.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: (r)(""")
+      comment: double quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.raw-regex.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: regular_expressions
+    - match: (R)(""")
+      comment: double quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.raw.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+    - match: '([uU])(""")'
+      comment: double quoted unicode string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.unicode.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: '([uU]r)(")'
+      comment: double-quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.unicode-raw-regex.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+        - include: regular_expressions
+    - match: '([uU]R)(")'
+      comment: double-quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.unicode-raw.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: (r)(")
+      comment: double-quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.raw-regex.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: regular_expressions
+    - match: (R)(")
+      comment: double-quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.raw.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+    - match: '([uU])(")'
+      comment: double quoted unicode string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.unicode.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: (""")(?=\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|REPLACE|ALTER))
+      comment: double quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.sql.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: scope:source.sql
+    - match: (")(?=\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|REPLACE|ALTER))
+      comment: double quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.sql.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: scope:source.sql
+    - match: (""")
+      comment: double quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.block.cython
+        - match: ((?<=""")(")""|""")
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+    - match: (")
+      comment: double quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.double.single-line.cython
+        - match: ((?<=")(")|")|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.double.cython
+            3: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+  string_quoted_single:
+    - match: (?<!')(')(('))(?!')
+      scope: string.quoted.single.single-line.cython
+      captures:
+        1: punctuation.definition.string.begin.cython
+        2: punctuation.definition.string.end.cython
+        3: meta.empty-string.single.cython
+    - match: "([uU]r)(''')"
+      comment: single quoted unicode-raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.unicode-raw-regex.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+        - include: regular_expressions
+    - match: "([uU]R)(''')"
+      comment: single quoted unicode-raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.unicode-raw.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: (r)(''')
+      comment: single quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.raw-regex.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: regular_expressions
+    - match: (R)(''')
+      comment: single quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.raw.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+    - match: "([uU])(''')"
+      comment: single quoted unicode string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.unicode.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: "([uU]r)(')"
+      comment: single quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.unicode-raw-regex.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+        - include: regular_expressions
+    - match: "([uU]R)(')"
+      comment: single quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.unicode-raw.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: (r)(')
+      comment: single quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.raw-regex.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: regular_expressions
+    - match: (R)(')
+      comment: single quoted raw string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.raw.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+    - match: "([uU])(')"
+      comment: single quoted unicode string
+      captures:
+        1: storage.type.string.cython
+        2: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.unicode.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_unicode_char
+        - include: escaped_char
+    - match: (''')(?=\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|REPLACE|ALTER))
+      comment: single quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: scope:source.sql
+    - match: (')(?=\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|REPLACE|ALTER))
+      comment: single quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+        - include: scope:source.sql
+    - match: (''')
+      comment: single quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.block.cython
+        - match: ((?<=''')(')''|''')
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: meta.empty-string.single.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+    - match: (')
+      comment: single quoted string
+      captures:
+        1: punctuation.definition.string.begin.cython
+      push:
+        - meta_scope: string.quoted.single.single-line.cython
+        - match: (')|(\n)
+          captures:
+            1: punctuation.definition.string.end.cython
+            2: invalid.illegal.unclosed-string.cython
+          pop: true
+        - include: constant_placeholder
+        - include: escaped_char
+  strings:
+    - include: string_quoted_double
+    - include: string_quoted_single

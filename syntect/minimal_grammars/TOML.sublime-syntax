@@ -1,0 +1,254 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: TOML
+file_extensions:
+  - toml
+scope: source.toml
+contexts:
+  main:
+    - include: comments
+    - include: groups
+    - include: key_pair
+    - include: invalid
+  comments:
+    - match: '(^[ \t]+)?(?=#)'
+      captures:
+        1: punctuation.whitespace.comment.leading.toml
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "#"
+          captures:
+            0: punctuation.definition.comment.toml
+          push:
+            - meta_scope: comment.line.number-sign.toml
+            - match: \n
+              pop: true
+  groups:
+    - match: '^\s*(\[)([^\[\]]*)(\])'
+      scope: meta.group.toml
+      captures:
+        1: punctuation.definition.section.begin.toml
+        3: punctuation.definition.section.begin.toml
+    - match: '^\s*(\[\[)([^\[\]]*)(\]\])'
+      scope: meta.group.double.toml
+      captures:
+        1: punctuation.definition.section.begin.toml
+        3: punctuation.definition.section.begin.toml
+  invalid:
+    - match: \S+(\s*(?=\S))?
+      scope: invalid.illegal.not-allowed-here.toml
+  key_pair:
+    - match: '([A-Za-z0-9_-]+)\s*(=)\s*'
+      captures:
+        1: variable.other.key.toml
+        2: punctuation.separator.key-value.toml
+      push:
+        - match: (?<=\S)(?<!=)|$
+          captures:
+            1: variable.other.key.toml
+            2: punctuation.separator.key-value.toml
+          pop: true
+        - include: primatives
+    - match: ((")(.*)("))\s*(=)\s*
+      captures:
+        1: variable.other.key.toml
+        2: punctuation.definition.variable.begin.toml
+        4: punctuation.definition.variable.end.toml
+        5: punctuation.separator.key-value.toml
+      push:
+        - match: (?<=\S)(?<!=)|$
+          captures:
+            1: variable.other.key.toml
+            2: punctuation.definition.variable.begin.toml
+            4: punctuation.definition.variable.end.toml
+            5: punctuation.separator.key-value.toml
+          pop: true
+        - include: primatives
+    - match: '(('')([^'']*)(''))\s*(=)\s*'
+      captures:
+        1: variable.other.key.toml
+        2: punctuation.definition.variable.begin.toml
+        4: punctuation.definition.variable.end.toml
+        5: punctuation.separator.key-value.toml
+      push:
+        - match: (?<=\S)(?<!=)|$
+          captures:
+            1: variable.other.key.toml
+            2: punctuation.definition.variable.begin.toml
+            4: punctuation.definition.variable.end.toml
+            5: punctuation.separator.key-value.toml
+          pop: true
+        - include: primatives
+    - match: |-
+        (?x)
+        	(
+        		(
+        			(?:
+        				[A-Za-z0-9_-]+				# Bare key
+        			  | "  (?:[^"\\]|\\.)* "		# Double quoted key
+        			  | ' [^']*          '		# Sindle quoted key
+        			)
+        			(?:
+        				\s* \. \s*					# Dot
+        			  | (?= \s* =)					#   or look-ahead for equals
+        			)
+        		){2,}								# Ensure at least one dot
+        	)
+        	\s*(=)\s*
+      comment: Dotted key
+      captures:
+        1: variable.other.key.toml
+        3: punctuation.separator.key-value.toml
+      push:
+        - match: (?<=\S)(?<!=)|$
+          captures:
+            1: variable.other.key.toml
+            3: punctuation.separator.key-value.toml
+          pop: true
+        - include: primatives
+  primatives:
+    - match: \G"""
+      captures:
+        0: punctuation.definition.string.begin.toml
+      push:
+        - meta_scope: string.quoted.triple.double.toml
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.toml
+          pop: true
+        - match: '\\([btnfr"\\]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape.toml
+        - match: '\\[^btnfr"\\\n]'
+          scope: invalid.illegal.escape.toml
+    - match: \G"
+      captures:
+        0: punctuation.definition.string.begin.toml
+      push:
+        - meta_scope: string.quoted.double.toml
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.toml
+          pop: true
+        - match: '\\([btnfr"\\]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape.toml
+        - match: '\\[^btnfr"\\]'
+          scope: invalid.illegal.escape.toml
+    - match: \G'''
+      captures:
+        0: punctuation.definition.string.begin.toml
+      push:
+        - meta_scope: string.quoted.triple.single.toml
+        - match: "'''"
+          captures:
+            0: punctuation.definition.string.end.toml
+          pop: true
+    - match: \G'
+      captures:
+        0: punctuation.definition.string.begin.toml
+      push:
+        - meta_scope: string.quoted.single.toml
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.toml
+          pop: true
+    - match: |-
+        \G(?x)
+        	[0-9]{4}
+        	-
+        	(0[1-9]|1[012])
+        	-
+        	(?!00|3[2-9])[0-3][0-9]
+        	(
+        		[Tt]
+        		(?!2[5-9])[0-2][0-9]
+        		:
+        		[0-5][0-9]
+        		:
+        		(?!6[1-9])[0-6][0-9]
+        		(\.[0-9]+)?
+        		(
+        			Z
+        		  | [+-](?!2[5-9])[0-2][0-9]:[0-5][0-9]
+        		)?
+        	)?
+      scope: constant.other.date.toml
+    - match: \G(true|false)
+      scope: constant.language.boolean.toml
+    - match: \G0x\h(\h|_\h)*
+      scope: constant.numeric.hex.toml
+    - match: '\G0o[0-7]([0-7]|_[0-7])*'
+      scope: constant.numeric.octal.toml
+    - match: '\G0b[01]([01]|_[01])*'
+      scope: constant.numeric.binary.toml
+    - match: '\G[+-]?(inf|nan)'
+      scope: constant.numeric.toml
+    - match: |-
+        (?x)
+        	\G
+        	(
+        	    [+-]?
+        	    (
+        			0
+        		  | ([1-9](([0-9]|_[0-9])+)?)
+        		)
+        	)
+        	(?=[.eE])
+        	(
+        	    \.
+        	    ([0-9](([0-9]|_[0-9])+)?)
+        	)?
+        	(
+        	    [eE]
+        	    ([+-]?(0|([1-9](([0-9]|_[0-9])+)?)))
+        	)?
+      scope: constant.numeric.float.toml
+    - match: |-
+        (?x)
+        	\G
+        	(
+        	    [+-]?
+        	    (
+        			0
+        		  | ([1-9](([0-9]|_[0-9])+)?)
+        		)
+        	)
+      scope: constant.numeric.integer.toml
+    - match: '\G\['
+      captures:
+        0: punctuation.definition.array.begin.toml
+      push:
+        - meta_scope: meta.array.toml
+        - match: '\]'
+          captures:
+            0: punctuation.definition.array.end.toml
+          pop: true
+        - match: '(?=["'''']|[+-]?[0-9]|[+-]?(inf|nan)|true|false|\[|\{)'
+          push:
+            - match: ",|(?=])"
+              captures:
+                0: punctuation.separator.array.toml
+              pop: true
+            - include: primatives
+            - include: comments
+            - include: invalid
+        - include: comments
+        - include: invalid
+    - match: '\G\{'
+      captures:
+        0: punctuation.definition.inline-table.begin.toml
+      push:
+        - meta_scope: meta.inline-table.toml
+        - match: '\}'
+          captures:
+            0: punctuation.definition.inline-table.end.toml
+          pop: true
+        - match: (?=\S)
+          push:
+            - match: ",|(?=})"
+              captures:
+                0: punctuation.separator.inline-table.toml
+              pop: true
+            - include: key_pair
+        - include: comments

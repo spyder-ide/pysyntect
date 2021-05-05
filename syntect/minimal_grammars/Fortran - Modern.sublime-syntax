@@ -1,0 +1,168 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Fortran - Modern
+comment: Specificities of Fortran >= 90
+file_extensions:
+  - f90
+  - F90
+  - f95
+  - F95
+  - f03
+  - F03
+  - f08
+  - F08
+first_line_match: "(?i)-[*]- mode: f90 -[*]-"
+scope: source.fortran.modern
+contexts:
+  main:
+    - include: scope:source.fortran
+    - match: |-
+        (?x:					# extended mode
+        ^
+        \s*					# start of line and possibly some space
+        (?i:(interface))		# 1: word interface
+        \s+					# some space
+        (?i:(operator|assignment))		# 2: the words operator or assignment
+        \(					# opening parenthesis
+        ((\.[a-zA-Z0-9_]+\.)|[\+\-\=\/\*]+)	# 3: an operator
+
+        \)					# closing parenthesis
+        )
+      comment: Interface declaration of operator/assignments
+      captures:
+        1: storage.type.function.fortran
+        2: storage.type.fortran
+        3: keyword.operator.fortran
+      push:
+        - meta_scope: meta.function.interface.operator.fortran.modern
+        - match: |-
+            (?xi)
+            	(end)(?=\s|\z)						# 1: the word end
+            	(?:
+            		\s+
+            		(interface)						# 2: possibly interface
+            	)?
+          captures:
+            1: keyword.other.fortran
+            2: storage.type.function.fortran
+          pop: true
+        - include: main
+    - match: |-
+        (?x:					# extended mode
+        ^
+        \s*					# start of line and possibly some space
+        (?i:(interface))		# 1: word interface
+        \s+					# some space
+        ([A-Za-z_][A-Za-z0-9_]*)	# 1: name
+        )
+      comment: Interface declaration of function/subroutines
+      captures:
+        1: storage.type.function.fortran
+        2: entity.name.function.fortran
+      push:
+        - meta_scope: meta.function.interface.fortran.modern
+        - match: |-
+            (?xi)
+            	(end)(?=\s|\z)						# 1: the word end
+            	(?:
+            		\s+
+            		(interface)						# 2: possibly interface
+            	)?
+          captures:
+            1: keyword.other.fortran
+            2: storage.type.function.fortran
+          pop: true
+        - include: main
+    - match: |-
+        (?x:								# extended mode
+        ^\s*								# begining of line and some space
+        (?i:(type))							# 1: word type
+        \s+									# some space
+        ([a-zA-Z_][a-zA-Z0-9_]*)			# 2: type name
+        )
+      comment: Type definition
+      captures:
+        1: storage.type.fortran.modern
+        2: entity.name.type.fortran.modern
+      push:
+        - meta_scope: meta.type-definition.fortran.modern
+        - match: |-
+            (?xi)
+            	(end)(?=\s|\z)						# 1: the word end
+            	(?:
+            		\s+
+            		(type)							# 2: possibly the word type
+            		(\s+[A-Za-z_][A-Za-z0-9_]*)?	# 3: possibly the name
+            	)?
+          captures:
+            1: keyword.other.fortran
+            2: storage.type.fortran.modern
+            3: entity.name.type.end.fortran.modern
+          pop: true
+        - include: main
+    - match: '(^[ \t]+)?(?=!-)'
+      captures:
+        1: punctuation.whitespace.comment.leading.fortran
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "!-"
+          captures:
+            0: punctuation.definition.comment.fortran
+          push:
+            - meta_scope: comment.line.exclamation.mark.fortran.modern
+            - match: \n
+              pop: true
+            - match: \\\s*\n
+    - match: '(^[ \t]+)?(?=!)'
+      captures:
+        1: punctuation.whitespace.comment.leading.fortran
+      push:
+        - match: (?!\G)
+          pop: true
+        - match: "!"
+          captures:
+            0: punctuation.definition.comment.fortran
+          push:
+            - meta_scope: comment.line.exclamation.fortran.modern
+            - match: \n
+              pop: true
+            - match: \\\s*\n
+    - match: \b(?i:(select\s+case|case(\s+default)?|end\s+select|use|(end\s+)?forall))\b
+      comment: statements controling the flow of the program
+      scope: keyword.control.fortran.modern
+    - match: \b(?i:(access|action|advance|append|apostrophe|asis|blank|delete|delim|direct|end|eor|err|exist|file|fmt|form|formatted|iolength|iostat|keep|name|named|nextrec|new|nml|no|null|number|old|opened|pad|position|quote|read|readwrite|rec|recl|replace|scratch|sequential|size|status|undefined|unformatted|unit|unknown|write|yes|zero|namelist)(?=\())
+      comment: input/output instrinsics
+      scope: keyword.control.io.fortran.modern
+    - match: \b(\=\=|\/\=|\>\=|\>|\<|\<\=)\b
+      comment: logical operators in symbolic format
+      scope: keyword.operator.logical.fortran.modern
+    - match: (\%|\=\>)
+      comment: operators
+      scope: keyword.operator.fortran.modern
+    - match: \b(?i:(ceiling|floor|modulo)(?=\())
+      comment: numeric instrinsics
+      scope: keyword.other.instrinsic.numeric.fortran.modern
+    - match: \b(?i:(allocate|allocated|deallocate)(?=\())
+      comment: matrix/vector/array instrinsics
+      scope: keyword.other.instrinsic.array.fortran.modern
+    - match: \b(?i:(associated)(?=\())
+      comment: pointer instrinsics
+      scope: keyword.other.instrinsic.pointer.fortran.modern
+    - match: \b(?i:((end\s*)?(interface|procedure|module)))\b
+      comment: programming units
+      scope: keyword.other.programming-units.fortran.modern
+    - match: \b(?i:(type(?=\s*\()))\b(?=.*::)
+      comment: Line of type specification
+      captures:
+        1: storage.type.fortran.modern
+      push:
+        - meta_scope: meta.specification.fortran.modern
+        - match: (?=!)|$
+          pop: true
+        - include: $top_level_main
+    - match: \b(?i:(type(?=\s*\()))\b
+      scope: storage.type.fortran.modern
+    - match: \b(?i:(optional|recursive|pointer|allocatable|target|private|public))\b
+      scope: storage.modifier.fortran.modern
