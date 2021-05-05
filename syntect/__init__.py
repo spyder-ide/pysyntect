@@ -21,6 +21,7 @@ from .syntect import (highlight, load_syntax_folder, load_theme_folder,
 
 HERE = osp.dirname(osp.abspath(__file__))
 GRAMMARS = osp.join(HERE, 'grammars')
+MIN_GRAMMARS = osp.join(HERE, 'minimal_grammars')
 
 
 class FontStyle:
@@ -30,9 +31,14 @@ class FontStyle:
     UNDERLINE = FontStyleConst.underline()
 
 
-def load_default_syntax():
+def load_minimum_syntax(use_thread):
+    """Load a minimum set of language grammars."""
+    return load_syntax_folder(MIN_GRAMMARS, use_thread)
+
+
+def load_default_syntax(use_thread):
     """Load the default syntax definitions included with pysyntect."""
-    return load_syntax_folder(GRAMMARS)
+    return load_syntax_folder(GRAMMARS, use_thread)
 
 
 # Package functions

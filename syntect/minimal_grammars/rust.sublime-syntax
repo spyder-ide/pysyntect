@@ -1,0 +1,368 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Rust
+file_extensions:
+  - rs
+scope: source.rust
+contexts:
+  main:
+    - match: \b(impl)\b
+      comment: Implementation
+      captures:
+        1: storage.type.rust
+      push:
+        - match: '\{'
+          pop: true
+        - include: block_comment
+        - include: line_comment
+        - include: sigils
+        - include: mut
+        - include: dyn
+        - include: ref_lifetime
+        - include: core_types
+        - include: core_marker
+        - include: core_traits
+        - include: std_types
+        - include: std_traits
+        - include: type_params
+        - include: where
+        - match: \bfor\b
+          scope: storage.type.rust
+        - include: type
+    - include: block_doc_comment
+    - include: block_comment
+    - include: line_doc_comment
+    - include: line_comment
+    - match: '#\!?\['
+      comment: Attribute
+      push:
+        - meta_scope: meta.attribute.rust
+        - match: '\]'
+          pop: true
+        - include: string_literal
+        - include: block_doc_comment
+        - include: block_comment
+        - include: line_doc_comment
+        - include: line_comment
+    - match: 'b?''([^''\\]|\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.))'''
+      comment: Single-quote string literal (character)
+      scope: string.quoted.single.rust
+    - include: string_literal
+    - include: raw_string_literal
+    - match: '\b[0-9][0-9_]*\.[0-9][0-9_]*([eE][+-]?[0-9_]+)?(f32|f64)?\b'
+      comment: Floating point literal (fraction)
+      scope: constant.numeric.float.rust
+    - match: '\b[0-9][0-9_]*(\.[0-9][0-9_]*)?[eE][+-]?[0-9_]+(f32|f64)?\b'
+      comment: Floating point literal (exponent)
+      scope: constant.numeric.float.rust
+    - match: '\b[0-9][0-9_]*(\.[0-9][0-9_]*)?([eE][+-]?[0-9_]+)?(f32|f64)\b'
+      comment: Floating point literal (typed)
+      scope: constant.numeric.float.rust
+    - match: '\b[0-9][0-9_]*([ui](8|16|32|64|128|s|size))?\b'
+      comment: Integer literal (decimal)
+      scope: constant.numeric.integer.decimal.rust
+    - match: '\b0x[a-fA-F0-9_]+([ui](8|16|32|64|128|s|size))?\b'
+      comment: Integer literal (hexadecimal)
+      scope: constant.numeric.integer.hexadecimal.rust
+    - match: '\b0o[0-7_]+([ui](8|16|32|64|128|s|size))?\b'
+      comment: Integer literal (octal)
+      scope: constant.numeric.integer.octal.rust
+    - match: '\b0b[01_]+([ui](8|16|32|64|128|s|size))?\b'
+      comment: Integer literal (binary)
+      scope: constant.numeric.integer.binary.rust
+    - match: \bstatic\b
+      comment: Static storage modifier
+      scope: storage.modifier.static.rust
+    - match: \b(true|false)\b
+      comment: Boolean constant
+      scope: constant.language.boolean.rust
+    - match: \b(async|await|break|continue|else|if|in|for|loop|match|return|try|while)\b
+      comment: Control keyword
+      scope: keyword.control.rust
+    - match: \b(crate|extern|mod|let|ref|use|super|move)\b
+      comment: Keyword
+      scope: keyword.other.rust
+    - match: \b(abstract|alignof|become|do|final|macro|offsetof|override|priv|proc|pure|sizeof|typeof|virtual|yield)\b
+      comment: Reserved keyword
+      scope: invalid.deprecated.rust
+    - include: unsafe
+    - include: sigils
+    - include: self
+    - include: mut
+    - include: dyn
+    - include: impl
+    - include: box
+    - include: lifetime
+    - include: ref_lifetime
+    - include: const
+    - include: pub
+    - match: (=>|::|\bas\b)
+      comment: Miscellaneous operator
+      scope: keyword.operator.misc.rust
+    - match: (&&|\|\||==|!=)
+      comment: Comparison operator
+      scope: keyword.operator.comparison.rust
+    - match: (\+=|-=|/=|\*=|%=|\^=|&=|\|=|<<=|>>=|=)
+      comment: Assignment operator
+      scope: keyword.operator.assignment.rust
+    - match: (!|\+|-|/|\*|%|\^|&|\||<<|>>)
+      comment: Arithmetic operator
+      scope: keyword.operator.arithmetic.rust
+    - match: (<=|>=|<|>)
+      comment: Comparison operator (second group because of regex precedence)
+      scope: keyword.operator.comparison.rust
+    - include: core_types
+    - include: core_vars
+    - include: core_marker
+    - include: core_traits
+    - include: std_types
+    - include: std_traits
+    - match: \b(macro_rules|compile_error|format_args|env|option_env|concat_idents|concat|line|column|file|stringify|include|include_str|include_bytes|module_path|cfg)!
+      comment: Built-in macro
+      scope: support.function.builtin.rust
+    - match: \b(panic|assert|assert_eq|assert_ne|debug_assert|debug_assert_eq|debug_assert_ne|try|write|writeln|unreachable|unimplemented)!
+      comment: Core macro
+      scope: support.function.core.rust
+    - match: \b(format|print|println|eprint|eprintln|select|vec)!
+      comment: Standard library macro
+      scope: support.function.std.rust
+    - match: \b(log|error|warn|info|debug|trace|log_enabled)!
+      comment: Logging macro
+      scope: support.function.log.rust
+    - match: '\b([a-zA-Z_][a-zA-Z0-9_]*\!)\s*[({\[]'
+      comment: Invokation of a macro
+      captures:
+        1: entity.name.function.macro.rust
+    - match: '\b([A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)\s*\('
+      comment: Function call
+      captures:
+        1: entity.name.function.rust
+    - match: '\b([A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)\s*(::)(?=\s*<.*>\s*\()'
+      comment: Function call with type parameters
+      captures:
+        1: entity.name.function.rust
+        2: keyword.operator.misc.rust
+      push:
+        - match: \(
+          captures:
+            1: entity.name.function.rust
+            2: keyword.operator.misc.rust
+          pop: true
+        - include: type_params
+    - match: '\b(fn)\s+([A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+)'
+      comment: Function definition
+      captures:
+        1: keyword.other.fn.rust
+        2: entity.name.function.rust
+      push:
+        - match: '[\{;]'
+          pop: true
+        - include: block_comment
+        - include: line_comment
+        - include: sigils
+        - include: self
+        - include: mut
+        - include: dyn
+        - include: impl
+        - include: ref_lifetime
+        - include: core_types
+        - include: core_marker
+        - include: core_traits
+        - include: std_types
+        - include: std_traits
+        - include: type_params
+        - include: const
+        - include: where
+        - include: unsafe
+        - match: fn
+          comment: Function arguments
+          scope: keyword.other.fn.rust
+    - match: '\b(enum|struct|trait|union)\s+([a-zA-Z_][a-zA-Z0-9_]*)'
+      comment: Type declaration
+      captures:
+        1: storage.type.rust
+        2: entity.name.type.rust
+      push:
+        - match: '[\{\(;]'
+          pop: true
+        - include: block_comment
+        - include: line_comment
+        - include: core_traits
+        - include: std_traits
+        - include: type_params
+        - include: core_types
+        - include: pub
+        - include: where
+    - match: '\b(type)\s+([a-zA-Z_][a-zA-Z0-9_]*)'
+      comment: Type alias
+      captures:
+        1: storage.type.rust
+        2: entity.name.type.rust
+      push:
+        - match: ;
+          pop: true
+        - include: block_comment
+        - include: line_comment
+        - include: sigils
+        - include: mut
+        - include: dyn
+        - include: impl
+        - include: lifetime
+        - include: ref_lifetime
+        - include: core_types
+        - include: core_marker
+        - include: core_traits
+        - include: std_types
+        - include: std_traits
+        - include: type_params
+  block_comment:
+    - match: /\*
+      comment: Block comment
+      push:
+        - meta_scope: comment.block.rust
+        - match: \*/
+          pop: true
+        - include: block_doc_comment
+        - include: block_comment
+  block_doc_comment:
+    - match: '/\*[\*!](?![\*/])'
+      comment: Block documentation comment
+      push:
+        - meta_scope: comment.block.documentation.rust
+        - match: \*/
+          pop: true
+        - include: block_doc_comment
+        - include: block_comment
+  box:
+    - match: \bbox\b
+      comment: Box storage modifier
+      scope: storage.modifier.box.rust
+  const:
+    - match: \bconst\b
+      comment: Const storage modifier
+      scope: storage.modifier.const.rust
+  core_marker:
+    - match: \b(Copy|Send|Sized|Sync)\b
+      comment: Core trait (marker)
+      scope: support.type.marker.rust
+  core_traits:
+    - match: \b(Drop|Fn|FnMut|FnOnce|Clone|PartialEq|PartialOrd|Eq|Ord|AsRef|AsMut|Into|From|Default|Iterator|Extend|IntoIterator|DoubleEndedIterator|ExactSizeIterator)\b
+      comment: Core trait
+      scope: support.type.core.rust
+  core_types:
+    - match: \b(bool|char|usize|isize|u8|u16|u32|u64|u128|i8|i16|i32|i64|i128|f32|f64|str|Self|Option|Result)\b
+      comment: Built-in/core type
+      scope: storage.type.core.rust
+  core_vars:
+    - match: \b(Some|None|Ok|Err)\b
+      comment: Core type variant
+      scope: support.constant.core.rust
+  dyn:
+    - match: \bdyn\b
+      comment: Dynamic modifier
+      scope: storage.modifier.dyn.rust
+  escaped_character:
+    - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+      scope: constant.character.escape.rust
+  impl:
+    - match: \bimpl\b
+      comment: Existential type modifier
+      scope: storage.modifier.impl.rust
+  lifetime:
+    - match: '''([a-zA-Z_][a-zA-Z0-9_]*)\b'
+      comment: Named lifetime
+      scope: storage.modifier.lifetime.rust
+      captures:
+        1: entity.name.lifetime.rust
+  line_comment:
+    - match: //
+      comment: Single-line comment
+      push:
+        - meta_scope: comment.line.double-slash.rust
+        - match: $
+          pop: true
+  line_doc_comment:
+    - match: "//[!/](?=[^/])"
+      comment: Single-line documentation comment
+      push:
+        - meta_scope: comment.line.documentation.rust
+        - match: $
+          pop: true
+  mut:
+    - match: \bmut\b
+      comment: Mutable storage modifier
+      scope: storage.modifier.mut.rust
+  pub:
+    - match: \bpub\b
+      comment: Visibility modifier
+      scope: storage.modifier.visibility.rust
+  raw_string_literal:
+    - match: b?r(#*)"
+      comment: Raw double-quote string literal
+      push:
+        - meta_scope: string.quoted.double.raw.rust
+        - match: '"\1'
+          pop: true
+  ref_lifetime:
+    - match: '&(''([a-zA-Z_][a-zA-Z0-9_]*))\b'
+      comment: Reference with named lifetime
+      captures:
+        1: storage.modifier.lifetime.rust
+        2: entity.name.lifetime.rust
+  self:
+    - match: \bself\b
+      comment: Self variable
+      scope: variable.language.rust
+  sigils:
+    - match: '[&*](?=[a-zA-Z0-9_\(\[\|\"]+)'
+      comment: Sigil
+      scope: keyword.operator.sigil.rust
+  std_traits:
+    - match: \b(ToOwned|ToString)\b
+      comment: Standard library trait
+      scope: support.type.std.rust
+  std_types:
+    - match: \b(Box|String|Vec|Path|PathBuf)\b
+      comment: Standard library type
+      scope: storage.class.std.rust
+  string_literal:
+    - match: b?"
+      comment: Double-quote string literal
+      push:
+        - meta_scope: string.quoted.double.rust
+        - match: '"'
+          pop: true
+        - include: escaped_character
+  type:
+    - match: '\b([A-Za-z][_A-Za-z0-9]*|_[_A-Za-z0-9]+)\b'
+      comment: A type
+      scope: entity.name.type.rust
+  type_params:
+    - match: "<(?![=<])"
+      comment: Type parameters
+      push:
+        - meta_scope: meta.type_params.rust
+        - match: "(?<![-])>"
+          pop: true
+        - include: block_comment
+        - include: line_comment
+        - include: sigils
+        - include: mut
+        - include: dyn
+        - include: impl
+        - include: lifetime
+        - include: core_types
+        - include: core_marker
+        - include: core_traits
+        - include: std_types
+        - include: std_traits
+        - include: type_params
+  unsafe:
+    - match: \bunsafe\b
+      comment: Unsafe code keyword
+      scope: keyword.other.unsafe.rust
+  where:
+    - match: \bwhere\b
+      comment: Generic where clause
+      scope: keyword.other.where.rust

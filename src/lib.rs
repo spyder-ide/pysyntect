@@ -7,6 +7,11 @@
 
 /// Rust bindings to syntect library in Python
 
+// Std imports
+use std::sync::mpsc;
+use std::thread;
+// use std::time::Instant;
+
 // PyO3 imports
 use pyo3::create_exception;
 use pyo3::exceptions;
@@ -546,15 +551,37 @@ fn highlight(
 /// LoadingError:
 ///     If there was some error trying to read any of the files.
 #[pyfunction]
-fn load_syntax_folder(folder: String) -> PyResult<SyntaxSetHandle> {
-    let syn_set = SyntaxSet::load_from_folder(&folder);
-    match syn_set {
-        Ok(result) => {
-            // let syntaxes = result.syntaxes();
-            let syn_handle = SyntaxSetHandle { syntax_set: result };
-            Ok(syn_handle)
+fn load_syntax_folder(folder: String, use_thread: bool, py: Python<'_>) -> PyResult<SyntaxSetHandle> {
+    // let (tx, rx) = mpsc::channel();
+    if use_thread {
+        return py.allow_threads(move || {
+            let (tx, rx) = mpsc::channel();
+            thread::spawn(move || {
+                let syn_set = SyntaxSet::load_from_folder(&folder);
+                tx.send(syn_set).unwrap();
+            });
+            let syn_set = rx.recv().unwrap();
+            match syn_set {
+                Ok(result) => {
+                    // let syntaxes = result.syntaxes();
+                    let syn_handle = SyntaxSetHandle { syntax_set: result };
+                    Ok(syn_handle)
+                }
+                Err(err) => Err(LoadingError::py_err(err.to_string())),
+            }
+        });
+    } else {
+        // let now = Instant::now();
+        let syn_set = SyntaxSet::load_from_folder(&folder);
+        // println!("{}", now.elapsed().as_secs());
+        match syn_set {
+            Ok(result) => {
+                // let syntaxes = result.syntaxes();
+                let syn_handle = SyntaxSetHandle { syntax_set: result };
+                Ok(syn_handle)
+            }
+            Err(err) => Err(LoadingError::py_err(err.to_string())),
         }
-        Err(err) => Err(LoadingError::py_err(err.to_string())),
     }
 }
 
