@@ -2,6 +2,16 @@
 from typing import List, Tuple
 
 
+class LoadingError(Exception):
+    """Exception that occurs whilst loading themes/syntax files."""
+    ...
+
+
+class SyntaxNotFoundError(Exception):
+    """Exception that occurs when a syntax definition was not found."""
+    ...
+
+
 class Color:
     """Class describing an RGBA color."""
     r: int = ...
