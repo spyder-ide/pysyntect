@@ -1,3 +1,19 @@
+## Version 0.3.0 (2021/05/05)
+
+### Issues Closed
+
+* [Issue 31](https://github.com/spyder-ide/pysyntect/issues/31) - Release v0.3.0
+
+In this release 1 issue was closed.
+
+### Pull Requests Merged
+
+* [PR 30](https://github.com/spyder-ide/pysyntect/pull/30) - PR: Split implementation into multiple modules, by [@andfoy](https://github.com/andfoy)
+* [PR 27](https://github.com/spyder-ide/pysyntect/pull/27) - Update pyo3 requirement from 0.10.1 to 0.13.2, by [@dependabot[bot]](https://github.com/apps/dependabot)
+
+In this release 2 pull requests were closed.
+
+
 ## Version 0.2.0 (2020/06/03)
 
 ### Issues Closed
