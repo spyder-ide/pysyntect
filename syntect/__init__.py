@@ -10,7 +10,6 @@
 """Python wrapper around syntect library."""
 
 # Standard library imports
-import os
 import os.path as osp
 
 # Local imports
