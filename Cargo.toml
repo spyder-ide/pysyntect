@@ -18,7 +18,7 @@ crate-type = ["cdylib"]
 syntect = "4.5"
 
 [dependencies.pyo3]
-version = "0.15.1"
+version = "0.16.3"
 features = ["extension-module"]
 
 [package.metadata.maturin]
