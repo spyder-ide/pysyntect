@@ -15,7 +15,7 @@ name = "syntect"
 crate-type = ["cdylib"]
 
 [dependencies]
-syntect = "4.5"
+syntect = "5.0"
 
 [dependencies.pyo3]
 version = "0.15.1"
